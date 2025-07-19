@@ -1,0 +1,211 @@
+{
+  "name": "Ioan Suătean",
+  "image": "",
+  "spouse": {
+    "name": "Ana Suătean",
+    "image": ""
+  },
+  "children": [
+    {
+      "name": "Maria Man",
+      "image": "",
+      "spouse": {
+        "name": "Manescu Man",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Florin Man",
+          "image": "",
+          "spouse": {
+            "name": "-----",
+            "image": ""
+          },
+          "children": [
+            { "name": "Sonia Man", "image": "" }
+          ]
+        },
+        {
+          "name": "Ovidiu Man",
+          "image": "",
+          "spouse": {
+            "name": "Corina Man",
+            "image": ""
+          },
+          "children": [
+            { "name": "Olivia Man", "image": "" }
+          ]
+        },
+        {
+          "name": "Mihaela Marian",
+          "image": "",
+          "spouse": {
+            "name": "Ioni Marian",
+            "image": ""
+          },
+          "children": [
+            { "name": "Tudor Marian", "image": "" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Felicia Suătean",
+      "image": ""
+
+    },
+    {
+      "name": "Felicia Nealcoș",
+      "image": "",
+      "spouse": {
+        "name": "Mitruț Nealcoș",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Adrian Nealcoș",
+          "image": "",
+          "spouse": {
+            "name": "Petruța Nealcoș",
+            "image": ""
+          },
+          "children": [
+            { "name": "Grandchild 2.1.1", "image": "" },
+            { "name": "Grandchild 2.1.1", "image": "" }
+          ]
+        },
+        {
+          "name": "Ioana Sasa",
+          "image": "",
+          "spouse": {
+            "name": "Ciprian Sasa",
+            "image": ""
+          },
+          "children": [
+            { "name": "Șerban Sasa", "image": "" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Leontin Suătean",
+      "image": "",
+      "spouse": {
+        "name": "Aurelia Suătean",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Andreea Suătean",
+          "image": ""
+        }
+      ]
+    },
+    {
+      "name": "Susana Laza",
+      "image": "",
+      "spouse": {
+        "name": "Ioan Laza",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Sergiu Laza",
+          "image": "",
+          "spouse": {
+            "name": "Andra Laza",
+            "image": ""
+          },
+          "children": [
+            { "name": "Ștefan Laza", "image": "" }
+          ]
+        },
+        {
+          "name": "Ioana Romantan",
+          "image": "",
+          "spouse": {
+            "name": "Alex Romantan",
+            "image": ""
+          },
+          "children": [
+            { "name": "Matei Romantan", "image": "" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emilia Petrar",
+      "image": "",
+      "spouse": {
+        "name": "Jenu Petrar",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Razvan Petrar",
+          "image": "",
+          "spouse": {
+            "name": "Liana Petrar",
+            "image": ""
+          },
+          "children": [
+            { "name": "Luca Petrar", "image": "" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Victoria Nădisan",
+      "image": "",
+      "spouse": {
+        "name": "Alexandru Nădisan",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Bogdan Nădisan",
+          "image": "",
+          "spouse": {
+            "name": "Cristina Nădisan",
+            "image": ""
+          },
+          "children": [
+            { "name": "Flaviu Nădisan", "image": "" },
+            { "name": "Grandchild 6.1.1", "image": "" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nicolae Săutean",
+      "image": "",
+      "spouse": {
+        "name": "Simona Săutean",
+        "image": ""
+      },
+      "children": [
+        { "name": "Andrei Săutean", "image": "" },    
+        { "name": "Adrian Săutean", "image": "" },
+        { "name": "Gabriel Săutean", "image": "" }
+      ]
+    },
+    {
+      "name": "Emil Suătean",
+      "image": "",
+      "spouse": {
+        "name": "Elena Suătean",
+        "image": ""
+      },
+      "children": [
+        {
+          "name": "Paul Suătean",
+          "image": "https://www.facebook.com/photo/?fbid=9153378404707258&set=a.136438726401316",
+          "spouse": {
+            "name": "Damaris Suătean",
+            "image": ""
+          }
+        }
+      ]
+    }
+  ]
+}
