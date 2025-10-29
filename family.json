@@ -1,211 +1,344 @@
 {
-  "name": "Ioan Suătean",
-  "image": "",
-  "spouse": {
-    "name": "Ana Suătean",
-    "image": ""
-  },
-  "children": [
-    {
-      "name": "Maria Man",
-      "image": "",
-      "spouse": {
-        "name": "Manescu Man",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Florin Man",
-          "image": "",
-          "spouse": {
-            "name": "-----",
-            "image": ""
-          },
-          "children": [
-            { "name": "Sonia Man", "image": "" }
-          ]
-        },
-        {
-          "name": "Ovidiu Man",
-          "image": "",
-          "spouse": {
-            "name": "Corina Man",
-            "image": ""
-          },
-          "children": [
-            { "name": "Olivia Man", "image": "" }
-          ]
-        },
-        {
-          "name": "Mihaela Marian",
-          "image": "",
-          "spouse": {
-            "name": "Ioni Marian",
-            "image": ""
-          },
-          "children": [
-            { "name": "Tudor Marian", "image": "" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Felicia Suătean",
-      "image": ""
-
-    },
-    {
-      "name": "Felicia Nealcoș",
-      "image": "",
-      "spouse": {
-        "name": "Mitruț Nealcoș",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Adrian Nealcoș",
-          "image": "",
-          "spouse": {
-            "name": "Petruța Nealcoș",
-            "image": ""
-          },
-          "children": [
-            { "name": "Grandchild 2.1.1", "image": "" },
-            { "name": "Grandchild 2.1.1", "image": "" }
-          ]
-        },
-        {
-          "name": "Ioana Sasa",
-          "image": "",
-          "spouse": {
-            "name": "Ciprian Sasa",
-            "image": ""
-          },
-          "children": [
-            { "name": "Șerban Sasa", "image": "" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Leontin Suătean",
-      "image": "",
-      "spouse": {
-        "name": "Aurelia Suătean",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Andreea Suătean",
-          "image": ""
-        }
-      ]
-    },
-    {
-      "name": "Susana Laza",
-      "image": "",
-      "spouse": {
-        "name": "Ioan Laza",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Sergiu Laza",
-          "image": "",
-          "spouse": {
-            "name": "Andra Laza",
-            "image": ""
-          },
-          "children": [
-            { "name": "Ștefan Laza", "image": "" }
-          ]
-        },
-        {
-          "name": "Ioana Romantan",
-          "image": "",
-          "spouse": {
-            "name": "Alex Romantan",
-            "image": ""
-          },
-          "children": [
-            { "name": "Matei Romantan", "image": "" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Emilia Petrar",
-      "image": "",
-      "spouse": {
-        "name": "Jenu Petrar",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Razvan Petrar",
-          "image": "",
-          "spouse": {
-            "name": "Liana Petrar",
-            "image": ""
-          },
-          "children": [
-            { "name": "Luca Petrar", "image": "" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Victoria Nădisan",
-      "image": "",
-      "spouse": {
-        "name": "Alexandru Nădisan",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Bogdan Nădisan",
-          "image": "",
-          "spouse": {
-            "name": "Cristina Nădisan",
-            "image": ""
-          },
-          "children": [
-            { "name": "Flaviu Nădisan", "image": "" },
-            { "name": "Grandchild 6.1.1", "image": "" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Nicolae Săutean",
-      "image": "",
-      "spouse": {
-        "name": "Simona Săutean",
-        "image": ""
-      },
-      "children": [
-        { "name": "Andrei Săutean", "image": "" },    
-        { "name": "Adrian Săutean", "image": "" },
-        { "name": "Gabriel Săutean", "image": "" }
-      ]
-    },
-    {
-      "name": "Emil Suătean",
-      "image": "",
-      "spouse": {
-        "name": "Elena Suătean",
-        "image": ""
-      },
-      "children": [
-        {
-          "name": "Paul Suătean",
-          "image": "https://www.facebook.com/photo/?fbid=9153378404707258&set=a.136438726401316",
-          "spouse": {
-            "name": "Damaris Suătean",
-            "image": ""
-          }
-        }
-      ]
-    }
-  ]
+    "Grandparent":  "Ioan Suatean",
+    "image":  "",
+    "spouse":  {
+                   "name":  "Ana Suatean",
+                   "image":  "",
+                   "birthday":  "1952-01-01"
+               },
+    "Parent":  [
+                   {
+                       "name":  "Maria Man",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Nicolae Man",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Florin Man",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Csilla Man",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Sonia Man",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        },
+                                        {
+                                            "name":  "Ovidiu Man",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Corina Man",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Olivia Man",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        },
+                                        {
+                                            "name":  "Mihaela Marian",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Ioan Alin Marian",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Tudor Marian",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Felicia Suatean",
+                       "image":  "",
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Felicia Nealco?",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Mitru? Nealco?",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Adrian Nealco?",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Petru?a Nealco?",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Victor Nealco?",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  },
+                                                                  {
+                                                                      "name":  "Alexandra Nealco?",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        },
+                                        {
+                                            "name":  "Ioana Sa?a",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Ciprian Sa?a",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "?erban Sa?a",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Liviu Suatean",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Aurelia Suatean",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Andreea Suatean",
+                                            "image":  "",
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Leontin Sautean",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Mariana Sautean",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Daniel Sautean",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Alina Sautean",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Andrei Sautean",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Susana Laza",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Ioan Laza",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Sergiu Laza",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Andra Laza",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "?tefan Laza",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        },
+                                        {
+                                            "name":  "Ioana Roman?an",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Alexandru Roman?an",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Matei Roman?an",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Emilia Petrar",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Jenu Petrar",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Razvan Petrar",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Liana Maria Petrar",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Luca Petrar",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Victoria Nadisan",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Alexandru Nadisan",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Bogdan Nadisan",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Cristina Nadisan",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "grandchildren":  [
+                                                                  {
+                                                                      "name":  "Flaviu Nadisan",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  },
+                                                                  {
+                                                                      "name":  "Mihai Nadisan",
+                                                                      "image":  "",
+                                                                      "birthday":  "2015-01-01"
+                                                                  }
+                                                              ],
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   },
+                   {
+                       "name":  "Nicolae Sautean",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Simona Sautean",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Andrei Sautean",
+                                            "image":  "",
+                                            "birthday":  "1998-01-01",
+                                            "fromPrevSpouse":  true
+                                        },
+                                        {
+                                            "name":  "Adrian Sautean",
+                                            "image":  "",
+                                            "birthday":  "1998-01-01"
+                                        },
+                                        {
+                                            "name":  "Gabriel Sautean",
+                                            "image":  "",
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01",
+                       "prevSpouse":  {
+                                          "name":  "Jane Doe",
+                                          "image":  "",
+                                          "birthday":  "1970-01-01"
+                                      }
+                   },
+                   {
+                       "name":  "Emil Suatean",
+                       "image":  "",
+                       "spouse":  {
+                                      "name":  "Elena Suatean",
+                                      "image":  "",
+                                      "birthday":  "1975-01-01"
+                                  },
+                       "children":  [
+                                        {
+                                            "name":  "Paul Suatean",
+                                            "image":  "",
+                                            "spouse":  {
+                                                           "name":  "Damaris Suatean",
+                                                           "image":  "",
+                                                           "birthday":  "1998-01-01"
+                                                       },
+                                            "birthday":  "1998-01-01"
+                                        }
+                                    ],
+                       "birthday":  "1975-01-01"
+                   }
+               ],
+    "birthday":  "1950-01-01"
 }
+
+
+
