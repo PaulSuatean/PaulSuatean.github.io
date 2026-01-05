@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Family Tree</title>
+    <meta name="description" content="Interactive, zoomable family tree" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Arbore Genealogic: Familia Suǎtean</div>
+      <div class="controls">
+        <button id="themeBtn" title="Toggle theme">Theme</button>
+        <button id="dnaBtn" title="Toggle DNA lines">DNA</button>
+        <button id="zoomInBtn" title="Zoom in">+</button>
+        <button id="zoomOutBtn" title="Zoom out">−</button>
+        <button id="resetBtn" title="Reset position">Reset</button>
+      </div>
+    </header>
+
+    <main class="canvas-wrap">
+      <!-- The SVG holds the zoom/pan surface -->
+      <svg id="tree" tabindex="0" aria-label="Family tree canvas" role="img"></svg>
+    </main>
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+      <div class="modal-dialog">
+        <button id="modalClose" class="modal-close" aria-label="Close">×</button>
+        <img id="modalImg" class="modal-img" alt="Selected person photo" />
+        <div class="modal-meta">
+          <div id="modalTitle" class="modal-name"></div>
+          <div id="modalDob" class="modal-dob"></div>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      This page requires JavaScript to render the family tree.
+    </noscript>
+
+    <!-- D3 for layout + zoom (loaded at runtime by the browser) -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="script.js"></script>
+  </body>
+  </html>
