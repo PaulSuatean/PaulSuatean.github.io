@@ -10,25 +10,54 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">Arbore Genealogic: Familia Suǎtean</div>
+      <div class="brand">Arbore Genealogic: Familia Suatean</div>
       <div class="controls">
-        <button id="themeBtn" title="Toggle theme">Theme</button>
-        <button id="dnaBtn" title="Toggle DNA lines">DNA</button>
+        <button id="themeBtn" title="Switch theme">&#9728;</button>
+        <button id="dnaBtn" title="Toggle lineage lines">Lineage</button>
         <button id="zoomInBtn" title="Zoom in">+</button>
-        <button id="zoomOutBtn" title="Zoom out">−</button>
+        <button id="zoomOutBtn" title="Zoom out">-</button>
         <button id="resetBtn" title="Reset position">Reset</button>
+        <button id="focusBtn" title="Enter focus mode" aria-pressed="false">Focus</button>
       </div>
     </header>
 
-    <main class="canvas-wrap">
-      <!-- The SVG holds the zoom/pan surface -->
-      <svg id="tree" tabindex="0" aria-label="Family tree canvas" role="img"></svg>
+    <div id="upcomingBanner" class="upcoming-banner" hidden aria-live="polite"></div>
+
+    <main class="page">
+      <div class="canvas-wrap">
+        <!-- The SVG holds the zoom/pan surface -->
+        <svg id="tree" tabindex="0" aria-label="Family tree canvas" role="img"></svg>
+      </div>
     </main>
+
+    <button id="calendarToggle" class="calendar-toggle" aria-expanded="false" aria-controls="birthdaySection">
+      Deschide Calendar
+    </button>
+
+    <section id="birthdaySection" class="birthday-bar" aria-label="Family birthdays by month">
+      <div class="birthday-bar__header">
+        <div class="calendar-title">Calendar Aniversar</div>
+        <div class="carousel-controls" aria-hidden="true">
+        <button id="monthPrev" class="carousel-btn" type="button" aria-label="Luna anterioara">&lt;</button>
+        <button id="monthNext" class="carousel-btn" type="button" aria-label="Luna urmatoare">&gt;</button>
+        </div>
+      </div>
+      <div class="calendar-side-nav" aria-hidden="true">
+        <button id="calendarSidePrev" class="month-nav-btn" type="button" aria-label="Luna anterioara">&lt;</button>
+        <button id="calendarSideNext" class="month-nav-btn" type="button" aria-label="Luna urmatoare">&gt;</button>
+      </div>
+    <button id="mobileFullCalBtn" class="mobile-full-cal-btn" type="button" aria-pressed="false" aria-label="Toate Lunile">
+      Toate Lunile
+    </button>
+      <div id="birthdayMonths" class="birthday-months" aria-live="polite"></div>
+    </section>
+
+    <div id="birthdayTooltip" class="birthday-tooltip" role="status" aria-live="polite" hidden></div>
 
     <!-- Photo Modal -->
     <div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
       <div class="modal-dialog">
-        <button id="modalClose" class="modal-close" aria-label="Close">×</button>
+        <button id="modalClose" class="modal-close" aria-label="Close">&times;</button>
         <img id="modalImg" class="modal-img" alt="Selected person photo" />
         <div class="modal-meta">
           <div id="modalTitle" class="modal-name"></div>
@@ -46,3 +75,6 @@
     <script src="script.js"></script>
   </body>
   </html>
+
+
+
