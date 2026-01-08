@@ -36,13 +36,13 @@
             "spouse": {
                 "name": "Aurelia Suătean",
                 "image": "images/Aurelia_Suatean.webp",
-                "birthday": "28/01/xxxx"
+                "birthday": "28/01/1956"
             },
             "children": [
                 {
                     "name": "Andreea Suătean",
                     "image": "images/Andreea_Suatean.webp",
-                    "birthday": "02/07/xxxx"
+                    "birthday": "02/07/1986"
                 }
             ],
             "birthday": "04/10/1949"
@@ -120,7 +120,7 @@
             "spouse": {
                 "name": "Mitruț Nealcoș",
                 "image": "images/Mitrut_Nealcos.webp",
-                "birthday": "15/10/1955"
+                "birthday": "15/10/1953"
             },
             "children": [
                 {
@@ -215,7 +215,7 @@
                         {
                             "name": "Ștefan Laza",
                             "image": "images/Stefan_Laza.webp",
-                            "birthday": "30/09/2018"
+                            "birthday": "10/08/2022"
                         }
                     ],
                     "birthday": "30/09/1984"
