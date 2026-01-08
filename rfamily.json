@@ -5,11 +5,11 @@
         "veteran"
     ],
     "parents": {
-        "name": "Father of Ioan Suatean",
+        "name": "F Ioan Suătean",
         "image": "",
         "birthday": "15/03/1920",
         "spouse": {
-            "name": "Mother of Ioan Suatean",
+            "name": "M Ioan Suătean",
             "image": "",
             "birthday": "22/07/1922"
         }
@@ -19,11 +19,11 @@
         "image": "",
         "birthday": "12/02/1952",
         "parents": {
-            "name": "Mother of Ana Suatean",
+            "name": "Ana Pintilie",
             "image": "",
             "birthday": "11/05/1921",
             "spouse": {
-                "name": "Father of Ana Suatean",
+                "name": "Ioan Pintilie",
                 "image": "",
                 "birthday": "30/12/1923"
             }

@@ -251,6 +251,8 @@ body.theme-dark .upcoming-banner .close-btn {
 .birthday-months {
   display: grid;
   grid-template-columns: repeat(6, minmax(150px, 1fr));
+  --month-cols: 6;
+  --month-card-width: calc((100% - ((var(--month-cols) - 1) * var(--month-col-gap))) / var(--month-cols));
   --month-col-gap: 14px;
   gap: 10px var(--month-col-gap);
   max-width: 100%;
@@ -275,7 +277,7 @@ body.theme-dark .upcoming-banner .close-btn {
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   overflow: hidden;
-  transition: box-shadow 160ms ease, border-color 160ms ease;
+  transition: box-shadow 160ms ease, border-color 160ms ease, transform 220ms ease;
   min-height: 190px;
   height: 190px;
   display: flex;
@@ -286,7 +288,8 @@ body.theme-dark .upcoming-banner .close-btn {
   height: auto;
   min-height: 190px;
   display: grid;
-  grid-template-columns: minmax(0, calc(50% - (var(--month-col-gap) / 2))) minmax(0, calc(50% - (var(--month-col-gap) / 2)));
+  --expanded-grid-pad: calc(var(--month-col-gap) / 2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: auto auto 1fr;
   column-gap: var(--month-col-gap);
   grid-column: span 2;
@@ -305,12 +308,21 @@ body.theme-dark .upcoming-banner .close-btn {
 }
 .month-card.expanded .month-head { grid-column: 1; grid-row: 1; }
 .month-card.expanded .month-count { grid-column: 1; grid-row: 2; }
-.month-card.expanded .month-body { grid-column: 1; grid-row: 3; }
+.month-card.expanded .month-body {
+  grid-column: 1;
+  grid-row: 3;
+  padding-right: calc(4px + var(--expanded-grid-pad));
+}
 .month-card.expanded .month-details {
   grid-column: 2;
   grid-row: 1 / span 3;
   border-top: 0;
   border-left: 0;
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
+  padding: 6px 12px 10px;
+  pointer-events: auto;
 }
 .month-card.current {
   border-color: #d4af37;
@@ -336,14 +348,14 @@ body.theme-dark .upcoming-banner .close-btn {
 }
 .month-title { flex: 1 1 auto; }
 .month-expand-icon {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   border: 1px solid #c9d7ea;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   color: #0d2138;
   background: #f6f9ff;
@@ -378,13 +390,17 @@ body.theme-dark .upcoming-banner .close-btn {
   padding: 0 4px 6px;
 }
 .month-details {
-  display: none;
-  padding: 6px 8px 10px;
-  border-top: 1px dashed #c9d7ea;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  overflow: hidden;
+  padding: 0;
+  border-top: 0 dashed #c9d7ea;
   font-size: 11px;
   color: var(--text);
+  transition: max-height 240ms ease, opacity 200ms ease, transform 200ms ease, padding 200ms ease;
+  pointer-events: none;
 }
-.month-card.expanded .month-details { display: block; }
 .month-list {
   list-style: none;
   margin: 0;
@@ -528,16 +544,16 @@ body.theme-dark .upcoming-banner .close-btn {
 }
 
 @media (max-width: 1400px) {
-  .birthday-months { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+  .birthday-months { grid-template-columns: repeat(4, minmax(150px, 1fr)); --month-cols: 4; }
 }
 @media (max-width: 1100px) {
-  .birthday-months { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+  .birthday-months { grid-template-columns: repeat(3, minmax(150px, 1fr)); --month-cols: 3; }
 }
 @media (max-width: 800px) {
-  .birthday-months { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+  .birthday-months { grid-template-columns: repeat(2, minmax(150px, 1fr)); --month-cols: 2; }
 }
 @media (max-width: 500px) {
-  .birthday-months { grid-template-columns: 1fr; width: 100%; max-width: 100%; margin: 0; }
+  .birthday-months { grid-template-columns: 1fr; width: 100%; max-width: 100%; margin: 0; --month-cols: 1; }
   .birthday-months.mobile-carousel .month-card { display: none; }
   .birthday-months.mobile-carousel .month-card.active { display: flex; }
   .birthday-months { width: 100%; max-width: 100%; margin: 0; }
@@ -548,6 +564,7 @@ body.theme-dark .upcoming-banner .close-btn {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   max-width: 100%;
   width: 100%;
+  --month-cols: 2;
   --month-col-gap: 8px;
   gap: 8px var(--month-col-gap);
   margin: 0;
@@ -839,6 +856,9 @@ body.focus-mode #tree {
   }
   .calendar-full { height: var(--calendar-panel-max-mobile); }
   .calendar-full .birthday-months { flex: 1 1 auto; }
+  .month-details {
+    transition: none;
+  }
 }
 
 @media (max-width: 640px) {
