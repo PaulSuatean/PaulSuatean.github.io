@@ -930,13 +930,13 @@
   function parseBirthday(raw) {
     if (!raw) return null;
     const str = String(raw).trim();
-    const ro = str.match(/^(\d{1,2})[.\-/\s](\d{1,2})[.\-/\s](\d{4})$/);
+    const ro = str.match(/^(\d{1,2})[.\-/\s](\d{1,2})[.\-/\s](\d{4}|[xX]{4})$/);
     const iso = !ro && str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     let day, month, year;
     if (ro) {
       day = Number(ro[1]);
       month = Number(ro[2]);
-      year = Number(ro[3]);
+      year = ro[3].toLowerCase() === 'xxxx' ? 2000 : Number(ro[3]);
     } else if (iso) {
       year = Number(iso[1]);
       month = Number(iso[2]);
