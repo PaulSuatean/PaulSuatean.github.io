@@ -43,7 +43,6 @@
   const calendarSidePrev = document.getElementById('calendarSidePrev');
   const calendarSideNext = document.getElementById('calendarSideNext');
   const calendarSideNav = document.querySelector('.calendar-side-nav');
-  const mobileFullCalBtn = document.getElementById('mobileFullCalBtn');
   let calendarOpen = false;
   const birthdayTooltip = document.getElementById('birthdayTooltip');
   const personLookup = new Map();
@@ -189,7 +188,7 @@
     return hour >= 20 || hour < 7;
   }
   document.getElementById('zoomInBtn').addEventListener('click', () => smoothZoom(1.2));
-  document.getElementById('zoomOutBtn').addEventListener('click', () => smoothZoom(1/1.2));
+  document.getElementById('zoomOutBtn').addEventListener('click', () => smoothZoom(1/1.1));
   document.getElementById('resetBtn').addEventListener('click', () => fitToScreen(50));
   const focusBtn = document.getElementById('focusBtn');
   let focusModeActive = document.body.classList.contains('focus-mode');
@@ -217,7 +216,8 @@
 
   function smoothZoom(factor) {
     svg.transition().duration(250).call(zoom.scaleBy, factor);
-  }  function fitToScreen(padding = 40) {
+  }
+  function fitToScreen(padding = 40) {
     const bbox = g.node().getBBox();
     if (!isFinite(bbox.x) || !isFinite(bbox.y) || !isFinite(bbox.width) || !isFinite(bbox.height)) return;
     const w = svg.node().clientWidth;
@@ -229,7 +229,7 @@
     const tx = (w - bbox.width * scale) / 2 - bbox.x * scale;
     const ty = (h - bbox.height * scale) / 2 - bbox.y * scale;
     const safeScale = Math.max(scale, 0.02);
-    const minScale = Math.max(Math.min(0.2, safeScale * 0.85), 0.02);
+    const minScale = Math.max(safeScale * 0.85, 0.02);
     const maxScale = Math.max(6, safeScale * 5);
     zoom.scaleExtent([minScale, maxScale]);
     const t = d3.zoomIdentity.translate(tx, ty).scale(safeScale);
@@ -464,12 +464,20 @@
       if (idx === currentMonthIdx) card.classList.add('current');
       card.dataset.monthIndex = idx;
 
-      const head = document.createElement('div');
+      const detailsId = `month-details-${idx}`;
+      const head = document.createElement('button');
+      head.type = 'button';
       head.className = 'month-head';
+      head.setAttribute('aria-expanded', 'false');
+      head.setAttribute('aria-controls', detailsId);
       const title = document.createElement('span');
       title.className = 'month-title';
       title.textContent = meta.long;
+      const expandIcon = document.createElement('span');
+      expandIcon.className = 'month-expand-icon';
+      expandIcon.textContent = '+';
       head.appendChild(title);
+      head.appendChild(expandIcon);
       card.appendChild(head);
 
       const count = document.createElement('div');
@@ -550,6 +558,57 @@
       }
       body.appendChild(grid);
       card.appendChild(body);
+
+      const details = document.createElement('div');
+      details.className = 'month-details';
+      details.id = detailsId;
+      details.setAttribute('aria-hidden', 'true');
+      if (total === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'month-empty';
+        empty.textContent = 'Nicio aniversare';
+        details.appendChild(empty);
+      } else {
+        const list = document.createElement('ul');
+        list.className = 'month-list';
+        const days = Object.keys(monthBucket)
+          .map((day) => Number(day))
+          .sort((a, b) => a - b);
+        days.forEach((day) => {
+          const names = monthBucket[day] || [];
+          if (!names.length) return;
+          const li = document.createElement('li');
+          const dayLabel = document.createElement('span');
+          dayLabel.className = 'month-day';
+          dayLabel.textContent = String(day).padStart(2, '0');
+          const namesLabel = document.createElement('span');
+          namesLabel.className = 'month-names';
+          namesLabel.textContent = names.join(', ');
+          li.appendChild(dayLabel);
+          li.appendChild(namesLabel);
+          list.appendChild(li);
+        });
+        details.appendChild(list);
+      }
+      card.appendChild(details);
+
+      head.addEventListener('click', () => {
+        const isExpanded = card.classList.toggle('expanded');
+        details.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
+        head.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        expandIcon.textContent = isExpanded ? '-' : '+';
+        if (!isExpanded || !birthdayMonthsEl) return;
+        birthdayMonthsEl.querySelectorAll('.month-card.expanded').forEach((other) => {
+          if (other === card) return;
+          other.classList.remove('expanded');
+          const otherDetails = other.querySelector('.month-details');
+          if (otherDetails) otherDetails.setAttribute('aria-hidden', 'true');
+          const otherHead = other.querySelector('.month-head');
+          if (otherHead) otherHead.setAttribute('aria-expanded', 'false');
+          const otherIcon = other.querySelector('.month-expand-icon');
+          if (otherIcon) otherIcon.textContent = '+';
+        });
+      });
       birthdayMonthsEl.appendChild(card);
     });
   }
@@ -751,45 +810,22 @@
   if (calendarToggle) {
     calendarToggle.addEventListener('click', () => setCalendarOpen(!calendarOpen));
   }
-  if (mobileFullCalBtn) {
-    mobileFullCalBtn.addEventListener('click', () => {
-      mobileShowAll = !mobileShowAll;
-      if (applyMobileState) applyMobileState();
-      if (mobileShowAll && birthdayMonthsEl) {
-        birthdayMonthsEl.scrollTop = 0;
-      }
-    });
-  }
-
   // Start collapsed by default
   setCalendarOpen(false);
 
   function setupCarouselControls() {
     if (!birthdayMonthsEl) return;
     applyMobileState = () => {
-      const mobileContext = mobileQuery.matches || mobileShowAll; // allow full view even if media query is borderline
-      if (!mobileContext) mobileShowAll = false;
-      const useCarousel = mobileContext && !mobileShowAll;
+      const mobileContext = mobileQuery.matches;
+      mobileShowAll = mobileContext;
       birthdayMonthsEl.classList.toggle('mobile-show-all', mobileShowAll);
-      birthdayMonthsEl.classList.toggle('mobile-carousel', useCarousel);
+      birthdayMonthsEl.classList.remove('mobile-carousel');
       if (calendarSection) calendarSection.classList.toggle('calendar-full', mobileShowAll);
-      if (useCarousel) {
-        ensureActiveMonth();
-        updateActiveMonthDisplay();
-        attachSwipe();
-        if (carouselControls) carouselControls.style.display = 'none';
-        if (calendarSideNav) calendarSideNav.style.display = 'flex';
-      } else {
-        // show all months
-        birthdayMonthsEl.querySelectorAll('.month-card').forEach((card) => card.classList.remove('active'));
-        detachSwipe();
-        if (carouselControls) carouselControls.style.display = 'none';
-        if (calendarSideNav) calendarSideNav.style.display = 'none';
-      }
-      if (mobileFullCalBtn) {
-        mobileFullCalBtn.setAttribute('aria-pressed', mobileShowAll ? 'true' : 'false');
-        mobileFullCalBtn.textContent = mobileShowAll ? 'Înapoi' : 'Toate Lunile';
-      }
+      // show all months
+      birthdayMonthsEl.querySelectorAll('.month-card').forEach((card) => card.classList.remove('active'));
+      detachSwipe();
+      if (carouselControls) carouselControls.style.display = 'none';
+      if (calendarSideNav) calendarSideNav.style.display = 'none';
     };
     mobileQuery.addEventListener('change', () => applyMobileState && applyMobileState());
     if (applyMobileState) applyMobileState();

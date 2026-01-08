@@ -8,15 +8,15 @@
   --accent: #5aa9ff;
   --accent-2: #7cc3ff;
   --page-bg: #f8fbff;
-  --calendar-panel-max: 40vh;
-  --calendar-panel-max-mobile: calc(100vh - 140px);
-  --calendar-toggle-clearance: 72px;
+  --calendar-panel-max: 36vh;
+  --calendar-panel-max-mobile: 55vh;
+  --calendar-toggle-clearance: 56px;
 }
 
 @supports (height: 100svh) {
   :root {
-    --calendar-panel-max: 40svh;
-    --calendar-panel-max-mobile: calc(100svh - 140px);
+    --calendar-panel-max: 36svh;
+    --calendar-panel-max-mobile: 55svh;
   }
 }
 
@@ -70,7 +70,7 @@ body.theme-dark .upcoming-banner .close-btn {
 .calendar-toggle {
   position: fixed;
   left: 50%;
-  bottom: 16px;
+  bottom: 8px;
   transform: translateX(-50%);
   z-index: 6;
   padding: 10px 18px;
@@ -189,7 +189,7 @@ body.theme-dark .upcoming-banner .close-btn {
   color: #0d2138;
   border-top: 1px solid #c9d7ea;
   box-shadow: none;
-  padding: 10px 12px calc(10px + var(--calendar-toggle-clearance));
+  padding: 1px 1px 10px;
   margin-top: 0;
   display: flex;
   flex-direction: column;
@@ -200,7 +200,7 @@ body.theme-dark .upcoming-banner .close-btn {
   pointer-events: none;
   visibility: hidden;
   max-height: var(--calendar-panel-max);
-  height: var(--calendar-panel-max);
+  height: auto;
   overflow: hidden;
 }
 #birthdaySection { scroll-margin-top: 80px; }
@@ -213,20 +213,24 @@ body.theme-dark .upcoming-banner .close-btn {
 }
 .calendar-open .calendar-toggle {
   box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+  z-index: 10;
+  background: #ffffff;
+  border: 2px solid #5aa9ff;
 }
 .birthday-bar__header {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 2px 4px 12px;
+  gap: 8px;
+  padding: 0 4px 4px;
   background: var(--page-bg);
   width: 100%;
+  flex-shrink: 0;
 }
 .calendar-title {
   font-weight: 800;
   letter-spacing: 0.2px;
-  font-size: 1.05rem;
+  font-size: 1rem;
   text-align: center;
 }
 .carousel-controls { display: none; gap: 8px; align-items: center; justify-content: center; flex: 1 0 100%; }
@@ -234,37 +238,79 @@ body.theme-dark .upcoming-banner .close-btn {
   border: 1px solid #c9d7ea;
   background: #ffffff;
   color: #0d2138;
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: 999px;
+  padding: 6px 12px;
   cursor: pointer;
   font-weight: 800;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  letter-spacing: 0.2px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
+.carousel-btn:hover { background: #eef5ff; }
 .carousel-btn:active { transform: translateY(1px); }
 .birthday-legend { display: none; }
 .birthday-months {
   display: grid;
   grid-template-columns: repeat(6, minmax(150px, 1fr));
-  gap: 8px 14px;
-  max-width: 1180px;
-  margin: 0 auto;
+  --month-col-gap: 14px;
+  gap: 10px var(--month-col-gap);
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  grid-auto-rows: minmax(190px, auto);
   align-items: start;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  padding: 6px 12px calc(1px + var(--calendar-toggle-clearance));
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.birthday-months::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 .month-card {
   background: #ffffff;
   border: 1px solid #c9d7ea;
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   overflow: hidden;
   transition: box-shadow 160ms ease, border-color 160ms ease;
-  min-height: 225px;
-  height: 225px;
+  min-height: 190px;
+  height: 190px;
   display: flex;
   flex-direction: column;
   position: relative;
+}
+.month-card.expanded {
+  height: auto;
+  min-height: 190px;
+  display: grid;
+  grid-template-columns: minmax(0, calc(50% - (var(--month-col-gap) / 2))) minmax(0, calc(50% - (var(--month-col-gap) / 2)));
+  grid-template-rows: auto auto 1fr;
+  column-gap: var(--month-col-gap);
+  grid-column: span 2;
+  grid-row: span 1;
+}
+.month-card.expanded::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 50%;
+  width: 1px;
+  background: #c9d7ea;
+  transform: translateX(-0.5px);
+  pointer-events: none;
+}
+.month-card.expanded .month-head { grid-column: 1; grid-row: 1; }
+.month-card.expanded .month-count { grid-column: 1; grid-row: 2; }
+.month-card.expanded .month-body { grid-column: 1; grid-row: 3; }
+.month-card.expanded .month-details {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  border-top: 0;
+  border-left: 0;
 }
 .month-card.current {
   border-color: #d4af37;
@@ -273,30 +319,49 @@ body.theme-dark .upcoming-banner .close-btn {
 }
 .month-head {
   width: 100%;
+  appearance: none;
   background: transparent;
   border: 0;
-  padding: 6px 8px 4px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
+  padding: 5px 6px 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-weight: 800;
   letter-spacing: 0.2px;
   color: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
 }
+.month-title { flex: 1 1 auto; }
+.month-expand-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid #c9d7ea;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0d2138;
+  background: #f6f9ff;
+}
+.month-head:hover .month-expand-icon { background: #eef5ff; }
 .month-count {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-align: left;
-  padding: 0 8px 4px;
+  padding: 0 6px 2px;
 }
 .weekday-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 2px;
-  margin: 2px 2px 6px;
-  font-size: 10px;
+  margin: 1px 2px 4px;
+  font-size: 9px;
   color: var(--muted);
   text-align: center;
   font-weight: 700;
@@ -306,18 +371,48 @@ body.theme-dark .upcoming-banner .close-btn {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
-  padding: 0 6px 14px;
+  padding: 0 2px 8px;
 }
 .month-body {
   flex: 1 1 auto;
-  padding: 0 4px 8px;
+  padding: 0 4px 6px;
+}
+.month-details {
+  display: none;
+  padding: 6px 8px 10px;
+  border-top: 1px dashed #c9d7ea;
+  font-size: 11px;
+  color: var(--text);
+}
+.month-card.expanded .month-details { display: block; }
+.month-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.month-list li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.month-day {
+  min-width: 24px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.month-names { color: #ffffff; }
+.month-empty {
+  color: var(--muted);
+  font-weight: 700;
 }
 .day-cell {
-  min-height: 23px;
+  min-height: 20px;
   border-radius: 5px;
   background: #e6eef9;
   color: #0d2138;
-  padding: 2px 7px 2px;
+  padding: 1px 6px 1px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -333,7 +428,7 @@ body.theme-dark .upcoming-banner .close-btn {
 }
 .day-num {
   font-weight: 800;
-  font-size: 10px;
+  font-size: 9px;
   text-align: left;
 }
 .day-cell.has-birthday {
@@ -404,84 +499,95 @@ body.theme-dark .upcoming-banner .close-btn {
   border: 1px solid #c9d7ea;
   background: #ffffff;
   color: #0d2138;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-weight: 800;
+  letter-spacing: 0.2px;
 }
+.month-nav-btn:hover { background: #eef5ff; }
 .month-nav-btn:active { transform: translateY(1px); }
 
 .calendar-side-nav {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(100% - 8px);
+  width: calc(100% - 24px);
   pointer-events: none;
   display: none;
   justify-content: space-between;
-  padding: 0 2px;
+  padding: 0;
   transform: translate(-50%, -50%);
+  z-index: 6;
 }
 .calendar-side-nav .month-nav-btn {
   pointer-events: auto;
   box-shadow: 0 2px 8px rgba(0,0,0,0.16);
 }
 
-@media (max-width: 1200px) {
-  .birthday-months { grid-template-columns: repeat(4, minmax(150px, 1fr)); max-width: 900px; }
+@media (max-width: 1400px) {
+  .birthday-months { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
 }
-@media (max-width: 900px) {
-  .birthday-months { grid-template-columns: repeat(3, minmax(150px, 1fr)); max-width: 700px; }
+@media (max-width: 1100px) {
+  .birthday-months { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
 }
-@media (max-width: 720px) {
-  .birthday-months { grid-template-columns: repeat(2, minmax(150px, 1fr)); max-width: 460px; }
+@media (max-width: 800px) {
+  .birthday-months { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
 }
 @media (max-width: 500px) {
-  .birthday-months { grid-template-columns: 1fr; }
+  .birthday-months { grid-template-columns: 1fr; width: 100%; max-width: 100%; margin: 0; }
   .birthday-months.mobile-carousel .month-card { display: none; }
   .birthday-months.mobile-carousel .month-card.active { display: flex; }
-  .birthday-months { max-width: calc(100% - 80px); margin: 0 auto; }
+  .birthday-months { width: 100%; max-width: 100%; margin: 0; }
   .carousel-controls { display: none; }
   .calendar-side-nav { display: flex; }
 }
 .birthday-months.mobile-show-all {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 900px;
+  max-width: 100%;
   width: 100%;
-  gap: 10px;
-  margin: 0 auto;
-  grid-auto-rows: minmax(200px, 1fr);
+  --month-col-gap: 8px;
+  gap: 8px var(--month-col-gap);
+  margin: 0;
+  grid-auto-rows: minmax(190px, auto);
 }
 .birthday-months.mobile-show-all .month-card {
   display: flex;
   height: 100%;
-  padding: 6px 8px 10px;
+  min-height: 190px;
+  padding: 4px 6px 8px;
+}
+.birthday-months.mobile-show-all .month-card.expanded {
+  display: grid;
+  height: auto;
+  min-height: 190px;
+  grid-column: span 2;
 }
 .birthday-months.mobile-show-all .month-head {
   padding: 4px 6px 2px;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 .birthday-months.mobile-show-all .month-count {
-  font-size: 10px;
-  padding: 0 6px 4px;
+  font-size: 9px;
+  padding: 0 6px 2px;
 }
 .birthday-months.mobile-show-all .weekday-row {
-  font-size: 10px;
+  font-size: 9px;
   margin: 2px;
 }
 .birthday-months.mobile-show-all .month-grid {
-  gap: 3px;
-  padding: 0 6px 10px;
+  gap: 2px;
+  padding: 0 2px 8px;
 }
 .birthday-months.mobile-show-all .day-cell {
   min-height: 18px;
-  padding: 1px 5px;
+  padding: 1px 4px;
   font-size: 8px;
 }
 .birthday-months.mobile-show-all .day-num {
-  font-size: 9px;
+  font-size: 8px;
 }
 .mobile-full-cal-btn {
   display: none;
@@ -496,6 +602,7 @@ body.theme-dark .upcoming-banner .close-btn {
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
+.mobile-full-cal-btn:hover { background: #eef5ff; }
 .mobile-full-cal-btn:active { transform: translateY(1px); }
 @media (max-width: 640px) {
   .mobile-full-cal-btn { display: block; }
@@ -506,6 +613,18 @@ body.theme-dark .birthday-bar {
   color: #eaf2ff;
   border-top-color: #17345f;
   box-shadow: none;
+}
+body.theme-dark .calendar-toggle {
+  background: #0f2a52;
+  border-color: #1a3c72;
+  color: #eaf2ff;
+}
+body.theme-dark .calendar-toggle:hover {
+  background: #153463;
+}
+body.theme-dark .calendar-open .calendar-toggle {
+  border-color: #5aa9ff;
+  background: #0f2a52;
 }
 body.theme-dark .birthday-legend { color: #b3c1d9; }
 body.theme-dark .month-card {
@@ -518,6 +637,18 @@ body.theme-dark .month-card.current {
   box-shadow: 0 0 0 2px rgba(212,175,55,0.5), 0 4px 12px rgba(0,0,0,0.32);
   animation: calendarPulse 3.6s ease-in-out infinite;
 }
+body.theme-dark .month-expand-icon {
+  background: #102d59;
+  border-color: #1a3c72;
+  color: #eaf2ff;
+}
+body.theme-dark .month-head:hover .month-expand-icon {
+  background: #153463;
+}
+body.theme-dark .month-details { border-color: #1a3c72; }
+body.theme-dark .month-card.expanded::after { background: #1a3c72; }
+body.theme-dark .month-day,
+body.theme-dark .month-empty { color: #93b1d7; }
 body.theme-dark .month-count { color: #93b1d7; }
 body.theme-dark .weekday-row { color: #9bb5db; }
 body.theme-dark .day-cell {
@@ -541,6 +672,18 @@ body.theme-dark .birthday-tooltip {
   box-shadow: 0 10px 28px rgba(0,0,0,0.35);
 }
 body.theme-dark .birthday-tooltip .tooltip-list { color: #eaf2ff; }
+body.theme-dark .carousel-btn,
+body.theme-dark .month-nav-btn,
+body.theme-dark .mobile-full-cal-btn {
+  background: #0f2a52;
+  border-color: #1a3c72;
+  color: #eaf2ff;
+}
+body.theme-dark .carousel-btn:hover,
+body.theme-dark .month-nav-btn:hover,
+body.theme-dark .mobile-full-cal-btn:hover {
+  background: #153463;
+}
 
 /* Light/print theme */
 /* removed theme-light variant per user request */
@@ -661,20 +804,41 @@ body.focus-mode #tree {
     align-items: center;
   }
   .birthday-bar {
-    bottom: 16px;
-    height: var(--calendar-panel-max-mobile);
+    bottom: 0;
+    height: auto;
     max-height: var(--calendar-panel-max-mobile);
-    padding: calc(12px + env(safe-area-inset-top)) 12px 38px;
+    padding: 12px 5px calc(8px + env(safe-area-inset-bottom));
+    --mobile-card-width: min(72vw, 320px);
+    --nav-btn-size: 34px;
   }
   .birthday-months {
     grid-template-columns: 1fr;
-    max-width: calc(100% - 80px);
-    margin-bottom: 12px;
+    max-width: 100%;
+    margin: 0 0 8px;
+    padding: 6px 10px 8px;
+    flex: 0 0 auto;
+  }
+  .birthday-months.mobile-carousel {
+    align-content: start;
+    justify-items: center;
+  }
+  .birthday-months.mobile-carousel .month-card {
+    width: var(--mobile-card-width);
   }
   .birthday-months.mobile-carousel .month-card { display: none; }
   .birthday-months.mobile-carousel .month-card.active { display: flex; }
   .carousel-controls { display: none; }
   .calendar-side-nav { display: flex; }
+  .calendar-side-nav {
+    width: 100vw;
+    left: 50%;
+    padding: 0 calc((100vw - var(--mobile-card-width) - (2 * var(--nav-btn-size))) / 4);
+  }
+  .calendar-toggle {
+    bottom: 10px;
+  }
+  .calendar-full { height: var(--calendar-panel-max-mobile); }
+  .calendar-full .birthday-months { flex: 1 1 auto; }
 }
 
 @media (max-width: 640px) {
