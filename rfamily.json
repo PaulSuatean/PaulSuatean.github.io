@@ -36,13 +36,13 @@
             "spouse": {
                 "name": "Aurelia Suătean",
                 "image": "images/Aurelia_Suatean.webp",
-                "birthday": "02/07/1949"
+                "birthday": "28/01/xxxx"
             },
             "children": [
                 {
                     "name": "Andreea Suătean",
                     "image": "images/Andreea_Suatean.webp",
-                    "birthday": "10/02/2001"
+                    "birthday": "02/07/xxxx"
                 }
             ],
             "birthday": "04/10/1949"
@@ -135,7 +135,7 @@
                         {
                             "name": "Victor Nealcoș",
                             "image": "images/Victor_Nealcos.webp",
-                            "birthday": "23/07/xxxx"
+                            "birthday": "23/07/2021"
                         },
                         {
                             "name": "Alexandra Nealcoș",
@@ -284,7 +284,7 @@
                     "spouse": {
                         "name": "Cristina Nădișan",
                         "image": "images/Cristina_Nadisan.webp",
-                        "birthday": "20/12/1995"
+                        "birthday": "08/03/1986"
                     },
                     "grandchildren": [
                         {
@@ -298,10 +298,10 @@
                             "birthday": "05/02/2013"
                         }
                     ],
-                    "birthday": "04/11/1994"
+                    "birthday": "18/09/1986"
                 }
             ],
-            "birthday": "18/09/1986"
+            "birthday": "09/05/xxxx"
         },
         {
             "name": "Niculae Săutean",
