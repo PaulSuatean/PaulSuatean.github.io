@@ -16,6 +16,20 @@
   const svg = d3.select('#tree');
   const g = svg.append('g').attr('class', 'viewport');
   const defs = svg.append('defs');
+  const personGradient = defs.append('linearGradient')
+    .attr('id', 'personGradient')
+    .attr('x1', '0%')
+    .attr('y1', '0%')
+    .attr('x2', '100%')
+    .attr('y2', '100%');
+  personGradient.append('stop')
+    .attr('offset', '0%')
+    .attr('stop-color', 'var(--accent-2)')
+    .attr('stop-opacity', 0.22);
+  personGradient.append('stop')
+    .attr('offset', '100%')
+    .attr('stop-color', 'var(--accent)')
+    .attr('stop-opacity', 0.22);
   // Transparent hit-surface so every touch/pointer reaches the zoom handler
   const hitRect = svg.insert('rect', ':first-child')
     .attr('class', 'zoom-hit-surface')
@@ -32,7 +46,10 @@
   const modalImg = document.getElementById('modalImg');
   const modalName = document.getElementById('modalTitle');
   const modalDob = document.getElementById('modalDob');
+  const modalExtendedInfo = document.getElementById('modalExtendedInfo');
   const modalClose = document.getElementById('modalClose');
+  const helpModal = document.getElementById('helpModal');
+  const helpClose = document.getElementById('helpClose');
   const birthdayMonthsEl = document.getElementById('birthdayMonths');
   const calendarSection = document.getElementById('birthdaySection');
   const calendarToggle = document.getElementById('calendarToggle');
@@ -45,8 +62,19 @@
   const calendarSideNav = document.querySelector('.calendar-side-nav');
   let calendarOpen = false;
   const birthdayTooltip = document.getElementById('birthdayTooltip');
+  const searchBar = document.getElementById('searchBar');
+  const searchInput = document.getElementById('searchInput');
+  const searchResults = document.getElementById('searchResults');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+  const helpBtn = document.getElementById('helpBtn');
+  const statsKidsEl = document.getElementById('statsKids');
+  const statsGrandkidsEl = document.getElementById('statsGrandkids');
+  const statsGreatGrandkidsEl = document.getElementById('statsGreatGrandkids');
   const personLookup = new Map();
+  const personHierarchy = new Map(); // Store hierarchical info
   let activeTooltipCell = null;
+  let familyTreeData = null; // Store the full data
   let mobileMonthIndex = 0;
   const mobileQuery = window.matchMedia('(max-width: 640px)');
   let mobileShowAll = false;
@@ -64,20 +92,67 @@
   };
   const baseCoupleWidth = person.width * 2 + person.hGap;
   const avatar = { r: 36, top: 10 };
-  const monthsMeta = [
-    { short: 'Ian', long: 'Ianuarie' },
-    { short: 'Feb', long: 'Februarie' },
-    { short: 'Mar', long: 'Martie' },
-    { short: 'Apr', long: 'Aprilie' },
-    { short: 'Mai', long: 'Mai' },
-    { short: 'Iun', long: 'Iunie' },
-    { short: 'Iul', long: 'Iulie' },
-    { short: 'Aug', long: 'August' },
-    { short: 'Sep', long: 'Septembrie' },
-    { short: 'Oct', long: 'Octombrie' },
-    { short: 'Noi', long: 'Noiembrie' },
-    { short: 'Dec', long: 'Decembrie' }
-  ];
+  // i18n support - default to Romanian, can be extended
+  const i18n = {
+    ro: {
+      months: [
+        { short: 'Ian', long: 'Ianuarie' },
+        { short: 'Feb', long: 'Februarie' },
+        { short: 'Mar', long: 'Martie' },
+        { short: 'Apr', long: 'Aprilie' },
+        { short: 'Mai', long: 'Mai' },
+        { short: 'Iun', long: 'Iunie' },
+        { short: 'Iul', long: 'Iulie' },
+        { short: 'Aug', long: 'August' },
+        { short: 'Sep', long: 'Septembrie' },
+        { short: 'Oct', long: 'Octombrie' },
+        { short: 'Noi', long: 'Noiembrie' },
+        { short: 'Dec', long: 'Decembrie' }
+      ],
+      birthday: 'Zi de nastere',
+      birthdays: 'zile de nastere',
+      today: 'Astazi',
+      tomorrow: 'Maine',
+      inDays: 'In {n} zile',
+      openCalendar: 'Deschide Calendar',
+      closeCalendar: 'Inchide Calendar',
+      noBirthdays: 'Nicio aniversare',
+      hideNotification: 'Ascunde notificarea'
+    },
+    en: {
+      months: [
+        { short: 'Jan', long: 'January' },
+        { short: 'Feb', long: 'February' },
+        { short: 'Mar', long: 'March' },
+        { short: 'Apr', long: 'April' },
+        { short: 'May', long: 'May' },
+        { short: 'Jun', long: 'June' },
+        { short: 'Jul', long: 'July' },
+        { short: 'Aug', long: 'August' },
+        { short: 'Sep', long: 'September' },
+        { short: 'Oct', long: 'October' },
+        { short: 'Nov', long: 'November' },
+        { short: 'Dec', long: 'December' }
+      ],
+      birthday: 'Birthday',
+      birthdays: 'birthdays',
+      today: 'Today',
+      tomorrow: 'Tomorrow',
+      inDays: 'In {n} days',
+      openCalendar: 'Open Calendar',
+      closeCalendar: 'Close Calendar',
+      noBirthdays: 'No birthdays',
+      hideNotification: 'Hide notification'
+    }
+  };
+
+  // Use Romanian by default (can be made dynamic with language selector)
+  const currentLang = localStorage.getItem('tree-lang') || 'ro';
+  const t = i18n[currentLang] || i18n.ro;
+  const monthsMeta = t.months;
+
+  const dnaHighlightNames = new Set(['ioan suatean', 'ana suatean']);
+  const dnaSuppressNames = new Set(['f ioan suatean', 'ioan pintilie']);
 
   const placeholderDataUrl = 'data:image/svg+xml;utf8,' +
     '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">' +
@@ -105,7 +180,7 @@
     }, 140);
   }
   const zoom = d3.zoom()
-    .scaleExtent([0.02, 6])
+    .scaleExtent([0.1, 4]) // Limit zoom bounds to prevent infinite zoom
     .wheelDelta((event) => {
       const base = event.deltaMode === 1 ? 0.02 : 0.002; // lines vs pixels
       return -event.deltaY * base;
@@ -118,7 +193,7 @@
   svg.call(zoom);
 
   // Controls
-  let dnaOn = false;
+  let dnaOn = true;
   let dnaGroup = null; // overlay for DNA lines
   function updateDNAVisibility() {
     if (dnaGroup) dnaGroup.attr('display', dnaOn ? null : 'none');
@@ -126,10 +201,19 @@
   }
   const dnaBtn = document.getElementById('dnaBtn');
   if (dnaBtn) {
+    updateDNAButtonText();
     dnaBtn.addEventListener('click', () => {
       dnaOn = !dnaOn;
       updateDNAVisibility();
+      updateDNAButtonText();
     });
+  }
+  function updateDNAButtonText() {
+    if (!dnaBtn) return;
+    const text = 'Genealogie';
+    dnaBtn.textContent = text;
+    dnaBtn.setAttribute('aria-pressed', dnaOn ? 'true' : 'false');
+    dnaBtn.setAttribute('title', 'Genealogie');
   }
   const themeBtn = document.getElementById('themeBtn');
   let autoThemeTimer = null;
@@ -169,7 +253,13 @@
   function updateThemeIcon() {
     if (!themeBtn) return;
     const isDark = document.body.classList.contains('theme-dark');
-    themeBtn.innerHTML = isDark ? '&#9790;' : '&#9728;';
+    const icon = themeBtn.querySelector('.material-symbols-outlined');
+    const iconName = isDark ? 'dark_mode' : 'light_mode';
+    if (icon) {
+      icon.textContent = iconName;
+    } else {
+      themeBtn.textContent = iconName;
+    }
     themeBtn.classList.toggle('sun-icon', !isDark);
     themeBtn.classList.toggle('moon-icon', isDark);
     const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
@@ -229,7 +319,8 @@
     const tx = (w - bbox.width * scale) / 2 - bbox.x * scale;
     const ty = (h - bbox.height * scale) / 2 - bbox.y * scale;
     const safeScale = Math.max(scale, 0.02);
-    const minScale = Math.max(safeScale * 0.85, 0.02);
+    const minScaleFactor = mobileQuery && mobileQuery.matches ? 0.95 : 0.85;
+    const minScale = Math.max(safeScale * minScaleFactor, 0.02);
     const maxScale = Math.max(6, safeScale * 5);
     zoom.scaleExtent([minScale, maxScale]);
     const t = d3.zoomIdentity.translate(tx, ty).scale(safeScale);
@@ -241,6 +332,8 @@
     if (!modalEl) return;
     modalImg.src = info.image || '';
     modalName.textContent = info.name || '';
+
+    // Birthday
     if (info.birthday && String(info.birthday).trim() !== '') {
       modalDob.textContent = `Birthday: ${info.birthday}`;
       modalDob.style.display = '';
@@ -248,6 +341,12 @@
       modalDob.textContent = '';
       modalDob.style.display = 'none';
     }
+
+    // Clear extended info - not needed
+    if (modalExtendedInfo) {
+      modalExtendedInfo.innerHTML = '';
+    }
+
     modalEl.classList.add('open');
     modalEl.setAttribute('aria-hidden', 'false');
   }
@@ -261,20 +360,185 @@
     modalEl.addEventListener('click', (e) => {
       if (e.target === modalEl) closeModal();
     });
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
   }
   if (modalClose) modalClose.addEventListener('click', closeModal);
+
+  // Help Modal
+  function openHelpModal() {
+    if (!helpModal) return;
+    helpModal.classList.add('open');
+    helpModal.setAttribute('aria-hidden', 'false');
+  }
+  function closeHelpModal() {
+    if (!helpModal) return;
+    helpModal.classList.remove('open');
+    helpModal.setAttribute('aria-hidden', 'true');
+  }
+  if (helpModal) {
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) closeHelpModal();
+    });
+  }
+  if (helpClose) helpClose.addEventListener('click', closeHelpModal);
+  if (helpBtn) helpBtn.addEventListener('click', openHelpModal);
+
+  // Global Keyboard Shortcuts
+  window.addEventListener('keydown', (e) => {
+    // Don't trigger shortcuts when typing in input fields
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (e.key === 'Escape') {
+        e.target.blur();
+        toggleSearch(false);
+      }
+      return;
+    }
+
+    switch(e.key) {
+      case 'Escape':
+        if (focusModeActive) {
+          focusBtn.click();
+        } else if (modalEl && modalEl.classList.contains('open')) {
+          closeModal();
+        } else if (helpModal && helpModal.classList.contains('open')) {
+          closeHelpModal();
+        } else if (searchBar && searchBar.classList.contains('show')) {
+          toggleSearch(false);
+        }
+        break;
+      case 'f':
+      case 'F':
+        if (focusBtn) focusBtn.click();
+        break;
+      case 'l':
+      case 'L':
+        if (dnaBtn) dnaBtn.click();
+        break;
+      case 't':
+      case 'T':
+        if (themeBtn) themeBtn.click();
+        break;
+      case 's':
+      case 'S':
+      case '/':
+        e.preventDefault();
+        toggleSearch(true);
+        break;
+      case 'c':
+      case 'C':
+        if (calendarToggle) calendarToggle.click();
+        break;
+      case '?':
+        e.preventDefault();
+        openHelpModal();
+        break;
+      case 'r':
+      case 'R':
+        if (document.getElementById('resetBtn')) document.getElementById('resetBtn').click();
+        break;
+      case '+':
+      case '=':
+        if (document.getElementById('zoomInBtn')) document.getElementById('zoomInBtn').click();
+        break;
+      case '-':
+      case '_':
+        if (document.getElementById('zoomOutBtn')) document.getElementById('zoomOutBtn').click();
+        break;
+    }
+  });
+
+  // Search functionality
+  function toggleSearch(show) {
+    if (!searchBar) return;
+    if (show) {
+      positionSearchBar();
+      searchBar.classList.add('show');
+      if (searchInput) searchInput.focus();
+    } else {
+      searchBar.classList.remove('show');
+      searchBar.classList.remove('mobile-positioned');
+      searchBar.style.removeProperty('--searchbar-top');
+      if (searchInput) searchInput.value = '';
+      if (searchResults) searchResults.innerHTML = '';
+    }
+  }
+
+  function positionSearchBar() {
+    if (!searchBar) return;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (!isMobile) {
+      searchBar.classList.remove('mobile-positioned');
+      searchBar.style.removeProperty('--searchbar-top');
+      return;
+    }
+    const topbar = document.querySelector('.topbar');
+    const top = topbar ? topbar.getBoundingClientRect().bottom + 8 : 140;
+    searchBar.style.setProperty('--searchbar-top', `${Math.round(top)}px`);
+    searchBar.classList.add('mobile-positioned');
+  }
+
+  function performSearch(query) {
+    if (!query || !searchResults) return;
+    const q = query.toLowerCase().trim();
+    const results = [];
+    personLookup.forEach((person) => {
+      if (person.name.toLowerCase().includes(q)) {
+        results.push(person);
+      }
+    });
+    if (results.length === 0) {
+      searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+    } else {
+      searchResults.innerHTML = results.map(p => `
+        <div class="search-result-item" data-name="${escapeHtml(p.name)}">
+          <div class="name">${escapeHtml(p.name)}</div>
+          ${p.birthday ? `<div class="birthday">Birthday: ${escapeHtml(p.birthday)}</div>` : ''}
+        </div>
+      `).join('');
+      searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const name = item.dataset.name;
+          const person = personLookup.get(name);
+          if (person) {
+            openModal({
+              name: person.name,
+              image: person.image || placeholderDataUrl,
+              birthday: person.birthday,
+              metadata: person.metadata
+            });
+            toggleSearch(false);
+          }
+        });
+      });
+    }
+  }
+
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      const isOpen = searchBar && searchBar.classList.contains('show');
+      toggleSearch(!isOpen);
+    });
+  }
+  if (searchClearBtn) searchClearBtn.addEventListener('click', () => toggleSearch(false));
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => performSearch(e.target.value));
+  }
+  window.addEventListener('resize', () => {
+    if (searchBar && searchBar.classList.contains('show')) {
+      positionSearchBar();
+    }
+  });
 
   // Load data from rfamily.json (try common relative locations)
   loadDataSequential(['rfamily.json', '../rfamily.json', '/rfamily.json'])
     .then((data) => {
+      familyTreeData = data;
       const normalized = normalizeData(data);
       renderBirthdayStrip(normalized);
       renderUpcomingBanner(normalized);
+      updateStats(normalized);
       setupCarouselControls();
       render(normalized);
+      showEmptyStateIfNeeded();
     })
     .catch((err) => {
       console.error('Failed to load data', err);
@@ -423,27 +687,127 @@
     return s;
   }
 
+  function attachThumbsToEntity(entity) {
+    if (!entity) return;
+    entity.thumb = entity.thumb || thumbPath(entity.image);
+    if (entity.spouse || entity.spouseImage) {
+      entity.spouseThumb = entity.spouseThumb || thumbPath(entity.spouseImage);
+    }
+  }
+
   function attachThumbs(node) {
     if (!node || typeof node !== 'object') return node;
-    node.thumb = node.thumb || thumbPath(node.image);
-    node.spouseThumb = node.spouseThumb || thumbPath(node.spouseImage);
-    if (node.prevSpouse) {
-      node.prevSpouse.thumb = node.prevSpouse.thumb || thumbPath(node.prevSpouse.image);
-    }
-    if (node.parents) {
-      node.parents.thumb = node.parents.thumb || thumbPath(node.parents.image);
-      if (node.parents.spouse || node.parents.spouseImage) {
-        node.parents.spouseThumb = node.parents.spouseThumb || thumbPath(node.parents.spouseImage);
-      }
-    }
-    if (node.spouseParents) {
-      node.spouseParents.thumb = node.spouseParents.thumb || thumbPath(node.spouseParents.image);
-      if (node.spouseParents.spouse || node.spouseParents.spouseImage) {
-        node.spouseParents.spouseThumb = node.spouseParents.spouseThumb || thumbPath(node.spouseParents.spouseImage);
-      }
-    }
+    attachThumbsToEntity(node);
+    if (node.prevSpouse) attachThumbsToEntity(node.prevSpouse);
+    if (node.parents) attachThumbsToEntity(node.parents);
+    if (node.spouseParents) attachThumbsToEntity(node.spouseParents);
     (node.children || []).forEach((child) => attachThumbs(child));
     return node;
+  }
+
+  function updateStats(data) {
+    if (!statsKidsEl || !statsGrandkidsEl || !statsGreatGrandkidsEl) return;
+    if (!data || !Array.isArray(data.children)) return;
+    const kids = data.children.length;
+    let grandkids = 0;
+    let greatGrandkids = 0;
+    data.children.forEach((child) => {
+      const children = Array.isArray(child.children) ? child.children : [];
+      grandkids += children.length;
+      children.forEach((gchild) => {
+        if (Array.isArray(gchild.children)) {
+          greatGrandkids += gchild.children.length;
+        }
+      });
+    });
+    statsKidsEl.textContent = String(kids);
+    statsGrandkidsEl.textContent = String(grandkids);
+    statsGreatGrandkidsEl.textContent = String(greatGrandkids);
+  }
+
+  function createMonthDetails(detailsId, total, monthBucket) {
+    const details = document.createElement('div');
+    details.className = 'month-details';
+    details.id = detailsId;
+    details.setAttribute('aria-hidden', 'true');
+    if (total === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'month-empty';
+      empty.textContent = 'Nicio aniversare';
+      details.appendChild(empty);
+    } else {
+      const list = document.createElement('ul');
+      list.className = 'month-list';
+      const days = Object.keys(monthBucket)
+        .map((day) => Number(day))
+        .sort((a, b) => a - b);
+      days.forEach((day) => {
+        const names = monthBucket[day] || [];
+        if (!names.length) return;
+        const li = document.createElement('li');
+        const dayLabel = document.createElement('span');
+        dayLabel.className = 'month-day';
+        dayLabel.textContent = String(day).padStart(2, '0');
+        const namesLabel = document.createElement('span');
+        namesLabel.className = 'month-names';
+        namesLabel.textContent = names.join(', ');
+        li.appendChild(dayLabel);
+        li.appendChild(namesLabel);
+        list.appendChild(li);
+      });
+      details.appendChild(list);
+    }
+    return details;
+  }
+
+  function createDayCell(day, monthBucket, meta, idx, currentMonthIdx, currentDay) {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    const names = monthBucket[day] || [];
+    if (names.length) {
+      cell.classList.add('has-birthday');
+      cell.dataset.names = names.join('||');
+      cell.dataset.dateLabel = `${meta.long} ${String(day).padStart(2, '0')}`;
+    }
+    if (idx === currentMonthIdx && day === currentDay) {
+      cell.classList.add('today');
+    }
+
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = day;
+    cell.appendChild(num);
+
+    const labelDay = String(day).padStart(2, '0');
+    cell.title = names.length
+      ? `${meta.long} ${labelDay}: ${names.join(', ')}`
+      : `${meta.long} ${labelDay}`;
+
+    if (names.length) {
+      cell.addEventListener('mouseenter', (e) => showBirthdayTooltip(e.currentTarget));
+      cell.addEventListener('mouseleave', hideBirthdayTooltip);
+      cell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const personName = names[0];
+        const person = names.length === 1 ? personLookup.get(personName) : null;
+        if (person) {
+          hideBirthdayTooltip();
+          openModal({
+            name: person.name,
+            image: person.image || placeholderDataUrl,
+            birthday: person.birthday
+          });
+          return;
+        }
+        const isActive = birthdayTooltip && birthdayTooltip.classList.contains('show') && activeTooltipCell === e.currentTarget;
+        if (isActive) {
+          hideBirthdayTooltip();
+        } else {
+          showBirthdayTooltip(e.currentTarget);
+        }
+      });
+    }
+    return cell;
   }
 
   function renderBirthdayStrip(data) {
@@ -507,89 +871,12 @@
         grid.appendChild(pad);
       }
       for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        const names = monthBucket[day] || [];
-        if (names.length) {
-          cell.classList.add('has-birthday');
-          cell.dataset.names = names.join('||');
-          cell.dataset.dateLabel = `${meta.long} ${String(day).padStart(2, '0')}`;
-        }
-        if (idx === currentMonthIdx && day === currentDay) {
-          cell.classList.add('today');
-        }
-
-        const num = document.createElement('div');
-        num.className = 'day-num';
-        num.textContent = day;
-        cell.appendChild(num);
-
-        const labelDay = String(day).padStart(2, '0');
-        cell.title = names.length
-          ? `${meta.long} ${labelDay}: ${names.join(', ')}`
-          : `${meta.long} ${labelDay}`;
-
-        if (names.length) {
-          cell.addEventListener('mouseenter', (e) => showBirthdayTooltip(e.currentTarget));
-          cell.addEventListener('mouseleave', hideBirthdayTooltip);
-          cell.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const personName = names[0];
-            const person = names.length === 1 ? personLookup.get(personName) : null;
-            if (person) {
-              hideBirthdayTooltip();
-              openModal({
-                name: person.name,
-                image: person.image || placeholderDataUrl,
-                birthday: person.birthday
-              });
-              return;
-            }
-            const isActive = birthdayTooltip && birthdayTooltip.classList.contains('show') && activeTooltipCell === e.currentTarget;
-            if (isActive) {
-              hideBirthdayTooltip();
-            } else {
-              showBirthdayTooltip(e.currentTarget);
-            }
-          });
-        }
-
-        grid.appendChild(cell);
+        grid.appendChild(createDayCell(day, monthBucket, meta, idx, currentMonthIdx, currentDay));
       }
       body.appendChild(grid);
       card.appendChild(body);
 
-      const details = document.createElement('div');
-      details.className = 'month-details';
-      details.id = detailsId;
-      details.setAttribute('aria-hidden', 'true');
-      if (total === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'month-empty';
-        empty.textContent = 'Nicio aniversare';
-        details.appendChild(empty);
-      } else {
-        const list = document.createElement('ul');
-        list.className = 'month-list';
-        const days = Object.keys(monthBucket)
-          .map((day) => Number(day))
-          .sort((a, b) => a - b);
-        days.forEach((day) => {
-          const names = monthBucket[day] || [];
-          if (!names.length) return;
-          const li = document.createElement('li');
-          const dayLabel = document.createElement('span');
-          dayLabel.className = 'month-day';
-          dayLabel.textContent = String(day).padStart(2, '0');
-          const namesLabel = document.createElement('span');
-          namesLabel.className = 'month-names';
-          namesLabel.textContent = names.join(', ');
-          li.appendChild(dayLabel);
-          li.appendChild(namesLabel);
-          list.appendChild(li);
-        });
-        details.appendChild(list);
-      }
+      const details = createMonthDetails(detailsId, total, monthBucket);
       card.appendChild(details);
 
       head.addEventListener('click', () => {
@@ -620,6 +907,26 @@
 
   const UPCOMING_WINDOW_DAYS = 10;
 
+  // Generic tree traversal helper
+  function traverseTree(data, callback) {
+    function walk(node) {
+      if (!node || typeof node !== 'object') return;
+      callback(node.name, node.birthday, node.image);
+      callback(node.spouse, node.spouseBirthday, node.spouseImage);
+      if (node.prevSpouse) callback(node.prevSpouse.name, node.prevSpouse.birthday, node.prevSpouse.image);
+      if (node.parents) {
+        callback(node.parents.name, node.parents.birthday, node.parents.image);
+        callback(node.parents.spouse, node.parents.spouseBirthday, node.parents.spouseImage);
+      }
+      if (node.spouseParents) {
+        callback(node.spouseParents.name, node.spouseParents.birthday, node.spouseParents.image);
+        callback(node.spouseParents.spouse, node.spouseParents.spouseBirthday, node.spouseParents.spouseImage);
+      }
+      (node.children || []).forEach((child) => walk(child));
+    }
+    walk(data);
+  }
+
   function getUpcomingBirthdays(data, windowDays = UPCOMING_WINDOW_DAYS) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -642,23 +949,7 @@
       });
     }
 
-    function walk(node) {
-      if (!node || typeof node !== 'object') return;
-      addPerson(node.name, node.birthday, node.image);
-      addPerson(node.spouse, node.spouseBirthday, node.spouseImage);
-      if (node.prevSpouse) addPerson(node.prevSpouse.name, node.prevSpouse.birthday, node.prevSpouse.image);
-      if (node.parents) {
-        addPerson(node.parents.name, node.parents.birthday, node.parents.image);
-        addPerson(node.parents.spouse, node.parents.spouseBirthday, node.parents.spouseImage);
-      }
-      if (node.spouseParents) {
-        addPerson(node.spouseParents.name, node.spouseParents.birthday, node.spouseParents.image);
-        addPerson(node.spouseParents.spouse, node.spouseParents.spouseBirthday, node.spouseParents.spouseImage);
-      }
-      (node.children || []).forEach((child) => walk(child));
-    }
-
-    walk(data);
+    traverseTree(data, addPerson);
     // Deduplicate by name keeping closest
     const byName = new Map();
     people.forEach((p) => {
@@ -678,21 +969,42 @@
       upcomingBanner.classList.remove('show');
       return;
     }
+
+    // Check if user has dismissed the banner
+    const dismissedUntil = localStorage.getItem('banner-dismissed-until');
+    if (dismissedUntil) {
+      const dismissedDate = new Date(dismissedUntil);
+      const now = new Date();
+      if (now < dismissedDate) {
+        upcomingBanner.hidden = true;
+        upcomingBanner.classList.remove('show');
+        return;
+      }
+    }
+
     const useTicker = mobileQuery.matches && upcoming.length >= 3;
     const maxShow = 6;
     const visible = useTicker ? upcoming : upcoming.slice(0, maxShow);
     const moreCount = useTicker ? 0 : (upcoming.length - visible.length);
+
+    // Enhanced: show actual dates and count
+    const totalCount = upcoming.length;
+    const countText = totalCount === 1 ? '1 birthday' : `${totalCount} birthdays`;
+
     const pills = visible.map((p) => {
-      const when = p.daysAway === 0 ? 'Astazi' : (p.daysAway === 1 ? 'Maine' : `In ${p.daysAway} zile`);
+      // Format date
+      const parsed = parseBirthday(p.birthday);
+      const dateStr = parsed ? `${monthsMeta[parsed.month - 1].short} ${parsed.day}` : '';
+      const when = p.daysAway === 0 ? `Today ${dateStr}` : (p.daysAway === 1 ? `Tomorrow ${dateStr}` : `${dateStr} (${p.daysAway}d)`);
       return `<button class="pill" data-name="${escapeHtml(p.name)}">${escapeHtml(p.name)} <span class="tag">${when}</span></button>`;
     }).join('');
-    const more = moreCount > 0 ? `<span class="more">+${moreCount} altele</span>` : '';
+    const more = moreCount > 0 ? `<span class="more">+${moreCount} more</span>` : '';
     const listContent = `${pills}${more}`;
     const listMarkup = useTicker ? `<div class="upcoming-track">${listContent}</div>` : listContent;
     upcomingBanner.innerHTML = `
-      <div class="upcoming-label">Zile de nastere in ${UPCOMING_WINDOW_DAYS} zile:</div>
+      <div class="upcoming-label">${countText} in ${UPCOMING_WINDOW_DAYS} days:</div>
       <div class="upcoming-list">${listMarkup}</div>
-      <button class="close-btn" aria-label="Ascunde notificarea">×</button>
+      <button class="close-btn" aria-label="Hide notification" title="Hide for 24 hours">×</button>
     `;
     upcomingBanner.hidden = false;
     upcomingBanner.classList.add('show');
@@ -706,8 +1018,16 @@
     const closeBtn = upcomingBanner.querySelector('.close-btn');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
-        upcomingBanner.hidden = true;
-        upcomingBanner.classList.remove('show');
+        upcomingBanner.classList.add('dismissed');
+        setTimeout(() => {
+          upcomingBanner.hidden = true;
+          upcomingBanner.classList.remove('show', 'dismissed');
+        }, 200);
+
+        // Remember dismissal for 24 hours
+        const tomorrow = new Date();
+        tomorrow.setHours(tomorrow.getHours() + 24);
+        localStorage.setItem('banner-dismissed-until', tomorrow.toISOString());
       });
     }
     upcomingBanner.querySelectorAll('.pill').forEach((pill) => {
@@ -715,7 +1035,7 @@
         const n = pill.dataset.name;
         const info = personLookup.get(n);
         if (info) {
-          openModal({ name: info.name, image: info.image || placeholderDataUrl, birthday: info.birthday });
+          openModal({ name: info.name, image: info.image || placeholderDataUrl, birthday: info.birthday, metadata: info.metadata });
         }
       });
     });
@@ -830,12 +1150,8 @@
     mobileQuery.addEventListener('change', () => applyMobileState && applyMobileState());
     if (applyMobileState) applyMobileState();
 
-    const prevHandler = () => shiftMonth(-1);
-    const nextHandler = () => shiftMonth(1);
-    if (monthPrevBtn) monthPrevBtn.addEventListener('click', prevHandler);
-    if (monthNextBtn) monthNextBtn.addEventListener('click', nextHandler);
-    if (calendarSidePrev) calendarSidePrev.addEventListener('click', prevHandler);
-    if (calendarSideNext) calendarSideNext.addEventListener('click', nextHandler);
+    [monthPrevBtn, calendarSidePrev].forEach(btn => btn && btn.addEventListener('click', () => shiftMonth(-1)));
+    [monthNextBtn, calendarSideNext].forEach(btn => btn && btn.addEventListener('click', () => shiftMonth(1)));
   }
 
   function shiftMonth(delta) {
@@ -890,14 +1206,17 @@
 
   function collectBirthdays(data) {
     personLookup.clear();
+    personHierarchy.clear();
     const months = Array.from({ length: 12 }, () => ({}));
-    function rememberPerson(name, birthday, image) {
+
+    function rememberPerson(name, birthday, image, metadata) {
       const key = (name || '').trim();
       if (!key) return;
       if (!personLookup.has(key)) {
-        personLookup.set(key, { name: key, birthday: birthday || '', image: image || '' });
+        personLookup.set(key, { name: key, birthday: birthday || '', image: image || '', metadata: metadata });
       }
     }
+
     function add(name, birthday, image) {
       const parsed = parseBirthday(birthday);
       if (!parsed) return;
@@ -908,23 +1227,154 @@
       if (!bucket[parsed.day]) bucket[parsed.day] = [];
       bucket[parsed.day].push(label);
     }
-    function walk(node) {
-      if (!node || typeof node !== 'object') return;
-      add(node.name, node.birthday, node.image);
-      add(node.spouse, node.spouseBirthday, node.spouseImage);
-      if (node.prevSpouse) add(node.prevSpouse.name, node.prevSpouse.birthday, node.prevSpouse.image);
+
+    // Build hierarchy with relationships - improved version
+    function buildHierarchy(node, generation = 0, parentNames = [], siblings = []) {
+      if (!node) return;
+
+      const recordPerson = (name, spouse, children, parents, sibs, gen) => {
+        if (!name) return;
+        const metadata = {
+          generation: gen,
+          spouse: spouse || null,
+          children: children || [],
+          parents: parents || [],
+          siblings: sibs || []
+        };
+        personHierarchy.set(name, metadata);
+        // Update personLookup with metadata
+        if (personLookup.has(name)) {
+          personLookup.get(name).metadata = metadata;
+        }
+      };
+
+      // Get all children names for this node
+      const childrenNames = (node.children || []).map(c => safe(c.name)).filter(Boolean);
+
+      // Primary person
+      if (node.name) {
+        const primaryName = safe(node.name);
+        recordPerson(primaryName, node.spouse, childrenNames, parentNames, siblings, generation);
+      }
+
+      // Spouse
+      if (node.spouse) {
+        const spouseName = safe(node.spouse);
+        recordPerson(spouseName, node.name, childrenNames, [], siblings, generation);
+      }
+
+      // Previous spouse
+      if (node.prevSpouse && node.prevSpouse.name) {
+        const prevSpouseName = safe(node.prevSpouse.name);
+        const prevChildren = childrenNames.filter((_, idx) => {
+          const child = node.children[idx];
+          return child && child.fromPrevSpouse;
+        });
+        recordPerson(prevSpouseName, node.name, prevChildren, [], [], generation);
+      }
+
+      // Process children with sibling info
+      if (node.children && node.children.length > 0) {
+        const currentParents = [safe(node.name), safe(node.spouse)].filter(Boolean);
+
+        // Build sibling list for each child
+        node.children.forEach((child, idx) => {
+          const childSiblings = childrenNames.filter((name, i) => i !== idx);
+          buildHierarchy(child, generation + 1, currentParents, childSiblings);
+        });
+      }
+
+      // Handle parents and spouseParents from the data structure
       if (node.parents) {
-        add(node.parents.name, node.parents.birthday, node.parents.image);
-        add(node.parents.spouse, node.parents.spouseBirthday, node.parents.spouseImage);
+        buildParentsHierarchy(node.parents, generation - 1);
       }
       if (node.spouseParents) {
-        add(node.spouseParents.name, node.spouseParents.birthday, node.spouseParents.image);
-        add(node.spouseParents.spouse, node.spouseParents.spouseBirthday, node.spouseParents.spouseImage);
+        buildParentsHierarchy(node.spouseParents, generation - 1);
       }
-      (node.children || []).forEach((child) => walk(child));
     }
-    walk(data);
+
+    function buildParentsHierarchy(parentsNode, generation) {
+      if (!parentsNode) return;
+
+      const parentName = safe(parentsNode.name);
+      const parentSpouse = safe(parentsNode.spouse);
+
+      if (parentName) {
+        const metadata = {
+          generation: generation,
+          spouse: parentSpouse || null,
+          children: [],
+          parents: [],
+          siblings: []
+        };
+        personHierarchy.set(parentName, metadata);
+        if (personLookup.has(parentName)) {
+          personLookup.get(parentName).metadata = metadata;
+        }
+      }
+
+      if (parentSpouse) {
+        const metadata = {
+          generation: generation,
+          spouse: parentName || null,
+          children: [],
+          parents: [],
+          siblings: []
+        };
+        personHierarchy.set(parentSpouse, metadata);
+        if (personLookup.has(parentSpouse)) {
+          personLookup.get(parentSpouse).metadata = metadata;
+        }
+      }
+    }
+
+    traverseTree(data, add);
+    buildHierarchy(data, 0, [], []);
     return months;
+  }
+
+  // Empty state overlay
+  function showEmptyStateIfNeeded() {
+    const hasVisited = localStorage.getItem('tree-visited');
+    if (hasVisited) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'empty-state-overlay';
+    overlay.innerHTML = `
+      <div class="empty-state-content">
+        <h2>Welcome to the Family Tree!</h2>
+        <p>Here's how to navigate:</p>
+        <ul>
+          <li><strong>Click on any person</strong> to view their details</li>
+          <li><strong>Scroll or pinch</strong> to zoom in and out</li>
+          <li><strong>Drag</strong> to move around the tree</li>
+          <li><strong>Press "?" or click Help</strong> for keyboard shortcuts</li>
+          <li><strong>Use Search</strong> to quickly find anyone</li>
+          <li><strong>Open Calendar</strong> to see all birthdays</li>
+        </ul>
+        <button id="dismissEmptyState">Got it!</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const dismissBtn = overlay.querySelector('#dismissEmptyState');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', () => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          document.body.removeChild(overlay);
+        }, 300);
+        localStorage.setItem('tree-visited', 'true');
+      });
+    }
+
+    // Auto-dismiss after 10 seconds
+    setTimeout(() => {
+      if (document.body.contains(overlay)) {
+        dismissBtn.click();
+      }
+    }, 10000);
   }
 
   function parseBirthday(raw) {
@@ -952,6 +1402,14 @@
   }
 
   function safe(v) { return (v == null ? '' : String(v)); }
+  function normalizeName(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
   function readTags(value) {
     if (!value) return [];
     if (typeof value === 'string') return [value.trim()].filter(Boolean);
@@ -999,7 +1457,7 @@
       const xPrimary = leftStart + (hasLeft ? (person.width + person.hGap) : 0);
       const xLeftSpouse = hasLeft ? leftStart : null;
       const xRightSpouse = hasRight ? (xPrimary + person.width + person.hGap) : null;
-      return { hasLeft, hasRight, count, totalWidth, leftStart, xPrimary, xLeftSpouse, xRightSpouse };
+      return { hasLeft, hasRight, count, totalWidth, leftStart, xPrimary, xLeftSpouse, xRightSpouse, left: hasLeft, right: hasRight };
     }
     function topOfPrimary(node) {
       const L = layoutFor(node.data);
@@ -1034,12 +1492,11 @@
     // How far below the bubbles the two parent-curves meet
     const mergePad = Math.max(24, person.height * 0.35);
     const mergeCurves = [];
-    const mergeCurvesGold = [];
     const trunkCommon = [];
     const branches = [];
     const overlayCouples = [];
 
-    function addOverlayCouple(info, placementAnchor, childAnchor, alignCenter = null, swapPrimarySpouse = false) {
+    function addOverlayCouple(info, placementAnchor, childAnchor, alignCenter = null, swapPrimarySpouse = false, isDNA = false) {
       if (!info || !placementAnchor || !childAnchor) return;
       const data = {
         name: safe(info.name),
@@ -1091,16 +1548,16 @@
         y: center.y
       } : null;
       const mergeTarget = { x: unionX, y: center.y + mergePad };
-      mergeCurves.push({ source: primaryInterior, target: mergeTarget });
-      mergeCurvesGold.push({ source: primaryInterior, target: mergeTarget });
+      mergeCurves.push({ source: primaryInterior, target: mergeTarget, isDNA });
       if (spouseInterior) {
-        mergeCurves.push({ source: spouseInterior, target: mergeTarget });
+        mergeCurves.push({ source: spouseInterior, target: mergeTarget, isDNA });
       }
       const childPoint = { x: childAnchor.x, y: childAnchor.y };
-      branches.push({ source: mergeTarget, target: childPoint });
+      branches.push({ source: mergeTarget, target: childPoint, isDNA });
       overlayCouples.push({ center, layout, data });
     }
     root.descendants().forEach((p) => {
+      const isRoot = p.depth === 0;
       // place each parent pair centered above its respective child/spouse
       if (p.data && p.data.spouseParents) {
         const childAnchor = topOfRightSpouse(p);
@@ -1110,7 +1567,7 @@
         } : childAnchor;
         // Swap so father renders on the right of the mother above Ana
         // Align mother (after swap) over Ana; father sits to her right
-        addOverlayCouple(p.data.spouseParents, placementAnchor, childAnchor, 'primary', true);
+        addOverlayCouple(p.data.spouseParents, placementAnchor, childAnchor, 'primary', true, false);
       }
       if (p.data && p.data.parents) {
         const childAnchor = topOfPrimary(p);
@@ -1119,7 +1576,7 @@
           y: childAnchor.y - person.height - mergePad
         };
         // Align mother (spouse) over Ioan; father sits to her left
-        addOverlayCouple(p.data.parents, placementAnchor, childAnchor, 'spouse', false);
+        addOverlayCouple(p.data.parents, placementAnchor, childAnchor, 'spouse', false, false);
       }
       if (!Array.isArray(p.children) || p.children.length === 0) return;
       const Lp = layoutFor(p.data || {});
@@ -1142,14 +1599,13 @@
       if (Lp.hasLeft && hasLeftChild && anchorLeftSpouseRight) {
         const xMergeLeft = (anchorLeftSpouseRight.x + anchorPrimaryLeft.x) / 2;
         const tLeft = { x: xMergeLeft, y: yMerge };
-        mergeCurves.push({ source: anchorLeftSpouseRight, target: tLeft });
-        mergeCurves.push({ source: anchorPrimaryLeft,     target: tLeft });
-        mergeCurvesGold.push({ source: anchorPrimaryLeft, target: tLeft });
-        trunkCommon.push({ x: xMergeLeft, y0: yMerge, y1: yJ });
+        mergeCurves.push({ source: anchorLeftSpouseRight, target: tLeft, isDNA: false });
+        mergeCurves.push({ source: anchorPrimaryLeft,     target: tLeft, isDNA: true });
+        trunkCommon.push({ x: xMergeLeft, y0: yMerge, y1: yJ, isDNA: true });
         const jLeft = { x: xMergeLeft, y: yJ };
         p.children.forEach((c) => {
           if (c.data && c.data.fromPrevSpouse) {
-            branches.push({ source: jLeft, target: topOfPrimary(c), parent: p, child: c });
+            branches.push({ source: jLeft, target: topOfPrimary(c), parent: p, child: c, isDNA: true });
           }
         });
       }
@@ -1157,14 +1613,13 @@
       if (Lp.hasRight && hasRightChild && anchorRightSpouseLeft) {
         const xMergeRight = (anchorPrimaryRight.x + anchorRightSpouseLeft.x) / 2;
         const tRight = { x: xMergeRight, y: yMerge };
-        mergeCurves.push({ source: anchorPrimaryRight,    target: tRight });
-        mergeCurves.push({ source: anchorRightSpouseLeft, target: tRight });
-        mergeCurvesGold.push({ source: anchorPrimaryRight, target: tRight });
-        trunkCommon.push({ x: xMergeRight, y0: yMerge, y1: yJ });
+        mergeCurves.push({ source: anchorPrimaryRight,    target: tRight, isDNA: true });
+        mergeCurves.push({ source: anchorRightSpouseLeft, target: tRight, isDNA: isRoot });
+        trunkCommon.push({ x: xMergeRight, y0: yMerge, y1: yJ, isDNA: true });
         const jRight = { x: xMergeRight, y: yJ };
         p.children.forEach((c) => {
           if (!(c.data && c.data.fromPrevSpouse)) {
-            branches.push({ source: jRight, target: topOfPrimary(c), parent: p, child: c });
+            branches.push({ source: jRight, target: topOfPrimary(c), parent: p, child: c, isDNA: true });
           }
         });
       }
@@ -1209,25 +1664,12 @@
       .attr('class', 'link branch')
       .attr('d', (d) => linkGen(d));
 
-    // Bloodline highlight (male lineage): highlight links where the child (primary person) is male
-    function isMaleNode(node) {
-      const g = (node.data && node.data.gender) ? String(node.data.gender).toUpperCase() : '';
-      if (g === 'M' || g === 'MALE') return true;
-      if (g === 'F' || g === 'FEMALE') return false;
-      const s = (node.data && node.data.name ? String(node.data.name) : '').trim();
-      if (!s) return false;
-      const lower = s.toLowerCase();
-      const femaleList = ['elena','ana','maria','simona','corina','sonia','olivia','damaris','csilla','susana','andrea','andra','felicia'];
-      if (/[aÄƒÃ¢]$/.test(lower) || femaleList.includes(lower)) return false;
-      return true;
-    }
-    const bloodLinks = branches;
     g.append('g')
       .attr('display', 'none')
       .attr('fill', 'none')
       .attr('stroke-linecap', 'round')
       .selectAll('path.blood-link')
-      .data(bloodLinks)
+      .data(branches)
       .join('path')
       .attr('class', 'blood-link')
       .attr('d', (d) => linkGen(d));
@@ -1330,55 +1772,26 @@
       });
     }
 
-    // Overlay connectors on top for visual continuity (dark)
-    g.append('g')
-      .attr('fill', 'none')
-      .attr('stroke-linecap', 'round')
-      .selectAll('path.curve-top')
-      .data(mergeCurves)
-      .join('path')
-      .attr('class', 'link')
-      .attr('d', (d) => unionCurvePath(d));
-
-    g.append('g')
-      .attr('fill', 'none')
-      .attr('stroke-linecap', 'round')
-      .selectAll('path.trunk-top')
-      .data(trunkCommon)
-      .join('path')
-      .attr('class', 'link trunk')
-      .attr('d', (t) => `M ${t.x},${t.y0} V ${t.y1}`);
-
-    g.append('g')
-      .attr('fill', 'none')
-      .attr('stroke-linecap', 'round')
-      .selectAll('path.branch-top')
-      .data(branches)
-      .join('path')
-      .attr('class', 'link branch')
-      .attr('d', (d) => linkGen(d));
-
-    // DNA overlay group (gold) with toggle â€” show full T via DNA parent only
-    const dnaBranches = branches;
+    // DNA overlay group (gold) with toggle â€" show full T via DNA parent only
     dnaGroup = g.append('g');
 
     // Curved union segments (gold) only for DNA parent (primary)
     dnaGroup.selectAll('path.blood-curve')
-      .data(mergeCurvesGold)
+      .data(mergeCurves.filter(d => d.isDNA))
       .join('path')
       .attr('class', 'blood-link')
       .attr('d', (d) => unionCurvePath(d));
 
     // Single vertical trunk (gold)
     dnaGroup.selectAll('path.blood-trunk')
-      .data(trunkCommon)
+      .data(trunkCommon.filter((t) => t.isDNA))
       .join('path')
       .attr('class', 'blood-link')
       .attr('d', (t) => `M ${t.x},${t.y0} V ${t.y1}`);
 
     // Split -> child bubble top (gold curved branches)
     dnaGroup.selectAll('path.blood-branch')
-      .data(dnaBranches)
+      .data(branches.filter((b) => b.isDNA))
       .join('path')
       .attr('class', 'blood-link')
       .attr('d', (d) => linkGen(d));
@@ -1396,6 +1809,9 @@
     const classes = ['person'];
     if (opts.role) classes.push(opts.role);
     if (hasVeteranTag) classes.push('tag-veteran');
+    const nameKey = normalizeName(opts.name);
+    if (nameKey && dnaHighlightNames.has(nameKey)) classes.push('dna-highlight');
+    if (nameKey && dnaSuppressNames.has(nameKey)) classes.push('dna-suppress');
 
     const gPerson = sel.append('g').attr('class', classes.join(' ')).attr('transform', `translate(${opts.x},${opts.y})`);
 
@@ -1479,35 +1895,6 @@
     return person.width * count + person.hGap * (count - 1);
   }
 
-  function styleForGender(gender) {
-    const g = (gender || '').toUpperCase();
-    if (g === 'F' || g === 'FEMALE') {
-      return { fill: getCssVar('--female') || '#ffd1dc', stroke: '#e29cb0' };
-    }
-    if (g === 'M' || g === 'MALE') {
-      return { fill: getCssVar('--male') || '#bfe7ff', stroke: '#8dbfdd' };
-    }
-    return { fill: '#dde3ee', stroke: '#a6b0c2' };
-  }
-  function getCssVar(name) {
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  }
-
-  function normalizeGender(v) {
-    if (!v) return '';
-    const s = String(v).trim().toUpperCase();
-    if (s.startsWith('M')) return 'M';
-    if (s.startsWith('F')) return 'F';
-    return '';
-  }
-  function guessGender(name, isSpouse) {
-    const s = (name || '').trim();
-    if (!s) return '';
-    const lower = s.toLowerCase();
-    if (/[aÄƒÃ¢]$/.test(lower) || ['elena','ana','maria','simona','corina','sonia','olivia','damaris','csilla','susana'].includes(lower)) return 'F';
-    if (isSpouse) return 'F';
-    return 'M';
-  }
 })();
 
 
