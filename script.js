@@ -109,13 +109,13 @@
         { short: 'Noi', long: 'Noiembrie' },
         { short: 'Dec', long: 'Decembrie' }
       ],
-      birthday: 'Zi de nastere',
-      birthdays: 'zile de nastere',
-      today: 'Astazi',
-      tomorrow: 'Maine',
-      inDays: 'In {n} zile',
-      openCalendar: 'Deschide Calendar',
-      closeCalendar: 'Inchide Calendar',
+      birthday: 'zi de naștere',
+      birthdays: 'zile de naștere',
+      today: 'Astăzi',
+      tomorrow: 'Mâine',
+      inDays: 'În {n} zile',
+      openCalendar: 'Deschide calendarul',
+      closeCalendar: 'Închide calendarul',
       noBirthdays: 'Nicio aniversare',
       hideNotification: 'Ascunde notificarea'
     },
@@ -153,6 +153,12 @@
 
   const dnaHighlightNames = new Set(['ioan suatean', 'ana suatean']);
   const dnaSuppressNames = new Set(['f ioan suatean', 'ioan pintilie']);
+  const calendarExcludeNames = new Set([
+    'F Ioan Suătean',
+    'M Ioan Suătean',
+    'Ana Pintilie',
+    'Ioan Pintilie'
+  ].map((name) => name.toLowerCase()));
 
   const placeholderDataUrl = 'data:image/svg+xml;utf8,' +
     '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">' +
@@ -193,10 +199,14 @@
   svg.call(zoom);
 
   // Controls
-  let dnaOn = true;
+  let dnaOn = false;
   let dnaGroup = null; // overlay for DNA lines
   function updateDNAVisibility() {
-    if (dnaGroup) dnaGroup.attr('display', dnaOn ? null : 'none');
+    if (dnaGroup) {
+      // Use opacity instead of display for smoother transitions
+      dnaGroup.style('opacity', dnaOn ? 1 : 0);
+      dnaGroup.attr('pointer-events', dnaOn ? 'auto' : 'none');
+    }
     d3.select('#tree').classed('dna-active', dnaOn);
   }
   const dnaBtn = document.getElementById('dnaBtn');
@@ -538,7 +548,7 @@
       updateStats(normalized);
       setupCarouselControls();
       render(normalized);
-      showEmptyStateIfNeeded();
+      showEmptyStateIfNeeded(normalized);
     })
     .catch((err) => {
       console.error('Failed to load data', err);
@@ -901,11 +911,15 @@
   }
 
   function formatCount(total) {
-    const word = total === 1 ? 'zi de nastere' : 'zile de nastere';
+    const word = total === 1 ? t.birthday : t.birthdays;
     return `${total} ${word}`;
   }
 
   const UPCOMING_WINDOW_DAYS = 10;
+  const BIRTHDAY_POPUP_WINDOW_DAYS = 7;
+  function shouldExcludeFromCalendar(name) {
+    return calendarExcludeNames.has(String(name || '').toLowerCase());
+  }
 
   // Generic tree traversal helper
   function traverseTree(data, callback) {
@@ -989,22 +1003,23 @@
 
     // Enhanced: show actual dates and count
     const totalCount = upcoming.length;
-    const countText = totalCount === 1 ? '1 birthday' : `${totalCount} birthdays`;
+    const countText = totalCount === 1 ? `1 ${t.birthday}` : `${totalCount} ${t.birthdays}`;
 
     const pills = visible.map((p) => {
       // Format date
       const parsed = parseBirthday(p.birthday);
-      const dateStr = parsed ? `${monthsMeta[parsed.month - 1].short} ${parsed.day}` : '';
-      const when = p.daysAway === 0 ? `Today ${dateStr}` : (p.daysAway === 1 ? `Tomorrow ${dateStr}` : `${dateStr} (${p.daysAway}d)`);
+      const dateStr = parsed ? `${monthsMeta[parsed.month - 1].short} ${String(parsed.day).padStart(2, '0')}` : '';
+      const whenLabel = p.daysAway === 0 ? t.today : (p.daysAway === 1 ? t.tomorrow : t.inDays.replace('{n}', p.daysAway));
+      const when = dateStr ? `${dateStr} (${whenLabel})` : whenLabel;
       return `<button class="pill" data-name="${escapeHtml(p.name)}">${escapeHtml(p.name)} <span class="tag">${when}</span></button>`;
     }).join('');
-    const more = moreCount > 0 ? `<span class="more">+${moreCount} more</span>` : '';
+    const more = moreCount > 0 ? `<span class="more">+${moreCount} altele</span>` : '';
     const listContent = `${pills}${more}`;
     const listMarkup = useTicker ? `<div class="upcoming-track">${listContent}</div>` : listContent;
     upcomingBanner.innerHTML = `
-      <div class="upcoming-label">${countText} in ${UPCOMING_WINDOW_DAYS} days:</div>
+      <div class="upcoming-label">${countText} în următoarele ${UPCOMING_WINDOW_DAYS} zile:</div>
       <div class="upcoming-list">${listMarkup}</div>
-      <button class="close-btn" aria-label="Hide notification" title="Hide for 24 hours">×</button>
+      <button class="close-btn" aria-label="${t.hideNotification}" title="Ascunde pentru 24 de ore">×</button>
     `;
     upcomingBanner.hidden = false;
     upcomingBanner.classList.add('show');
@@ -1218,10 +1233,14 @@
     }
 
     function add(name, birthday, image) {
+      const label = safe(name).trim();
+      if (!label) return;
+      if (shouldExcludeFromCalendar(label)) {
+        rememberPerson(label, birthday, image);
+        return;
+      }
       const parsed = parseBirthday(birthday);
       if (!parsed) return;
-      const label = safe(name);
-      if (!label) return;
       rememberPerson(label, birthday, image);
       const bucket = months[parsed.month - 1];
       if (!bucket[parsed.day]) bucket[parsed.day] = [];
@@ -1334,25 +1353,36 @@
   }
 
   // Empty state overlay
-  function showEmptyStateIfNeeded() {
+  function showEmptyStateIfNeeded(data) {
     const hasVisited = localStorage.getItem('tree-visited');
     if (hasVisited) return;
+    if (!data) return;
+
+    const upcoming = getUpcomingBirthdays(data, BIRTHDAY_POPUP_WINDOW_DAYS);
+    if (!upcoming.length) return;
+
+    const heading = upcoming.length === 1
+      ? `Zi de naștere în următoarele ${BIRTHDAY_POPUP_WINDOW_DAYS} zile`
+      : `Zile de naștere în următoarele ${BIRTHDAY_POPUP_WINDOW_DAYS} zile`;
+    const listItems = upcoming.map((person) => {
+      const parsed = parseBirthday(person.birthday);
+      const dateStr = parsed ? `${monthsMeta[parsed.month - 1].short} ${String(parsed.day).padStart(2, '0')}` : '';
+      const whenLabel = person.daysAway === 0
+        ? t.today
+        : (person.daysAway === 1 ? t.tomorrow : t.inDays.replace('{n}', person.daysAway));
+      const label = dateStr ? `${dateStr} (${whenLabel})` : whenLabel;
+      return `<li><strong>${escapeHtml(person.name)}</strong> - ${escapeHtml(label)}</li>`;
+    }).join('');
 
     const overlay = document.createElement('div');
     overlay.className = 'empty-state-overlay';
     overlay.innerHTML = `
       <div class="empty-state-content">
-        <h2>Welcome to the Family Tree!</h2>
-        <p>Here's how to navigate:</p>
-        <ul>
-          <li><strong>Click on any person</strong> to view their details</li>
-          <li><strong>Scroll or pinch</strong> to zoom in and out</li>
-          <li><strong>Drag</strong> to move around the tree</li>
-          <li><strong>Press "?" or click Help</strong> for keyboard shortcuts</li>
-          <li><strong>Use Search</strong> to quickly find anyone</li>
-          <li><strong>Open Calendar</strong> to see all birthdays</li>
-        </ul>
-        <button id="dismissEmptyState">Got it!</button>
+        <h2>${heading}</h2>
+        <p>Iată cine își sărbătorește ziua în următoarele ${BIRTHDAY_POPUP_WINDOW_DAYS} zile:</p>
+        <ul>${listItems}</ul>
+        <p>Deschide calendarul pentru toate zilele de naștere.</p>
+        <button id="dismissEmptyState">Am înțeles!</button>
       </div>
     `;
 
@@ -1377,9 +1407,19 @@
     }, 10000);
   }
 
+  // Cache for parsed birthdays to avoid repeated parsing
+  const birthdayCache = new Map();
+
   function parseBirthday(raw) {
     if (!raw) return null;
-    const str = String(raw).trim();
+
+    // Check cache first
+    const cacheKey = String(raw).trim();
+    if (birthdayCache.has(cacheKey)) {
+      return birthdayCache.get(cacheKey);
+    }
+
+    const str = cacheKey;
     const ro = str.match(/^(\d{1,2})[.\-/\s](\d{1,2})[.\-/\s](\d{4}|[xX]{4})$/);
     const iso = !ro && str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     let day, month, year;
@@ -1392,13 +1432,23 @@
       month = Number(iso[2]);
       day = Number(iso[3]);
     } else {
+      birthdayCache.set(cacheKey, null);
       return null;
     }
     const isLeap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
     const daysInMonth = [31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    if (month < 1 || month > 12) return null;
-    if (day < 1 || day > daysInMonth[month - 1]) return null;
-    return { month, day };
+    if (month < 1 || month > 12) {
+      birthdayCache.set(cacheKey, null);
+      return null;
+    }
+    if (day < 1 || day > daysInMonth[month - 1]) {
+      birthdayCache.set(cacheKey, null);
+      return null;
+    }
+
+    const result = { month, day };
+    birthdayCache.set(cacheKey, result);
+    return result;
   }
 
   function safe(v) { return (v == null ? '' : String(v)); }
@@ -1797,7 +1847,11 @@
       .attr('d', (d) => linkGen(d));
     updateDNAVisibility();
 
-    fitToScreen(50);
+    // Only fit to screen on initial load, not on every render
+    if (!window._initialFitComplete) {
+      window._initialFitComplete = true;
+      fitToScreen(50);
+    }
   }
 
   function drawPerson(sel, opts) {
@@ -1859,7 +1913,9 @@
       .attr('width', avatar.r * 2)
       .attr('height', avatar.r * 2)
       .attr('clip-path', `url(#${clipId})`)
-      .attr('preserveAspectRatio', 'xMidYMid slice');
+      .attr('preserveAspectRatio', 'xMidYMid slice')
+      .attr('loading', 'lazy') // Native lazy loading
+      .attr('decoding', 'async'); // Async image decoding
     // If thumb fails, fall back to full image or placeholder.
     imgEl.on('error', function () {
       const fallback = fullSrc || placeholderDataUrl;

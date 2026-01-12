@@ -311,40 +311,39 @@
             "spouse": {
                 "name": "Simona Săutean",
                 "image": "images/Simona_Sautean.webp",
-                "birthday": "14/04/1972"
+                "birthday": "18/04/1980"
             },
             "prevSpouse": {
                 "name": "Ioana",
-                "image": "",
-                "birthday": "02/05/1970"
+                "image": ""
             },
             "children": [
                 {
                     "name": "Andrei Săutean",
                     "image": "images/Andrei_Sautean2.webp",
-                    "birthday": "11/06/1998",
+                    "birthday": "15/10/1990",
                     "fromPrevSpouse": true
                 },
                 {
                     "name": "Adrian Săutean",
                     "image": "images/Adrian_Sautean.webp",
-                    "birthday": "22/07/1999"
+                    "birthday": "10/01/2001"
                 },
                 {
                     "name": "Gabriel Săutean",
                     "image": "images/Gabriel_Sautean.webp",
-                    "birthday": "09/08/2001"
+                    "birthday": "07/06/2009"
                 }
             ]
         },
         {
             "name": "Emil Suătean",
             "image": "images/Emil_Suatean.webp",
-            "birthday": "17/09/1974",
+            "birthday": "19/04/1969",
             "spouse": {
                 "name": "Elena Suătean",
                 "image": "images/Elena_Suatean.webp",
-                "birthday": "30/10/1976"
+                "birthday": "02/02/1973"
             },
             "children": [
                 {
@@ -354,7 +353,7 @@
                     "spouse": {
                         "name": "Damaris Suătean",
                         "image": "images/Damaris_Suatean.webp",
-                        "birthday": "03/12/1992"
+                        "birthday": "12/10/1995"
                     }
                 }
             ]
