@@ -421,7 +421,7 @@ body.theme-dark .upcoming-banner .close-btn {
   min-height: 0;
 }
 .month-card.current {
-  border-color: var(--calendar-bday-border);
+  border-color: transparent;
   box-shadow: 0 0 0 2px rgba(200, 162, 75, 0.4), 0 4px 10px rgba(0,0,0,0.06);
   animation: calendarPulse 3.6s ease-in-out infinite;
 }
@@ -770,7 +770,7 @@ body.theme-dark .month-card {
   box-shadow: var(--shadow-sm);
 }
 body.theme-dark .month-card.current {
-  border-color: var(--calendar-bday-border);
+  border-color: transparent;
   box-shadow: 0 0 0 2px rgba(212,175,55,0.55), 0 4px 12px rgba(0,0,0,0.32);
   animation: calendarPulse 3.6s ease-in-out infinite;
 }
@@ -1524,7 +1524,7 @@ body.theme-dark .controls > button:hover { color: #ffffff; }
 #themeBtn.sun-icon { color: #f59e0b; }
 #themeBtn.moon-icon { color: var(--accent-2); }
 #dnaBtn {
-  border-color: var(--calendar-bday-border);
+  border-color: transparent;
   animation: calendarPulse 3.6s ease-in-out infinite;
 }
 #zoomInBtn,
@@ -1625,7 +1625,7 @@ body.focus-mode #resetBtn { display: inline-flex; }
 }
 .month-card:hover::before { opacity: 1; }
 .month-card.current {
-  border-color: var(--calendar-bday-border);
+  border-color: transparent;
   box-shadow: 0 0 0 2px rgba(200, 162, 75, 0.4), 0 6px 14px rgba(15, 23, 42, 0.12);
   animation: calendarPulse 3.6s ease-in-out infinite;
 }
@@ -1856,7 +1856,7 @@ body.theme-dark .mobile-full-cal-btn {
 }
 body.theme-dark .month-card { background: var(--surface); border-color: var(--border); }
 body.theme-dark .month-card.current {
-  border-color: var(--calendar-bday-border);
+  border-color: transparent;
   box-shadow: 0 0 0 2px rgba(212,175,55,0.6), 0 4px 12px rgba(0,0,0,0.32);
   animation: calendarPulse 3.6s ease-in-out infinite;
 }
@@ -1955,11 +1955,15 @@ body.theme-dark.focus-mode .topbar {
     text-overflow: ellipsis;
   }
   body:not(.focus-mode) #searchBtn,
-  body:not(.focus-mode) #dnaBtn,
   body:not(.focus-mode) #focusBtn {
-    flex: 1.25 1 0;
-    padding: 9px 6px;
-    font-size: 0.9rem;
+    flex: 1.1 1 0;
+    padding: 8px 5px;
+    font-size: 0.86rem;
+  }
+  body:not(.focus-mode) #dnaBtn {
+    flex: 1.6 1 0;
+    padding: 9px 8px;
+    font-size: 0.92rem;
   }
   body:not(.focus-mode) #themeBtn,
   body:not(.focus-mode) #helpBtn {
@@ -1989,10 +1993,13 @@ body.theme-dark.focus-mode .topbar {
     font-size: 0.8rem;
   }
   body:not(.focus-mode) #searchBtn,
-  body:not(.focus-mode) #dnaBtn,
   body:not(.focus-mode) #focusBtn {
-    padding: 8px 5px;
-    font-size: 0.86rem;
+    padding: 7px 4px;
+    font-size: 0.82rem;
+  }
+  body:not(.focus-mode) #dnaBtn {
+    padding: 8px 6px;
+    font-size: 0.88rem;
   }
   body:not(.focus-mode) #themeBtn,
   body:not(.focus-mode) #helpBtn {
@@ -2006,4 +2013,3 @@ body.theme-dark.focus-mode .topbar {
     animation: slideDownMobile var(--transition-slow) ease;
   }
 }
-
