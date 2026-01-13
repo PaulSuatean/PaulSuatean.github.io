@@ -468,10 +468,15 @@
   setView(currentView);
 
   function getTreeDefaultPadding() {
-    return mobileQuery && mobileQuery.matches ? 28 : 36;
+    return mobileQuery && mobileQuery.matches ? 12 : 36;
   }
   function getTreeFocusPadding() {
     return mobileQuery && mobileQuery.matches ? 60 : 70;
+  }
+  function getTreeVerticalBias(height) {
+    if (!mobileQuery || !mobileQuery.matches) return 0;
+    const base = -Math.min(90, height * 0.18);
+    return calendarOpen ? (base - 72) : base;
   }
   function fitTreeWhenVisible(padding, tries = 40) {
     const node = svg.node();
@@ -510,7 +515,7 @@
     const maxScale = Math.max(6, safeScale * 5);
     const appliedScale = Math.min(safeScale, maxScale);
     const tx = (w - bbox.width * appliedScale) / 2 - bbox.x * appliedScale;
-    const ty = (h - bbox.height * appliedScale) / 2 - bbox.y * appliedScale;
+    const ty = (h - bbox.height * appliedScale) / 2 - bbox.y * appliedScale + getTreeVerticalBias(h);
     zoom.scaleExtent([minScale, maxScale]);
     const t = d3.zoomIdentity.translate(tx, ty).scale(appliedScale);
     svg.transition().duration(450).call(zoom.transform, t);
@@ -1137,6 +1142,10 @@
   let globeVelocityY = 0;
   let globeLastDragTime = 0;
   let globeInertiaId = null;
+  let globeCenterX = 0;
+  let globeCenterY = 0;
+  let globeBaseScale = 0;
+  let globeBaseSize = 0;
   let globeRenderQueued = false;
   let globeResizeObserver = null;
   function shouldExcludeFromCalendar(name) {
@@ -1465,11 +1474,27 @@
     if (globeMovedStrokeGoldPaths) globeMovedStrokeGoldPaths.attr('d', globePath);
   }
 
+  function applyGlobeProjection() {
+    if (!globeProjection || !globeBaseScale || !globeBaseSize) return;
+    const radius = globeBaseScale * globeZoom;
+    if (globeLegendEl) {
+      const overflow = Math.max(0, radius - globeBaseSize / 2);
+      const offset = overflow > 0 ? overflow + 12 : 0;
+      globeLegendEl.style.marginTop = '';
+      globeLegendEl.style.transform = offset ? `translateY(${Math.round(offset)}px)` : '';
+    }
+    globeProjection
+      .translate([globeCenterX, globeCenterY])
+      .scale(radius)
+      .rotate([globeRotation, globeTilt]);
+    renderGlobe();
+  }
+
   function setGlobeZoom(nextZoom) {
     const clamped = Math.min(GLOBE_ZOOM_MAX, Math.max(GLOBE_ZOOM_MIN, nextZoom));
     if (Math.abs(clamped - globeZoom) < 0.001) return;
     globeZoom = clamped;
-    resizeGlobe();
+    applyGlobeProjection();
   }
   function adjustGlobeZoom(delta) {
     setGlobeZoom(globeZoom + delta);
@@ -1523,18 +1548,11 @@
     const rect = globeSvgEl.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const size = Math.min(rect.width, rect.height);
-    const baseScale = (size / 2) - 12;
-    const radius = baseScale * globeZoom;
-    if (globeLegendEl) {
-      const overflow = Math.max(0, radius - size / 2);
-      const offset = overflow > 0 ? overflow + 12 : 0;
-      globeLegendEl.style.marginTop = `${Math.round(offset)}px`;
-    }
-    globeProjection
-      .translate([rect.width / 2, rect.height / 2])
-      .scale(baseScale * globeZoom)
-      .rotate([globeRotation, globeTilt]);
-    renderGlobe();
+    globeCenterX = rect.width / 2;
+    globeCenterY = rect.height / 2;
+    globeBaseScale = (size / 2) - 12;
+    globeBaseSize = size;
+    applyGlobeProjection();
   }
 
   function ensureGlobeVisible(tries = 60) {
