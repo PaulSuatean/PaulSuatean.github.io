@@ -24,7 +24,19 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">Arbore Genealogic: Familia Suatean</div>
+      <div class="brand-group">
+        <div class="brand">Arbore Genealogic: Familia Suatean</div>
+        <div class="view-toggle" role="group" aria-label="Schimba vizualizarea">
+          <button class="view-toggle-btn is-active" type="button" data-view="tree" aria-pressed="true">
+            <span class="material-symbols-outlined" aria-hidden="true">account_tree</span>
+            <span class="view-label">Arbore</span>
+          </button>
+          <button class="view-toggle-btn" type="button" data-view="globe" aria-pressed="false">
+            <span class="material-symbols-outlined" aria-hidden="true">public</span>
+            <span class="view-label">Glob</span>
+          </button>
+        </div>
+      </div>
       <div class="controls">
         <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
           <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
@@ -58,6 +70,20 @@
         <svg id="tree" tabindex="0" aria-label="Family tree canvas" role="img"></svg>
       </div>
     </main>
+
+    <section id="globeView" class="globe-view" aria-hidden="true">
+      <div class="globe-panel">
+        <div class="globe-stage">
+          <svg id="globeSvg" role="img" aria-label="Globe view"></svg>
+          <div id="globeTooltip" class="globe-tooltip" hidden></div>
+        </div>
+        <div class="globe-legend" aria-hidden="true">
+          <span class="legend-item"><span class="legend-dot legend-home"></span>Tara de origine</span>
+          <span class="legend-item"><span class="legend-dot legend-moved"></span>Mutat permanent</span>
+          <span class="legend-item"><span class="legend-dot legend-visited"></span>Vizitat</span>
+        </div>
+      </div>
+    </section>
 
     <button id="calendarToggle" class="calendar-toggle" aria-expanded="false" aria-controls="birthdaySection">
       <span class="calendar-label">Calendar</span>
@@ -146,6 +172,7 @@
 
     <!-- D3 for layout + zoom (loaded at runtime by the browser) -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
     <script src="script.js"></script>
   </body>
   </html>

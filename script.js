@@ -60,6 +60,11 @@
   const calendarSidePrev = document.getElementById('calendarSidePrev');
   const calendarSideNext = document.getElementById('calendarSideNext');
   const calendarSideNav = document.querySelector('.calendar-side-nav');
+  const pageEl = document.querySelector('.page');
+  const globeView = document.getElementById('globeView');
+  const globeSvgEl = document.getElementById('globeSvg');
+  const globeTooltip = document.getElementById('globeTooltip');
+  const viewToggleButtons = document.querySelectorAll('.view-toggle-btn');
   let calendarOpen = false;
   const birthdayTooltip = document.getElementById('birthdayTooltip');
   const searchBar = document.getElementById('searchBar');
@@ -159,6 +164,76 @@
     'Ana Pintilie',
     'Ioan Pintilie'
   ].map((name) => name.toLowerCase()));
+
+  const globeCountryAliases = {
+    anglia: 'United Kingdom',
+    austria: 'Austria',
+    'bosnia&herzegovina': 'Bosnia and Herz.',
+    'bosnia and herzegovina': 'Bosnia and Herz.',
+    cehia: 'Czechia',
+    croatia: 'Croatia',
+    danemarca: 'Denmark',
+    egipt: 'Egypt',
+    franta: 'France',
+    germania: 'Germany',
+    grecia: 'Greece',
+    italia: 'Italy',
+    olanda: 'Netherlands',
+    portugal: 'Portugal',
+    rusia: 'Russia',
+    'rusia/urss': 'Russia',
+    spania: 'Spain',
+    suedia: 'Sweden',
+    sweeden: 'Sweden',
+    uk: 'United Kingdom',
+    ungaria: 'Hungary',
+    usa: 'United States of America'
+  };
+  const globeMovedCountries = new Set(['Romania', 'United Kingdom', 'Hungary', 'Spain']);
+  const globePeopleVisits = {
+    Andreea: ['Egypt', 'Ungaria', 'Italia', 'Bosnia&Herzegovina', 'Portugal', 'Germany', 'USA', 'France'],
+    Florin: ['Spania', 'Austria'],
+    Ovidiu: ['Italia', 'Spania', 'France', 'Germania', 'Croatia', 'Austria', 'Grecia'],
+    Miha: ['Grecia'],
+    Ioana: ['Grecia'],
+    Sergiu: ['Ungaria', 'Spania'],
+    Razvan: ['Anglia', 'Spania', 'Ungaria'],
+    Bogdan: ['Austria', 'India', 'Ungaria', 'Croatia', 'Germania'],
+    Adi: ['Spania', 'Anglia'],
+    Paul: ['Suedia', 'Danemarca', 'Olanda', 'Germania', 'Austria', 'Cehia', 'Ungaria', 'Grecia', 'Italia'],
+    'Ioan Suatean': ['Rusia/URSS'],
+    Emil: ['Ungaria', 'Italia', 'Grecia'],
+    Emilia: ['Anglia', 'Spania'],
+    Liviu: ['Ungaria'],
+    Victoria: ['Austria', 'Ungaria', 'Grecia']
+  };
+  const globeVisits = buildGlobeVisits(globePeopleVisits);
+  function buildGlobeVisits(peopleMap) {
+    const visits = {
+      Romania: { people: ['Familia Suatean'], tone: 'home' }
+    };
+    Object.entries(peopleMap).forEach(([person, countries]) => {
+      if (!Array.isArray(countries)) return;
+      countries.forEach((country) => {
+        const normalized = normalizeCountryName(country);
+        if (!normalized) return;
+        const isHome = normalized === 'Romania';
+        const isMoved = globeMovedCountries.has(normalized);
+        const entry = visits[normalized] || { people: [], tone: isHome ? 'home' : (isMoved ? 'moved' : 'visited') };
+        if (!entry.people.includes(person)) {
+          entry.people.push(person);
+        }
+        if (isHome) {
+          entry.tone = 'home';
+        } else if (isMoved && entry.tone !== 'home') {
+          entry.tone = 'moved';
+        }
+        visits[normalized] = entry;
+      });
+    });
+    return visits;
+  }
+  const GLOBE_DATA_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
   const placeholderDataUrl = 'data:image/svg+xml;utf8,' +
     '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">' +
@@ -313,6 +388,46 @@
     focusBtn.setAttribute('aria-label', label);
     focusBtn.setAttribute('title', label);
   }
+
+  let currentView = localStorage.getItem('tree-view') || 'tree';
+  let globeInitialized = false;
+
+  function updateViewToggleUI() {
+    if (!viewToggleButtons || !viewToggleButtons.length) return;
+    viewToggleButtons.forEach((btn) => {
+      const isActive = btn.dataset.view === currentView;
+      btn.classList.toggle('is-active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
+  function setView(view) {
+    const nextView = view === 'globe' ? 'globe' : 'tree';
+    currentView = nextView;
+    document.body.classList.toggle('view-globe', nextView === 'globe');
+    if (globeView) globeView.setAttribute('aria-hidden', nextView === 'globe' ? 'false' : 'true');
+    if (pageEl) pageEl.setAttribute('aria-hidden', nextView === 'globe' ? 'true' : 'false');
+    updateViewToggleUI();
+    localStorage.setItem('tree-view', nextView);
+    if (nextView === 'globe') {
+      if (focusModeActive) {
+        focusModeActive = false;
+        document.body.classList.remove('focus-mode');
+        focusBtn && focusBtn.setAttribute('aria-pressed', 'false');
+        updateFocusModeUI();
+      }
+      setCalendarOpen(false);
+      initGlobe();
+      ensureGlobeVisible();
+    }
+  }
+
+  if (viewToggleButtons && viewToggleButtons.length) {
+    viewToggleButtons.forEach((btn) => {
+      btn.addEventListener('click', () => setView(btn.dataset.view));
+    });
+  }
+  setView(currentView);
 
   function smoothZoom(factor) {
     svg.transition().duration(250).call(zoom.scaleBy, factor);
@@ -535,6 +650,14 @@
   window.addEventListener('resize', () => {
     if (searchBar && searchBar.classList.contains('show')) {
       positionSearchBar();
+    }
+    if (currentView === 'globe') {
+      resizeGlobe();
+    }
+  });
+  window.addEventListener('load', () => {
+    if (currentView === 'globe') {
+      ensureGlobeVisible();
     }
   });
 
@@ -917,9 +1040,86 @@
 
   const UPCOMING_WINDOW_DAYS = 10;
   const BIRTHDAY_POPUP_WINDOW_DAYS = 7;
+  const GLOBE_CENTER_THRESHOLD = 0.35;
+  const GLOBE_REMOTE_THRESHOLD = 0.6;
+  const GLOBE_TILT = -18;
+  const GLOBE_ROTATE_SPEED = 0.3;
+  let globeProjection = null;
+  let globePath = null;
+  let globeSvg = null;
+  let globeSpherePath = null;
+  let globeBasePaths = null;
+  let globeHighlightPaths = null;
+  let globeMovedStrokeBluePaths = null;
+  let globeMovedStrokeGoldPaths = null;
+  let globeCountries = [];
+  let globeVisitedFeatures = [];
+  let globeHighlightFeatures = [];
+  let globeRotation = -15;
+  let globeDragStartX = null;
+  let globeRotationStart = 0;
+  let globeRenderQueued = false;
+  let globeResizeObserver = null;
   function shouldExcludeFromCalendar(name) {
     return calendarExcludeNames.has(String(name || '').toLowerCase());
   }
+
+  function normalizeCountryName(name) {
+    const raw = String(name || '');
+    const trimmed = raw.replace(/[.,]+$/g, '').trim();
+    if (!trimmed) return '';
+    const key = trimmed
+      .toLowerCase()
+      .replace(/\s*&\s*/g, '&')
+      .replace(/\s*\/\s*/g, '/')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const alias = globeCountryAliases[key];
+    return alias || trimmed;
+  }
+
+  function isCoarsePointer() {
+    return window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  }
+
+  function pruneRemotePolygons(feature, maxDistance = GLOBE_REMOTE_THRESHOLD) {
+    if (!feature || !feature.geometry) return feature;
+    if (feature.geometry.type !== 'MultiPolygon') return feature;
+    const polygons = feature.geometry.coordinates || [];
+    if (polygons.length <= 1) return feature;
+    const polyFeatures = polygons.map((coords) => ({
+      type: 'Feature',
+      properties: feature.properties,
+      geometry: { type: 'Polygon', coordinates: coords }
+    }));
+    let maxIndex = 0;
+    let maxArea = -1;
+    polyFeatures.forEach((poly, idx) => {
+      const area = d3.geoArea(poly);
+      if (area > maxArea) {
+        maxArea = area;
+        maxIndex = idx;
+      }
+    });
+    const main = polyFeatures[maxIndex];
+    const mainCentroid = d3.geoCentroid(main);
+    const kept = polyFeatures.filter((poly, idx) => {
+      if (idx === maxIndex) return true;
+      const distance = d3.geoDistance(mainCentroid, d3.geoCentroid(poly));
+      return distance <= maxDistance;
+    });
+    if (kept.length === 1) {
+      return { ...feature, geometry: kept[0].geometry };
+    }
+    return {
+      ...feature,
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: kept.map((poly) => poly.geometry.coordinates)
+      }
+    };
+  }
+
 
   // Generic tree traversal helper
   function traverseTree(data, callback) {
@@ -1126,6 +1326,248 @@
       applyMobileState && applyMobileState();
       queueCalendarScroll();
     }
+  }
+
+  function getCountryInfo(name) {
+    if (!name) return null;
+    const key = normalizeCountryName(name);
+    return globeVisits[key] || null;
+  }
+
+  function showGlobeTooltip(name, people, x, y, centered = false, lock = false) {
+    if (!globeTooltip) return;
+    const listItems = (people && people.length)
+      ? people.map((p) => `<li class="tooltip-pill">${escapeHtml(p)}</li>`).join('')
+      : '<li class="tooltip-pill">Fara date</li>';
+    globeTooltip.innerHTML = `
+      <div class="tooltip-title">${escapeHtml(name)}</div>
+      <ul class="tooltip-list">${listItems}</ul>
+    `;
+    globeTooltip.hidden = false;
+    globeTooltip.classList.toggle('centered', centered);
+    globeTooltip.classList.add('show');
+    if (centered) {
+      globeTooltip.style.left = '50%';
+      globeTooltip.style.top = '14px';
+    } else {
+      globeTooltip.style.left = `${Math.round(x)}px`;
+      globeTooltip.style.top = `${Math.round(y)}px`;
+    }
+    globeTooltip.dataset.locked = lock ? 'true' : 'false';
+  }
+
+  function hideGlobeTooltip(force = false) {
+    if (!globeTooltip) return;
+    if (!force && globeTooltip.dataset.locked === 'true') return;
+    globeTooltip.classList.remove('show', 'centered');
+    globeTooltip.hidden = true;
+    globeTooltip.dataset.locked = 'false';
+  }
+
+  function renderGlobe() {
+    if (!globePath || !globeSpherePath) return;
+    globeSpherePath.attr('d', globePath({ type: 'Sphere' }));
+    if (globeBasePaths) globeBasePaths.attr('d', globePath);
+    if (globeHighlightPaths) globeHighlightPaths.attr('d', globePath);
+    if (globeMovedStrokeBluePaths) globeMovedStrokeBluePaths.attr('d', globePath);
+    if (globeMovedStrokeGoldPaths) globeMovedStrokeGoldPaths.attr('d', globePath);
+  }
+
+  function scheduleGlobeRender() {
+    if (globeRenderQueued) return;
+    globeRenderQueued = true;
+    requestAnimationFrame(() => {
+      globeRenderQueued = false;
+      if (!globeProjection) return;
+      globeProjection.rotate([globeRotation, GLOBE_TILT]);
+      renderGlobe();
+    });
+  }
+
+  function resizeGlobe() {
+    if (!globeSvgEl || !globeProjection || !globePath) return;
+    const rect = globeSvgEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const size = Math.min(rect.width, rect.height);
+    globeProjection
+      .translate([rect.width / 2, rect.height / 2])
+      .scale((size / 2) - 12)
+      .rotate([globeRotation, GLOBE_TILT]);
+    renderGlobe();
+  }
+
+  function ensureGlobeVisible(tries = 20) {
+    if (!globeSvgEl || !globeProjection) return;
+    const rect = globeSvgEl.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      resizeGlobe();
+      return;
+    }
+    if (tries <= 0) return;
+    requestAnimationFrame(() => ensureGlobeVisible(tries - 1));
+  }
+
+  function initGlobe() {
+    if (globeInitialized || !globeSvgEl) return;
+    if (typeof topojson === 'undefined') {
+      console.warn('TopoJSON client missing, globe view disabled.');
+      return;
+    }
+    globeInitialized = true;
+    globeSvg = d3.select(globeSvgEl);
+    if (!globeResizeObserver && typeof ResizeObserver !== 'undefined') {
+      globeResizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.width && entry.contentRect.height) {
+            resizeGlobe();
+            break;
+          }
+        }
+      });
+      globeResizeObserver.observe(globeSvgEl);
+    }
+    globeProjection = d3.geoOrthographic()
+      .clipAngle(90)
+      .precision(1.1)
+      .rotate([globeRotation, GLOBE_TILT]);
+    globePath = d3.geoPath().projection(globeProjection);
+    globeSpherePath = globeSvg.append('path').attr('class', 'globe-sphere');
+    const countriesGroup = globeSvg.append('g').attr('class', 'globe-countries');
+    const highlightGroup = globeSvg.append('g').attr('class', 'globe-highlights');
+
+    globeSvg.style('cursor', 'grab');
+    if (globeSvgEl && globeSvgEl.setPointerCapture) {
+      globeSvgEl.addEventListener('pointerdown', (event) => {
+        globeSvgEl.setPointerCapture(event.pointerId);
+      });
+      const releasePointer = (event) => {
+        if (globeSvgEl.hasPointerCapture && globeSvgEl.hasPointerCapture(event.pointerId)) {
+          globeSvgEl.releasePointerCapture(event.pointerId);
+        }
+      };
+      globeSvgEl.addEventListener('pointerup', releasePointer);
+      globeSvgEl.addEventListener('pointercancel', releasePointer);
+    }
+
+    d3.json(GLOBE_DATA_URL).then((world) => {
+      if (!world || !world.objects || !world.objects.countries) return;
+      globeCountries = topojson.feature(world, world.objects.countries).features || [];
+      const byName = new Map(globeCountries.map((c) => [c.properties.name, c]));
+      globeVisitedFeatures = Object.keys(globeVisits)
+        .map((name) => byName.get(normalizeCountryName(name)))
+        .filter(Boolean);
+      globeHighlightFeatures = globeVisitedFeatures.map((feature) => pruneRemotePolygons(feature));
+      globeVisitedFeatures = globeHighlightFeatures;
+      const movedFeatures = globeHighlightFeatures.filter((feature) => {
+        const info = getCountryInfo(feature.properties.name);
+        return info && info.tone === 'moved';
+      });
+
+      globeBasePaths = countriesGroup.selectAll('path.globe-country-base')
+        .data(globeCountries)
+        .join('path')
+        .attr('class', 'globe-country globe-country-base')
+        .attr('data-name', (d) => d.properties.name);
+
+      globeHighlightPaths = highlightGroup.selectAll('path.globe-country')
+        .data(globeHighlightFeatures)
+        .join('path')
+        .attr('class', (d) => {
+          const info = getCountryInfo(d.properties.name);
+          if (!info) return 'globe-country';
+          if (info.tone === 'home') return 'globe-country home';
+          if (info.tone === 'moved') return 'globe-country moved';
+          return 'globe-country visited';
+        })
+        .attr('data-name', (d) => d.properties.name)
+        .on('mouseenter', (event, d) => {
+          if (isCoarsePointer()) return;
+          const info = getCountryInfo(d.properties.name);
+          if (!info) return;
+          const [x, y] = d3.pointer(event, globeSvgEl);
+          showGlobeTooltip(d.properties.name, info.people, x, y, false, false);
+        })
+        .on('mousemove', (event, d) => {
+          if (isCoarsePointer()) return;
+          const info = getCountryInfo(d.properties.name);
+          if (!info) return;
+          const [x, y] = d3.pointer(event, globeSvgEl);
+          showGlobeTooltip(d.properties.name, info.people, x, y, false, false);
+        })
+        .on('mouseleave', () => {
+          if (isCoarsePointer()) return;
+          hideGlobeTooltip();
+        })
+        .on('click', (event, d) => {
+          const info = getCountryInfo(d.properties.name);
+          if (!info) {
+            hideGlobeTooltip(true);
+            return;
+          }
+          event.stopPropagation();
+          const rect = globeSvgEl.getBoundingClientRect();
+          const lock = isCoarsePointer();
+          showGlobeTooltip(d.properties.name, info.people, rect.width / 2, 16, lock, lock);
+        });
+
+      globeMovedStrokeBluePaths = highlightGroup.selectAll('path.globe-moved-stroke-blue')
+        .data(movedFeatures)
+        .join('path')
+        .attr('class', 'globe-moved-stroke globe-moved-stroke-blue')
+        .attr('data-name', (d) => d.properties.name);
+      globeMovedStrokeGoldPaths = highlightGroup.selectAll('path.globe-moved-stroke-gold')
+        .data(movedFeatures)
+        .join('path')
+        .attr('class', 'globe-moved-stroke globe-moved-stroke-gold')
+        .attr('data-name', (d) => d.properties.name);
+
+      globeSvg.on('click', (event) => {
+        const target = event.target;
+        if (!target || !target.classList) {
+          hideGlobeTooltip(true);
+          return;
+        }
+        if (!target.classList.contains('globe-country')) {
+          hideGlobeTooltip(true);
+          return;
+        }
+        const name = target.getAttribute('data-name');
+        if (!getCountryInfo(name)) hideGlobeTooltip(true);
+      });
+
+      function dragStarted(event) {
+        globeSvg.style('cursor', 'grabbing');
+        hideGlobeTooltip(true);
+        globeDragStartX = event.x;
+        globeRotationStart = globeRotation;
+      }
+
+      function dragged(event) {
+        if (globeDragStartX == null) return;
+        const dx = event.x - globeDragStartX;
+        globeRotation = globeRotationStart + dx * GLOBE_ROTATE_SPEED;
+        scheduleGlobeRender();
+      }
+
+      function dragEnded() {
+        globeSvg.style('cursor', 'grab');
+        globeDragStartX = null;
+      }
+
+      globeSvg.call(
+        d3.drag()
+          .on('start', dragStarted)
+          .on('drag', dragged)
+          .on('end', dragEnded)
+      );
+
+      ensureGlobeVisible();
+    }).catch(() => {
+      if (!globeTooltip) return;
+      globeTooltip.hidden = false;
+      globeTooltip.classList.add('show', 'centered');
+      globeTooltip.innerHTML = '<div class="tooltip-title">Globe data unavailable</div>';
+    });
   }
 
   function queueCalendarScroll() {
