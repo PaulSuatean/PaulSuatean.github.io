@@ -26,16 +26,6 @@
     <header class="topbar">
       <div class="brand-group">
         <div class="brand">Arbore Genealogic: Familia Suatean</div>
-        <div class="view-toggle" role="group" aria-label="Schimba vizualizarea">
-          <button class="view-toggle-btn is-active" type="button" data-view="tree" aria-pressed="true">
-            <span class="material-symbols-outlined" aria-hidden="true">account_tree</span>
-            <span class="view-label">Arbore</span>
-          </button>
-          <button class="view-toggle-btn" type="button" data-view="globe" aria-pressed="false">
-            <span class="material-symbols-outlined" aria-hidden="true">public</span>
-            <span class="view-label">Glob</span>
-          </button>
-        </div>
       </div>
       <div class="controls">
         <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
@@ -54,6 +44,17 @@
         </button>
       </div>
     </header>
+
+    <div class="view-toggle" role="group" aria-label="Schimba vizualizarea">
+      <button class="view-toggle-btn is-active" type="button" data-view="tree" aria-pressed="true">
+        <span class="material-symbols-outlined tree-icon" aria-hidden="true">account_tree</span>
+        <span class="view-label">Arbore</span>
+      </button>
+      <button class="view-toggle-btn" type="button" data-view="globe" aria-pressed="false">
+        <span class="material-symbols-outlined" aria-hidden="true">public</span>
+        <span class="view-label">Glob</span>
+      </button>
+    </div>
 
     <div id="upcomingBanner" class="upcoming-banner" hidden aria-live="polite"></div>
 

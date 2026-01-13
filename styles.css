@@ -68,6 +68,9 @@
   justify-content: center;
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
+.tree-icon {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -1532,10 +1535,17 @@ body.theme-dark .topbar {
   flex-wrap: wrap;
 }
 .view-toggle {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 76px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 4px;
+  width: 190px;
+  min-width: 190px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -1552,6 +1562,8 @@ body.theme-dark .topbar {
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  flex: 1 1 50%;
+  justify-content: center;
   transition: background var(--transition-base) ease, color var(--transition-base) ease, transform var(--transition-base) ease;
 }
 .view-toggle-btn .material-symbols-outlined { font-size: 18px; }
@@ -1634,12 +1646,14 @@ body.focus-mode #resetBtn { display: inline-flex; }
   position: relative;
   width: min(80vmin, 640px);
   aspect-ratio: 1;
+  z-index: 2;
 }
 #globeSvg {
   width: 100%;
   height: 100%;
   display: block;
   touch-action: none;
+  overflow: visible;
 }
 .globe-sphere {
   fill: rgba(59, 130, 246, 0.08);
@@ -1732,6 +1746,9 @@ body.focus-mode #resetBtn { display: inline-flex; }
   gap: 12px;
   font-size: 12px;
   color: var(--muted);
+  position: relative;
+  z-index: 1;
+  transition: margin-top 180ms ease;
 }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .legend-dot {
@@ -1780,10 +1797,10 @@ body.view-globe #calendarToggle,
 body.view-globe #birthdaySection,
 body.view-globe #upcomingBanner { display: none !important; }
 body.view-globe #dnaBtn,
-body.view-globe #zoomInBtn,
-body.view-globe #zoomOutBtn,
 body.view-globe #resetBtn,
 body.view-globe #focusBtn { display: none !important; }
+body.view-globe #zoomInBtn,
+body.view-globe #zoomOutBtn { display: inline-flex; }
 
 .calendar-toggle {
   background: var(--accent);
@@ -2180,8 +2197,11 @@ body.theme-dark.focus-mode .topbar {
 
 @media (max-width: 768px) {
   body:not(.focus-mode) .topbar {
-    padding: 8px 4px;
+    padding: 8px 6px 10px;
     padding-top: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
   body:not(.focus-mode) .brand {
     padding: 0;
@@ -2190,43 +2210,53 @@ body.theme-dark.focus-mode .topbar {
     width: 100%;
   }
   body:not(.focus-mode) .controls {
-    justify-content: space-between;
-    padding: 0 6px;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+    gap: 6px;
+    padding: 0 6px 6px;
   }
   body:not(.focus-mode) .controls > button {
-    flex: 0.9 1 0;
+    width: 100%;
     justify-content: center;
     min-width: 0;
     padding: 8px 6px;
-    font-size: 0.84rem;
-    white-space: nowrap;
+    font-size: 0.82rem;
+    white-space: normal;
+    line-height: 1.1;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  body:not(.focus-mode) #searchBtn,
-  body:not(.focus-mode) #focusBtn {
-    flex: 1.1 1 0;
-    padding: 8px 5px;
-    font-size: 0.86rem;
-  }
   body:not(.focus-mode) #dnaBtn {
-    flex: 1.6 1 0;
-    padding: 9px 8px;
-    font-size: 0.92rem;
+    font-size: 0.84rem;
   }
   body:not(.focus-mode) #themeBtn,
   body:not(.focus-mode) #helpBtn {
-    flex: 0.75 1 0;
-    padding: 7px 6px;
     font-size: 0.78rem;
+  }
+  body:not(.focus-mode) .calendar-toggle {
+    transition: background var(--transition-base) ease, box-shadow var(--transition-base) ease, transform var(--transition-base) ease;
+  }
+  body:not(.focus-mode) .calendar-open .calendar-toggle {
+    width: min(190px, 80vw);
+    min-width: min(190px, 80vw);
+    height: auto;
+    padding: 12px 20px;
+    border-radius: 999px;
+  }
+  body:not(.focus-mode) .calendar-open .calendar-toggle .calendar-label {
+    opacity: 1;
+    transform: none;
+  }
+  body:not(.focus-mode) .calendar-open .calendar-toggle .calendar-icon {
+    opacity: 0;
+    transform: scale(0.7);
   }
 }
 
 @media (max-width: 640px) {
   body:not(.focus-mode) .topbar {
-    padding: 6px 2px;
+    padding: 6px 4px 8px;
     padding-top: 10px;
   }
   body:not(.focus-mode) .brand {
@@ -2236,26 +2266,23 @@ body.theme-dark.focus-mode .topbar {
     width: 100%;
   }
   body:not(.focus-mode) .controls {
-    padding: 0 4px;
-    gap: 4px;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    padding: 0 4px 6px;
+    gap: 6px;
   }
   body:not(.focus-mode) .controls > button {
-    padding: 7px 4px;
-    font-size: 0.8rem;
-  }
-  body:not(.focus-mode) #searchBtn,
-  body:not(.focus-mode) #focusBtn {
-    padding: 7px 4px;
-    font-size: 0.82rem;
+    padding: 7px 5px;
+    font-size: 0.78rem;
   }
   body:not(.focus-mode) #dnaBtn {
-    padding: 8px 6px;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
   }
   body:not(.focus-mode) #themeBtn,
   body:not(.focus-mode) #helpBtn {
-    padding: 6px 4px;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
+  }
+  body:not(.focus-mode) .calendar-open .calendar-toggle {
+    padding: 11px 18px;
   }
 }
 
@@ -2269,14 +2296,21 @@ body.theme-dark.focus-mode .topbar {
   .brand-group {
     width: 100%;
     justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
   }
-  .view-toggle { justify-content: center; }
+  .view-toggle {
+    top: calc(env(safe-area-inset-top) + 112px);
+    justify-content: center;
+  }
   .globe-view { padding: 0 12px 28px; }
   .globe-stage { width: min(86vmin, 520px); }
 }
 
 @media (max-width: 640px) {
   .view-toggle-btn { padding: 6px 8px; font-size: 0.8rem; }
+  .view-toggle { top: calc(env(safe-area-inset-top) + 104px); }
   .globe-stage { width: min(88vmin, 420px); }
   .globe-legend { gap: 8px; font-size: 11px; }
 }

@@ -62,6 +62,7 @@
   const calendarSideNav = document.querySelector('.calendar-side-nav');
   const pageEl = document.querySelector('.page');
   const globeView = document.getElementById('globeView');
+  const globeLegendEl = document.querySelector('.globe-legend');
   const globeSvgEl = document.getElementById('globeSvg');
   const globeTooltip = document.getElementById('globeTooltip');
   const viewToggleButtons = document.querySelectorAll('.view-toggle-btn');
@@ -362,9 +363,39 @@
     const hour = new Date().getHours();
     return hour >= 20 || hour < 7;
   }
-  document.getElementById('zoomInBtn').addEventListener('click', () => smoothZoom(1.2));
-  document.getElementById('zoomOutBtn').addEventListener('click', () => smoothZoom(1/1.1));
-  document.getElementById('resetBtn').addEventListener('click', () => fitToScreen(50));
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  function isGlobeActive() {
+    return document.body.classList.contains('view-globe');
+  }
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => {
+      if (isGlobeActive()) {
+        adjustGlobeZoom(GLOBE_ZOOM_STEP);
+      } else {
+        smoothZoom(1.2);
+      }
+    });
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => {
+      if (isGlobeActive()) {
+        adjustGlobeZoom(-GLOBE_ZOOM_STEP);
+      } else {
+        smoothZoom(1 / 1.1);
+      }
+    });
+  }
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (isGlobeActive()) {
+        setGlobeZoom(GLOBE_ZOOM_DEFAULT);
+      } else {
+        fitTreeWhenVisible(getTreeDefaultPadding());
+      }
+    });
+  }
   const focusBtn = document.getElementById('focusBtn');
   let focusModeActive = document.body.classList.contains('focus-mode');
   if (focusBtn) {
@@ -375,7 +406,7 @@
       document.body.classList.toggle('focus-mode', focusModeActive);
       focusBtn.setAttribute('aria-pressed', focusModeActive ? 'true' : 'false');
       updateFocusModeUI();
-      fitToScreen(focusModeActive ? 80 : 50);
+      fitTreeWhenVisible(focusModeActive ? getTreeFocusPadding() : getTreeDefaultPadding());
       if (focusModeActive) setCalendarOpen(false);
     });
   }
@@ -418,7 +449,14 @@
       }
       setCalendarOpen(false);
       initGlobe();
-      ensureGlobeVisible();
+      requestAnimationFrame(() => ensureGlobeVisible(60));
+    } else {
+      requestAnimationFrame(() => {
+        resizeHitSurface();
+        if (!window._initialFitComplete) {
+          fitTreeWhenVisible(getTreeDefaultPadding(), 60);
+        }
+      });
     }
   }
 
@@ -429,6 +467,31 @@
   }
   setView(currentView);
 
+  function getTreeDefaultPadding() {
+    return mobileQuery && mobileQuery.matches ? 28 : 36;
+  }
+  function getTreeFocusPadding() {
+    return mobileQuery && mobileQuery.matches ? 60 : 70;
+  }
+  function fitTreeWhenVisible(padding, tries = 40) {
+    const node = svg.node();
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
+    if (!rect.width || !rect.height) {
+      if (tries <= 0) return;
+      requestAnimationFrame(() => fitTreeWhenVisible(padding, tries - 1));
+      return;
+    }
+    const bbox = g.node() ? g.node().getBBox() : null;
+    if (!bbox || !isFinite(bbox.width) || !isFinite(bbox.height) || bbox.width < 2 || bbox.height < 2) {
+      if (tries <= 0) return;
+      requestAnimationFrame(() => fitTreeWhenVisible(padding, tries - 1));
+      return;
+    }
+    resizeHitSurface();
+    fitToScreen(padding);
+    window._initialFitComplete = true;
+  }
   function smoothZoom(factor) {
     svg.transition().duration(250).call(zoom.scaleBy, factor);
   }
@@ -441,14 +504,15 @@
       (w - padding * 2) / Math.max(bbox.width, 1),
       (h - padding * 2) / Math.max(bbox.height, 1)
     );
-    const tx = (w - bbox.width * scale) / 2 - bbox.x * scale;
-    const ty = (h - bbox.height * scale) / 2 - bbox.y * scale;
     const safeScale = Math.max(scale, 0.02);
     const minScaleFactor = mobileQuery && mobileQuery.matches ? 0.95 : 0.85;
     const minScale = Math.max(safeScale * minScaleFactor, 0.02);
     const maxScale = Math.max(6, safeScale * 5);
+    const appliedScale = Math.min(safeScale, maxScale);
+    const tx = (w - bbox.width * appliedScale) / 2 - bbox.x * appliedScale;
+    const ty = (h - bbox.height * appliedScale) / 2 - bbox.y * appliedScale;
     zoom.scaleExtent([minScale, maxScale]);
-    const t = d3.zoomIdentity.translate(tx, ty).scale(safeScale);
+    const t = d3.zoomIdentity.translate(tx, ty).scale(appliedScale);
     svg.transition().duration(450).call(zoom.transform, t);
   }
 
@@ -657,7 +721,8 @@
   });
   window.addEventListener('load', () => {
     if (currentView === 'globe') {
-      ensureGlobeVisible();
+      initGlobe();
+      requestAnimationFrame(() => ensureGlobeVisible(60));
     }
   });
 
@@ -1042,8 +1107,15 @@
   const BIRTHDAY_POPUP_WINDOW_DAYS = 7;
   const GLOBE_CENTER_THRESHOLD = 0.35;
   const GLOBE_REMOTE_THRESHOLD = 0.6;
-  const GLOBE_TILT = -18;
+  const GLOBE_TILT_DEFAULT = -18;
+  const GLOBE_TILT_MIN = -60;
+  const GLOBE_TILT_MAX = 60;
+  const GLOBE_TILT_SPEED = 0.22;
   const GLOBE_ROTATE_SPEED = 0.3;
+  const GLOBE_ZOOM_MIN = 0.9;
+  const GLOBE_ZOOM_MAX = 2.56;
+  const GLOBE_ZOOM_STEP = 0.12;
+  const GLOBE_ZOOM_DEFAULT = isCoarsePointer() ? 1.1 : 1.08;
   let globeProjection = null;
   let globePath = null;
   let globeSvg = null;
@@ -1056,8 +1128,15 @@
   let globeVisitedFeatures = [];
   let globeHighlightFeatures = [];
   let globeRotation = -15;
-  let globeDragStartX = null;
-  let globeRotationStart = 0;
+  let globeTilt = GLOBE_TILT_DEFAULT;
+  let globeZoom = GLOBE_ZOOM_DEFAULT;
+  let globePinchStartDistance = null;
+  let globePinchStartZoom = null;
+  let globeDragActive = false;
+  let globeVelocityX = 0;
+  let globeVelocityY = 0;
+  let globeLastDragTime = 0;
+  let globeInertiaId = null;
   let globeRenderQueued = false;
   let globeResizeObserver = null;
   function shouldExcludeFromCalendar(name) {
@@ -1364,6 +1443,19 @@
     globeTooltip.dataset.locked = 'false';
   }
 
+  function normalizeRotation(angle) {
+    const normalized = ((angle + 180) % 360 + 360) % 360 - 180;
+    return normalized;
+  }
+  function clampTilt(value) {
+    return Math.max(GLOBE_TILT_MIN, Math.min(GLOBE_TILT_MAX, value));
+  }
+  function stopGlobeInertia() {
+    if (!globeInertiaId) return;
+    cancelAnimationFrame(globeInertiaId);
+    globeInertiaId = null;
+  }
+
   function renderGlobe() {
     if (!globePath || !globeSpherePath) return;
     globeSpherePath.attr('d', globePath({ type: 'Sphere' }));
@@ -1373,13 +1465,55 @@
     if (globeMovedStrokeGoldPaths) globeMovedStrokeGoldPaths.attr('d', globePath);
   }
 
+  function setGlobeZoom(nextZoom) {
+    const clamped = Math.min(GLOBE_ZOOM_MAX, Math.max(GLOBE_ZOOM_MIN, nextZoom));
+    if (Math.abs(clamped - globeZoom) < 0.001) return;
+    globeZoom = clamped;
+    resizeGlobe();
+  }
+  function adjustGlobeZoom(delta) {
+    setGlobeZoom(globeZoom + delta);
+  }
+  function handleGlobeWheel(event) {
+    if (!isGlobeActive()) return;
+    event.preventDefault();
+    stopGlobeInertia();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    adjustGlobeZoom(direction * GLOBE_ZOOM_STEP);
+  }
+  function handleGlobeTouchStart(event) {
+    if (!isGlobeActive()) return;
+    if (event.touches && event.touches.length === 2) {
+      stopGlobeInertia();
+      const [a, b] = event.touches;
+      globePinchStartDistance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      globePinchStartZoom = globeZoom;
+    }
+  }
+  function handleGlobeTouchMove(event) {
+    if (!isGlobeActive()) return;
+    if (!event.touches || event.touches.length !== 2) return;
+    if (!globePinchStartDistance || globePinchStartZoom == null) return;
+    event.preventDefault();
+    const [a, b] = event.touches;
+    const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    if (!distance) return;
+    const factor = distance / globePinchStartDistance;
+    setGlobeZoom(globePinchStartZoom * factor);
+  }
+  function handleGlobeTouchEnd(event) {
+    if (event.touches && event.touches.length >= 2) return;
+    globePinchStartDistance = null;
+    globePinchStartZoom = null;
+  }
+
   function scheduleGlobeRender() {
     if (globeRenderQueued) return;
     globeRenderQueued = true;
     requestAnimationFrame(() => {
       globeRenderQueued = false;
       if (!globeProjection) return;
-      globeProjection.rotate([globeRotation, GLOBE_TILT]);
+      globeProjection.rotate([globeRotation, globeTilt]);
       renderGlobe();
     });
   }
@@ -1389,15 +1523,27 @@
     const rect = globeSvgEl.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const size = Math.min(rect.width, rect.height);
+    const baseScale = (size / 2) - 12;
+    const radius = baseScale * globeZoom;
+    if (globeLegendEl) {
+      const overflow = Math.max(0, radius - size / 2);
+      const offset = overflow > 0 ? overflow + 12 : 0;
+      globeLegendEl.style.marginTop = `${Math.round(offset)}px`;
+    }
     globeProjection
       .translate([rect.width / 2, rect.height / 2])
-      .scale((size / 2) - 12)
-      .rotate([globeRotation, GLOBE_TILT]);
+      .scale(baseScale * globeZoom)
+      .rotate([globeRotation, globeTilt]);
     renderGlobe();
   }
 
-  function ensureGlobeVisible(tries = 20) {
-    if (!globeSvgEl || !globeProjection) return;
+  function ensureGlobeVisible(tries = 60) {
+    if (!globeSvgEl) return;
+    if (!globeProjection) {
+      if (tries <= 0) return;
+      requestAnimationFrame(() => ensureGlobeVisible(tries - 1));
+      return;
+    }
     const rect = globeSvgEl.getBoundingClientRect();
     if (rect.width && rect.height) {
       resizeGlobe();
@@ -1429,7 +1575,7 @@
     globeProjection = d3.geoOrthographic()
       .clipAngle(90)
       .precision(1.1)
-      .rotate([globeRotation, GLOBE_TILT]);
+      .rotate([globeRotation, globeTilt]);
     globePath = d3.geoPath().projection(globeProjection);
     globeSpherePath = globeSvg.append('path').attr('class', 'globe-sphere');
     const countriesGroup = globeSvg.append('g').attr('class', 'globe-countries');
@@ -1448,6 +1594,11 @@
       globeSvgEl.addEventListener('pointerup', releasePointer);
       globeSvgEl.addEventListener('pointercancel', releasePointer);
     }
+    globeSvgEl.addEventListener('wheel', handleGlobeWheel, { passive: false });
+    globeSvgEl.addEventListener('touchstart', handleGlobeTouchStart, { passive: false });
+    globeSvgEl.addEventListener('touchmove', handleGlobeTouchMove, { passive: false });
+    globeSvgEl.addEventListener('touchend', handleGlobeTouchEnd);
+    globeSvgEl.addEventListener('touchcancel', handleGlobeTouchEnd);
 
     d3.json(GLOBE_DATA_URL).then((world) => {
       if (!world || !world.objects || !world.objects.countries) return;
@@ -1538,20 +1689,54 @@
       function dragStarted(event) {
         globeSvg.style('cursor', 'grabbing');
         hideGlobeTooltip(true);
-        globeDragStartX = event.x;
-        globeRotationStart = globeRotation;
+        globeDragActive = true;
+        globeVelocityX = 0;
+        globeVelocityY = 0;
+        globeLastDragTime = performance.now();
+        stopGlobeInertia();
       }
 
       function dragged(event) {
-        if (globeDragStartX == null) return;
-        const dx = event.x - globeDragStartX;
-        globeRotation = globeRotationStart + dx * GLOBE_ROTATE_SPEED;
+        if (!globeDragActive) return;
+        const now = performance.now();
+        const dt = Math.max(12, now - globeLastDragTime);
+        globeLastDragTime = now;
+        const dx = event.dx || 0;
+        const dy = event.dy || 0;
+        globeRotation = normalizeRotation(globeRotation + dx * GLOBE_ROTATE_SPEED);
+        globeTilt = clampTilt(globeTilt - dy * GLOBE_TILT_SPEED);
+        globeVelocityX = (dx * GLOBE_ROTATE_SPEED) / dt;
+        globeVelocityY = (-dy * GLOBE_TILT_SPEED) / dt;
         scheduleGlobeRender();
       }
 
       function dragEnded() {
         globeSvg.style('cursor', 'grab');
-        globeDragStartX = null;
+        globeDragActive = false;
+        startGlobeInertia();
+      }
+
+      function startGlobeInertia() {
+        const minVelocity = 0.0008;
+        if (Math.abs(globeVelocityX) < minVelocity && Math.abs(globeVelocityY) < minVelocity) return;
+        let lastTime = performance.now();
+        const step = () => {
+          const now = performance.now();
+          const dt = Math.max(12, now - lastTime);
+          lastTime = now;
+          const decay = Math.pow(0.92, dt / 16);
+          globeVelocityX *= decay;
+          globeVelocityY *= decay;
+          if (Math.abs(globeVelocityX) < minVelocity && Math.abs(globeVelocityY) < minVelocity) {
+            globeInertiaId = null;
+            return;
+          }
+          globeRotation = normalizeRotation(globeRotation + globeVelocityX * dt);
+          globeTilt = clampTilt(globeTilt + globeVelocityY * dt);
+          scheduleGlobeRender();
+          globeInertiaId = requestAnimationFrame(step);
+        };
+        globeInertiaId = requestAnimationFrame(step);
       }
 
       globeSvg.call(
@@ -1561,6 +1746,7 @@
           .on('end', dragEnded)
       );
 
+      resizeGlobe();
       ensureGlobeVisible();
     }).catch(() => {
       if (!globeTooltip) return;
@@ -2296,8 +2482,7 @@
 
     // Only fit to screen on initial load, not on every render
     if (!window._initialFitComplete) {
-      window._initialFitComplete = true;
-      fitToScreen(50);
+      fitTreeWhenVisible(getTreeDefaultPadding(), 60);
     }
   }
 
