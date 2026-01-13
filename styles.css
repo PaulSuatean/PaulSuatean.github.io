@@ -150,6 +150,10 @@ body.theme-dark .upcoming-banner .close-btn {
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 12px 24px;
   border-radius: 999px;
   border: 2px solid transparent;
@@ -160,6 +164,7 @@ body.theme-dark .upcoming-banner .close-btn {
   box-shadow: var(--shadow-lg);
   cursor: pointer;
   min-width: 190px;
+  width: 190px;
   text-align: center;
   white-space: nowrap;
   transition: all var(--transition-base) ease;
@@ -167,6 +172,22 @@ body.theme-dark .upcoming-banner .close-btn {
 .calendar-toggle:hover {
   transform: translateX(-50%) translateY(-2px);
   box-shadow: var(--shadow-xl);
+}
+.calendar-toggle .calendar-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition-base) ease, transform var(--transition-base) ease;
+}
+.calendar-toggle .calendar-icon {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity var(--transition-base) ease, transform var(--transition-base) ease;
 }
 
 .upcoming-banner {
@@ -305,6 +326,18 @@ body.theme-dark .upcoming-banner .close-btn {
   z-index: 10;
   background: var(--accent-2);
   border: 2px solid var(--accent);
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  padding: 0;
+}
+.calendar-open .calendar-toggle .calendar-label {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.calendar-open .calendar-toggle .calendar-icon {
+  opacity: 1;
+  transform: scale(1);
 }
 .birthday-bar__header {
   display: flex;

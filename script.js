@@ -1108,14 +1108,19 @@
       .replace(/'/g, '&#39;');
   }
 
+  function updateCalendarToggleState(open) {
+    if (!calendarToggle) return;
+    calendarToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    const label = open ? t.closeCalendar : t.openCalendar;
+    calendarToggle.setAttribute('aria-label', label);
+    calendarToggle.setAttribute('title', label);
+  }
+
   function setCalendarOpen(open) {
     calendarOpen = open;
     document.body.classList.toggle('calendar-open', open);
     if (calendarSection) calendarSection.setAttribute('aria-hidden', open ? 'false' : 'true');
-    if (calendarToggle) {
-      calendarToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      calendarToggle.textContent = open ? 'Inchide Calendar' : 'Deschide Calendar';
-    }
+    updateCalendarToggleState(open);
     if (!open) hideBirthdayTooltip();
     if (open) {
       applyMobileState && applyMobileState();
