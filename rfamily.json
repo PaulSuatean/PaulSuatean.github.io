@@ -169,17 +169,17 @@
         {
             "name": "Leontin Săutean",
             "image": "",
-            "birthday": "28/03/1972",
+            "birthday": "23/10/1956",
             "spouse": {
                 "name": "Mariana Săutean",
                 "image": "",
-                "birthday": "13/04/1973"
+                "birthday": "18/04/1961"
             },
             "children": [
                 {
                     "name": "Daniel Săutean",
                     "image": "images/Daniel_Sautean.webp",
-                    "birthday": "05/10/1983",
+                    "birthday": "15/10/1983",
                     "spouse": {
                         "name": "Alina Săutean",
                         "image": "images/Alina_Sautean.webp",
@@ -189,7 +189,7 @@
                         {
                             "name": "Andrei Săutean",
                             "image": "images/Andrei_Sautean.webp",
-                            "birthday": "09/07/2017"
+                            "birthday": "09/06/2008"
                         }
                     ]
                 }

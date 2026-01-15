@@ -33,6 +33,7 @@
   --calendar-today-bg: #e4efff;
   --calendar-today-shadow: inset 0 0 0 1.5px rgba(200, 162, 75, 0.95), 0 3px 8px rgba(110, 142, 190, 0.28);
   --calendar-today-text: #7a5600;
+  --view-toggle-top: calc(env(safe-area-inset-top) + 76px);
   --month-card-height: 220px;
   --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.08);
   --shadow-md: 0 12px 24px rgba(15, 23, 42, 0.12);
@@ -1536,7 +1537,7 @@ body.theme-dark .topbar {
 }
 .view-toggle {
   position: fixed;
-  top: calc(env(safe-area-inset-top) + 76px);
+  top: var(--view-toggle-top);
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;
@@ -1547,6 +1548,7 @@ body.theme-dark .topbar {
   width: 190px;
   min-width: 190px;
   background: var(--surface-2);
+  transition: top var(--transition-base) ease;
   border: 1px solid var(--border);
   border-radius: 999px;
   box-shadow: var(--shadow-sm);
@@ -2210,26 +2212,31 @@ body.theme-dark.focus-mode .topbar {
     width: 100%;
   }
   body:not(.focus-mode) .controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
-    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(4px, 1.6vw, 8px);
     padding: 0 6px 6px;
   }
   body:not(.focus-mode) .controls > button {
-    width: 100%;
-    justify-content: center;
     min-width: 0;
+    flex: 0 0 auto;
+    justify-content: center;
+    white-space: nowrap;
+    line-height: 1.05;
+    text-align: center;
+  }
+  body:not(.focus-mode) #dnaBtn,
+  body:not(.focus-mode) #focusBtn {
     padding: 7px 6px;
     font-size: 0.8rem;
-    white-space: normal;
-    line-height: 1.1;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
-  body:not(.focus-mode) #themeBtn,
-  body:not(.focus-mode) #helpBtn {
-    font-size: 0.78rem;
+  body:not(.focus-mode) .controls > button:not(#dnaBtn):not(#focusBtn) {
+    padding: clamp(4px, 1.2vw, 6px) clamp(6px, 2.2vw, 10px);
+    font-size: clamp(0.6rem, 2.2vw, 0.78rem);
+  }
+  body:not(.focus-mode) .controls > button:not(#dnaBtn):not(#focusBtn) .material-symbols-outlined {
+    font-size: clamp(16px, 4.2vw, 20px);
   }
   .calendar-toggle {
     width: min(210px, 86vw);
@@ -2268,17 +2275,19 @@ body.theme-dark.focus-mode .topbar {
     width: 100%;
   }
   body:not(.focus-mode) .controls {
-    grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
     padding: 0 4px 6px;
-    gap: 6px;
   }
   body:not(.focus-mode) .controls > button {
+    line-height: 1;
+  }
+  body:not(.focus-mode) #dnaBtn,
+  body:not(.focus-mode) #focusBtn {
     padding: 7px 5px;
     font-size: 0.78rem;
   }
-  body:not(.focus-mode) #themeBtn,
-  body:not(.focus-mode) #helpBtn {
-    font-size: 0.74rem;
+  body:not(.focus-mode) .controls > button:not(#dnaBtn):not(#focusBtn) {
+    padding: clamp(3px, 1.2vw, 5px) clamp(5px, 2vw, 9px);
+    font-size: clamp(0.56rem, 2.1vw, 0.74rem);
   }
   body:not(.focus-mode) .calendar-toggle.is-open {
     padding: 11px 18px;
@@ -2292,6 +2301,7 @@ body.theme-dark.focus-mode .topbar {
 }
 
 @media (max-width: 768px) {
+  :root { --view-toggle-top: calc(env(safe-area-inset-top) + 112px); }
   .brand-group {
     width: 100%;
     justify-content: center;
@@ -2300,7 +2310,6 @@ body.theme-dark.focus-mode .topbar {
     gap: 8px;
   }
   .view-toggle {
-    top: calc(env(safe-area-inset-top) + 112px);
     justify-content: center;
   }
   .globe-view { padding: 0 12px 28px; }
@@ -2308,8 +2317,8 @@ body.theme-dark.focus-mode .topbar {
 }
 
 @media (max-width: 640px) {
+  :root { --view-toggle-top: calc(env(safe-area-inset-top) + 104px); }
   .view-toggle-btn { padding: 6px 8px; font-size: 0.8rem; }
-  .view-toggle { top: calc(env(safe-area-inset-top) + 104px); }
   .globe-stage { width: min(88vmin, 420px); }
   .globe-legend { gap: 8px; font-size: 11px; }
 }

@@ -54,6 +54,7 @@
   const calendarSection = document.getElementById('birthdaySection');
   const calendarToggle = document.getElementById('calendarToggle');
   const upcomingBanner = document.getElementById('upcomingBanner');
+  const topbar = document.querySelector('.topbar');
   const monthPrevBtn = document.getElementById('monthPrev');
   const monthNextBtn = document.getElementById('monthNext');
   const carouselControls = document.querySelector('.carousel-controls');
@@ -66,6 +67,7 @@
   const globeSvgEl = document.getElementById('globeSvg');
   const globeTooltip = document.getElementById('globeTooltip');
   const viewToggleButtons = document.querySelectorAll('.view-toggle-btn');
+  const viewToggle = document.querySelector('.view-toggle');
   let calendarOpen = false;
   const birthdayTooltip = document.getElementById('birthdayTooltip');
   const searchBar = document.getElementById('searchBar');
@@ -406,6 +408,7 @@
       document.body.classList.toggle('focus-mode', focusModeActive);
       focusBtn.setAttribute('aria-pressed', focusModeActive ? 'true' : 'false');
       updateFocusModeUI();
+      requestAnimationFrame(updateViewToggleOffset);
       fitTreeWhenVisible(focusModeActive ? getTreeFocusPadding() : getTreeDefaultPadding());
       if (focusModeActive) setCalendarOpen(false);
     });
@@ -436,6 +439,7 @@
     const nextView = view === 'globe' ? 'globe' : 'tree';
     currentView = nextView;
     document.body.classList.toggle('view-globe', nextView === 'globe');
+    requestAnimationFrame(updateViewToggleOffset);
     if (globeView) globeView.setAttribute('aria-hidden', nextView === 'globe' ? 'false' : 'true');
     if (pageEl) pageEl.setAttribute('aria-hidden', nextView === 'globe' ? 'true' : 'false');
     updateViewToggleUI();
@@ -723,6 +727,7 @@
     if (currentView === 'globe') {
       resizeGlobe();
     }
+    requestAnimationFrame(updateViewToggleOffset);
   });
   window.addEventListener('load', () => {
     if (currentView === 'globe') {
@@ -1263,12 +1268,44 @@
     return Array.from(byName.values()).sort((a, b) => a.daysAway - b.daysAway || a.name.localeCompare(b.name));
   }
 
+  function updateViewToggleOffset() {
+    if (!viewToggle) return;
+    let anchor = null;
+    let useBanner = false;
+
+    if (upcomingBanner) {
+      const bannerStyle = window.getComputedStyle(upcomingBanner);
+      const isHidden = upcomingBanner.hidden
+        || upcomingBanner.classList.contains('dismissed')
+        || bannerStyle.display === 'none'
+        || bannerStyle.visibility === 'hidden';
+      if (!isHidden) {
+        anchor = upcomingBanner;
+        useBanner = true;
+      }
+    }
+
+    if (!anchor && topbar) {
+      anchor = topbar;
+    }
+
+    if (!anchor) return;
+
+    const anchorStyle = window.getComputedStyle(anchor);
+    const marginBottom = parseFloat(anchorStyle.marginBottom) || 0;
+    const rect = anchor.getBoundingClientRect();
+    const spacing = useBanner ? marginBottom : 8;
+    const top = Math.max(0, Math.round(rect.bottom + spacing));
+    document.documentElement.style.setProperty('--view-toggle-top', `${top}px`);
+  }
+
   function renderUpcomingBanner(data) {
     if (!upcomingBanner) return;
     const upcoming = getUpcomingBirthdays(data);
     if (!upcoming.length) {
       upcomingBanner.hidden = true;
       upcomingBanner.classList.remove('show');
+      updateViewToggleOffset();
       return;
     }
 
@@ -1280,6 +1317,7 @@
       if (now < dismissedDate) {
         upcomingBanner.hidden = true;
         upcomingBanner.classList.remove('show');
+        updateViewToggleOffset();
         return;
       }
     }
@@ -1317,14 +1355,17 @@
     } else {
       upcomingBanner.style.removeProperty('--banner-speed');
     }
+    requestAnimationFrame(updateViewToggleOffset);
 
     const closeBtn = upcomingBanner.querySelector('.close-btn');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
         upcomingBanner.classList.add('dismissed');
+        updateViewToggleOffset();
         setTimeout(() => {
           upcomingBanner.hidden = true;
           upcomingBanner.classList.remove('show', 'dismissed');
+          updateViewToggleOffset();
         }, 200);
 
         // Remember dismissal for 24 hours
