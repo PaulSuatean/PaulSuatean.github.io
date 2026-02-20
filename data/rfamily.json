@@ -1,0 +1,334 @@
+{
+    "name": "Ioan Suătean",
+    "image": "",
+    "birthday": "06/01/1950",
+    "tags": ["veteran"],
+    "spouse": "Ana Suătean",
+    "spouseImage": "",
+    "spouseBirthday": "12/02/1952",
+    "parents": {
+        "name": "F Ioan Suătean",
+        "image": "",
+        "birthday": "15/03/1920",
+        "spouse": "M Ioan Suătean",
+        "spouseImage": "",
+        "spouseBirthday": "22/07/1922"
+    },
+    "spouseParents": {
+        "name": "Ana Pintilie",
+        "image": "",
+        "birthday": "11/05/1921",
+        "spouse": "Ioan Pintilie",
+        "spouseImage": "",
+        "spouseBirthday": "30/12/1923"
+    },
+    "children": [
+        {
+            "name": "Liviu Suătean",
+            "image": "images/Liviu_Suatean.webp",
+            "birthday": "04/10/1949",
+            "spouse": "Aurelia Suătean",
+            "spouseImage": "images/Aurelia_Suatean.webp",
+            "spouseBirthday": "28/01/1956",
+            "children": [
+                {
+                    "name": "Andreea Suătean",
+                    "image": "images/Andreea_Suatean.webp",
+                    "birthday": "02/07/1986",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Maria Man",
+            "image": "images/Maria_Man.webp",
+            "birthday": "01/06/1951",
+            "spouse": "Nicolae Man",
+            "spouseImage": "images/Nicolae_Man.webp",
+            "spouseBirthday": "06/12/1943",
+            "children": [
+                {
+                    "name": "Florin Man",
+                    "image": "images/Florin_Man.webp",
+                    "birthday": "10/09/1973",
+                    "spouse": "Csilla",
+                    "spouseImage": "images/Csilla_Man.webp",
+                    "spouseBirthday": "",
+                    "children": [
+                        {
+                            "name": "Sonia Man",
+                            "image": "images/Sonia_Man.webp",
+                            "birthday": "02/07/2015",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Ovidiu Man",
+                    "image": "images/Ovidiu_Man.webp",
+                    "birthday": "24/10/xxxx",
+                    "spouse": "Corina Man",
+                    "spouseImage": "images/Corina_Man.webp",
+                    "spouseBirthday": "19/09/1996",
+                    "children": [
+                        {
+                            "name": "Olivia Man",
+                            "image": "images/Olivia_Man.webp",
+                            "birthday": "28/10/2015",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Mihaela Marian",
+                    "image": "images/Mihaela_Marian.webp",
+                    "birthday": "23/11/1976",
+                    "spouse": "Ioni Marian",
+                    "spouseImage": "images/Ioan_Marian.webp",
+                    "spouseBirthday": "23/11/1975",
+                    "children": [
+                        {
+                            "name": "Tudor Marian",
+                            "image": "images/Tudor_Marian.webp",
+                            "birthday": "08/02/2009",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Felicia Suătean",
+            "image": "",
+            "birthday": "27/02/1977",
+            "children": []
+        },
+        {
+            "name": "Felicia Nealcoș",
+            "image": "images/Felicia_Nealcos.webp",
+            "birthday": "06/01/1955",
+            "spouse": "Mitruț Nealcoș",
+            "spouseImage": "images/Mitrut_Nealcos.webp",
+            "spouseBirthday": "15/10/1953",
+            "children": [
+                {
+                    "name": "Adrian Nealcoș",
+                    "image": "images/Adrian_Nealcos.webp",
+                    "birthday": "10/05/1984",
+                    "spouse": "Petruța Nealcoș",
+                    "spouseImage": "images/Petruta_Nealcos.webp",
+                    "spouseBirthday": "20/06/1989",
+                    "children": [
+                        {
+                            "name": "Victor Nealcoș",
+                            "image": "images/Victor_Nealcos.webp",
+                            "birthday": "23/07/2021",
+                            "children": []
+                        },
+                        {
+                            "name": "Alexandra Nealcoș",
+                            "image": "images/Alexandra_Nealcos.webp",
+                            "birthday": "14/02/2018",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Ioana Sașa",
+                    "image": "images/Ioana_Sasa.webp",
+                    "birthday": "04/01/1980",
+                    "spouse": "Ciprian Sașa",
+                    "spouseImage": "images/Ciprian_Sasa.webp",
+                    "spouseBirthday": "20/05/1978",
+                    "children": [
+                        {
+                            "name": "Șerban Sașa",
+                            "image": "images/Serban_Sasa.webp",
+                            "birthday": "18/12/2010",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Leontin Săutean",
+            "image": "",
+            "birthday": "23/10/1956",
+            "spouse": "Mariana Săutean",
+            "spouseImage": "",
+            "spouseBirthday": "18/04/1961",
+            "children": [
+                {
+                    "name": "Daniel Săutean",
+                    "image": "images/Daniel_Sautean.webp",
+                    "birthday": "15/10/1983",
+                    "spouse": "Alina Săutean",
+                    "spouseImage": "images/Alina_Sautean.webp",
+                    "spouseBirthday": "18/06/1985",
+                    "children": [
+                        {
+                            "name": "Andrei Săutean",
+                            "image": "images/Andrei_Sautean.webp",
+                            "birthday": "09/06/2008",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Susana Laza",
+            "image": "images/Susana_Laza.webp",
+            "birthday": "09/10/1958",
+            "spouse": "Ioan Laza",
+            "spouseImage": "images/Ioan_Laza.webp",
+            "spouseBirthday": "18/02/1955",
+            "children": [
+                {
+                    "name": "Sergiu Laza",
+                    "image": "images/Sergiu_Laza.webp",
+                    "birthday": "30/09/1984",
+                    "spouse": "Andra Laza",
+                    "spouseImage": "images/Andra_Laza.webp",
+                    "spouseBirthday": "11/04/1984",
+                    "children": [
+                        {
+                            "name": "Ștefan Laza",
+                            "image": "images/Stefan_Laza.webp",
+                            "birthday": "10/08/2022",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Ioana Romanțan",
+                    "image": "images/Laza_Ioana.webp",
+                    "birthday": "31/10/1990",
+                    "spouse": "Alexandru Romanțan",
+                    "spouseImage": "images/Alexandru_Romantan.webp",
+                    "spouseBirthday": "24/09/1990",
+                    "children": [
+                        {
+                            "name": "Matei Romanțan",
+                            "image": "images/Matei_Romantan.webp",
+                            "birthday": "31/01/2018",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Emilia Petrar",
+            "image": "images/Emilia_Petrar.webp",
+            "birthday": "15/04/1961",
+            "spouse": "Jenu Petrar",
+            "spouseImage": "images/Jenu_Petrar.webp",
+            "spouseBirthday": "19/02/1958",
+            "children": [
+                {
+                    "name": "Răzvan Petrar",
+                    "image": "images/Razvan_Petrar.webp",
+                    "birthday": "09/09/1988",
+                    "spouse": "Lia Petrar",
+                    "spouseImage": "images/Liana_Petrar.webp",
+                    "spouseBirthday": "29/01/1989",
+                    "children": [
+                        {
+                            "name": "Luca Petrar",
+                            "image": "images/Luca_Petrar.webp",
+                            "birthday": "12/08/2017",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Victoria Nădișan",
+            "image": "images/Victoria_Nadisan.webp",
+            "birthday": "09/05/xxxx",
+            "spouse": "Alexandru Nădișan",
+            "spouseImage": "images/Alexandru_Nadisan.webp",
+            "spouseBirthday": "23/10/1974",
+            "children": [
+                {
+                    "name": "Bogdan Nădișan",
+                    "image": "images/Bogdan_Nadisan.webp",
+                    "birthday": "18/09/1986",
+                    "spouse": "Cristina Nădișan",
+                    "spouseImage": "images/Cristina_Nadisan.webp",
+                    "spouseBirthday": "08/03/1986",
+                    "children": [
+                        {
+                            "name": "Flaviu Nădișan",
+                            "image": "images/Flaviu_Nadisan.PNG",
+                            "birthday": "16/01/2014",
+                            "children": []
+                        },
+                        {
+                            "name": "Mihai Nădișan",
+                            "image": "images/Mihai_Nadisan.PNG",
+                            "birthday": "05/02/2013",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Niculae Săutean",
+            "image": "images/Niculae_Sautean.webp",
+            "birthday": "10/07/1966",
+            "spouse": "Simona Săutean",
+            "spouseImage": "images/Simona_Sautean.webp",
+            "spouseBirthday": "18/04/1980",
+            "prevSpouse": {
+                "name": "Ioana",
+                "image": ""
+            },
+            "children": [
+                {
+                    "name": "Andrei Săutean",
+                    "image": "images/Andrei_Sautean2.webp",
+                    "birthday": "15/10/1990",
+                    "fromPrevSpouse": true,
+                    "children": []
+                },
+                {
+                    "name": "Adrian Săutean",
+                    "image": "images/Adrian_Sautean.webp",
+                    "birthday": "10/01/2001",
+                    "children": []
+                },
+                {
+                    "name": "Gabriel Săutean",
+                    "image": "images/Gabriel_Sautean.webp",
+                    "birthday": "07/06/2009",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Emil Suătean",
+            "image": "images/Emil_Suatean.webp",
+            "birthday": "19/04/1969",
+            "spouse": "Elena Suătean",
+            "spouseImage": "images/Elena_Suatean.webp",
+            "spouseBirthday": "02/02/1973",
+            "children": [
+                {
+                    "name": "Paul Suătean",
+                    "image": "images/Paul_Suatean.webp",
+                    "birthday": "09/11/1993",
+                    "spouse": "Damaris Suătean",
+                    "spouseImage": "images/Damaris_Suatean.webp",
+                    "spouseBirthday": "12/10/1995",
+                    "isOrigin": true,
+                    "children": []
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Editor - Family Tree Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="editor.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand" id="treeTitle">Loading...</div>
+    </div>
+    <div class="controls">
+      <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
+        <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+      </button>
+      <button id="saveBtn" title="Save changes" aria-label="Save changes" disabled>
+        <span class="material-symbols-outlined" aria-hidden="true">save</span>
+        Save
+      </button>
+      <button id="viewTreeBtn" title="Preview tree" aria-label="Preview tree">
+        <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+        Preview
+      </button>
+      <a href="dashboard.html" style="text-decoration: none;">
+        <button title="Back to Dashboard" aria-label="Back to dashboard">
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          Dashboard
+        </button>
+      </a>
+    </div>
+  </header>
+
+  <main class="editor-main">
+    <div class="editor-container">
+      <div class="editor-layout">
+        <div class="editor-sidebar">
+          <div class="sidebar-section">
+            <h3>
+              <span class="material-symbols-outlined">settings</span>
+              Tree Settings
+            </h3>
+            <div class="form-group">
+              <label class="form-label">Tree Name</label>
+              <input type="text" id="editTreeName" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea id="editTreeDescription" class="form-input" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Privacy</label>
+              <select id="editTreePrivacy" class="form-input">
+                <option value="private">🔒 Private</option>
+                <option value="public">🌍 Public</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3>
+              <span class="material-symbols-outlined">bolt</span>
+              Quick Actions
+            </h3>
+            <button class="action-btn" id="addPersonBtn">
+              <span class="material-symbols-outlined">person_add</span>
+              Add Family Member
+            </button>
+            <button class="action-btn" id="importJsonBtn">
+              <span class="material-symbols-outlined">upload_file</span>
+              Import JSON
+            </button>
+            <button class="action-btn" id="exportJsonBtn">
+              <span class="material-symbols-outlined">download</span>
+              Export JSON
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <h3>
+              <span class="material-symbols-outlined">help</span>
+              Instructions
+            </h3>
+            <ul class="instructions-list">
+              <li>Click on any person to edit their details</li>
+              <li>Use the JSON editor below for advanced editing</li>
+              <li>Changes are saved to the cloud</li>
+              <li>Preview your tree before publishing</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="editor-content">
+          <div class="editor-tabs">
+            <button class="editor-tab active" data-tab="visual">
+              <span class="material-symbols-outlined">account_tree</span>
+              Visual Editor
+            </button>
+            <button class="editor-tab" data-tab="json">
+              <span class="material-symbols-outlined">code</span>
+              JSON Editor
+            </button>
+          </div>
+
+          <div class="tab-content active" id="visualTab">
+            <div class="visual-editor">
+              <p class="editor-note">
+                <span class="material-symbols-outlined">info</span>
+                Use the JSON editor for now to modify your family tree data. Visual drag-and-drop editor coming soon!
+              </p>
+              <div class="tree-preview" id="treePreview">
+                <div class="preview-message">
+                  Switch to JSON Editor tab to edit your family tree data.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" id="jsonTab">
+            <div class="json-editor-wrapper">
+              <div class="json-toolbar">
+                <button id="formatJsonBtn" class="tool-btn">
+                  <span class="material-symbols-outlined">format_align_left</span>
+                  Format
+                </button>
+                <button id="validateJsonBtn" class="tool-btn">
+                  <span class="material-symbols-outlined">check_circle</span>
+                  Validate
+                </button>
+                <span class="json-status" id="jsonStatus"></span>
+              </div>
+              <textarea id="jsonEditor" class="json-editor" spellcheck="false"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Import JSON Modal -->
+  <div id="importModal" class="modal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Import JSON</h3>
+          <button class="modal-close" id="closeImportModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Upload a JSON file or paste your family tree data:</p>
+          <input type="file" id="fileInput" accept=".json" class="file-input" />
+          <div class="divider-text">or</div>
+          <textarea id="pasteJson" class="form-input" rows="10" placeholder='{"Grandparent": "...", ...}'></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelImportBtn">Cancel</button>
+          <button type="button" class="btn-primary" id="confirmImportBtn">Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="editor.js"></script>
+  <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="paulsuatean" data-description="Support me on Buy me a coffee!" data-message="Buy me a coffee?" data-color="#FFDD00" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+</body>
+</html>
