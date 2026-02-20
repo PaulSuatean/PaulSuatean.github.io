@@ -1,181 +1,801 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Arbore Genealogic: Familia Suătean</title>
-    <meta name="description" content="Interactive, zoomable family tree" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Arbore Genealogic: Familia Suătean" />
-    <meta property="og:description" content="Interactive, zoomable family tree" />
-    <meta property="og:url" content="https://paulsuatean.github.io/" />
-    <meta property="og:image" content="https://paulsuatean.github.io/images/other/house.webp" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Arbore Genealogic: Familia Suătean" />
-    <meta name="twitter:description" content="Interactive, zoomable family tree" />
-    <meta name="twitter:image" content="https://paulsuatean.github.io/images/other/house.webp" />
-    <meta name="twitter:image:alt" content="Family tree preview" />
-    <link rel="icon" type="image/webp" href="images/other/favicon.webp" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="brand-group">
-        <div class="brand">Arbore Genealogic: Familia Suătean</div>
-      </div>
-      <div class="controls">
-        <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
-          <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
-        </button>
-        <button id="searchBtn" title="Cauta persoane" aria-label="Cauta persoane">
-          <span class="material-symbols-outlined" aria-hidden="true">search</span>
-        </button>
-        <button id="dnaBtn" title="Toggle lineage lines" aria-label="Toggle lineage lines">Show Lines</button>
-        <button id="zoomInBtn" title="Zoom in" aria-label="Zoom in">+</button>
-        <button id="zoomOutBtn" title="Zoom out" aria-label="Zoom out">-</button>
-        <button id="resetBtn" title="Reset position" aria-label="Reset tree view">Reset</button>
-        <button id="focusBtn" title="Enter focus mode" aria-pressed="false" aria-label="Enter focus mode">Focus</button>
-        <button id="helpBtn" title="Ajutor" aria-label="Ajutor și scurtături">
-          <span class="material-symbols-outlined" aria-hidden="true">help</span>
-        </button>
-      </div>
-    </header>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ancestrio - Family Tree</title>
+  <meta name="description" content="Create and explore your family tree with Ancestrio" />
+  <link rel="icon" type="image/webp" href="images/other/favicon.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <div id="upcomingBanner" class="upcoming-banner" hidden aria-live="polite"></div>
+    :root {
+      --page-gradient: linear-gradient(160deg, #ffffff 0%, #f1f3f5 55%, #ffffff 100%);
+      --left-gradient: linear-gradient(160deg, #ffffff 0%, #ffffff 55%, #ffffff 100%);
+      --right-gradient: linear-gradient(160deg, #f1f3f5 0%, #f1f3f5 55%, #f1f3f5 100%);
+      --contact-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+      --card-bg-left: rgba(241, 243, 245, 0.95);
+      --card-bg-right: rgba(255, 255, 255, 0.95);
+      --card-bg-bottom: rgba(59, 130, 246, 0.12);
+      --card-border-left: #d9dde2;
+      --card-border-right: #d9dde2;
+      --text-left: #1f2937;
+      --text-right: #1f2937;
+      --text-right-muted: #5b6472;
+      --right-btn-bg: #3b82f6;
+      --right-btn-text: #ffffff;
+      --right-btn-border: transparent;
+      /* Hover animation variables */
+      --hover-width: 54%;
+      --other-width: 46%;
+      --hover-speed: 600ms;
+    }
 
-    <div class="view-toggle" role="group" aria-label="Schimba vizualizarea">
-      <button class="view-toggle-btn is-active" type="button" data-view="tree" aria-pressed="true">
-        <span class="material-symbols-outlined tree-icon" aria-hidden="true">account_tree</span>
-        <span class="view-label">Arbore</span>
-      </button>
-      <button class="view-toggle-btn" type="button" data-view="globe" aria-pressed="false">
-        <span class="material-symbols-outlined" aria-hidden="true">public</span>
-        <span class="view-label">Glob</span>
-      </button>
-    </div>
+    body.theme-dark {
+      --page-gradient: linear-gradient(160deg, #0b1d33 0%, #132a46 55%, #0b1d33 100%);
+      --left-gradient: linear-gradient(160deg, #0b1d33 0%, #0b1d33 55%, #0b1d33 100%);
+      --right-gradient: linear-gradient(160deg, #132a46 0%, #132a46 55%, #132a46 100%);
+      --contact-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+      --card-bg-left: rgba(19, 42, 70, 0.92);
+      --card-bg-right: rgba(11, 29, 51, 0.92);
+      --card-bg-bottom: rgba(59, 130, 246, 0.16);
+      --card-border-left: rgba(230, 238, 249, 0.18);
+      --card-border-right: rgba(230, 238, 249, 0.18);
+      --text-left: #e6eef9;
+      --text-right: #e6eef9;
+      --text-right-muted: #b7c3d6;
+      --right-btn-bg: #3b82f6;
+      --right-btn-text: #ffffff;
+      --right-btn-border: transparent;
+    }
 
-    <!-- Search Bar -->
-    <div id="searchBar" class="search-bar">
-      <input type="text" id="searchInput" placeholder="Cauta o persoana..." aria-label="Cauta o persoana" />
-      <button id="searchClearBtn" aria-label="Inchide cautare">✕</button>
-      <div id="searchResults" class="search-results"></div>
-    </div>
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: var(--page-gradient);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      position: relative;
+      transition: background 400ms ease, color 300ms ease;
+    }
 
-    <main class="page">
-      <div class="canvas-wrap">
-        <!-- The SVG holds the zoom/pan surface -->
-        <svg id="tree" tabindex="0" aria-label="Family tree canvas" role="img"></svg>
-      </div>
-    </main>
+    .triangle-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: var(--page-gradient);
+    }
 
-    <section id="globeView" class="globe-view" aria-hidden="true">
-      <div class="globe-panel">
-        <div class="globe-stage">
-          <svg id="globeSvg" role="img" aria-label="Globe view"></svg>
-          <div id="globeTooltip" class="globe-tooltip" hidden></div>
-        </div>
-        <div class="globe-legend" aria-hidden="true">
-          <span class="legend-item"><span class="legend-dot legend-home"></span>Tara de origine</span>
-          <span class="legend-item"><span class="legend-dot legend-moved"></span>Mutat permanent</span>
-          <span class="legend-item"><span class="legend-dot legend-visited"></span>Vizitat</span>
-        </div>
-      </div>
-    </section>
+    .triangle {
+      position: absolute;
+      cursor: pointer;
+      transition: width var(--hover-speed) ease-in-out, left var(--hover-speed) ease-in-out, clip-path var(--hover-speed) ease-in-out;
+      text-decoration: none;
+      overflow: hidden;
+    }
 
-    <button id="calendarToggle" class="calendar-toggle" aria-expanded="false" aria-controls="birthdaySection">
-      <span class="calendar-label">Calendar</span>
-      <span class="material-symbols-outlined calendar-icon" aria-hidden="true">close</span>
+    /* Left Triangle - DEMO */
+    .triangle-left {
+      left: 0;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 75%, 0 100%);
+      background: var(--left-gradient);
+      z-index: 1;
+    }
+
+    /* Right Triangle - CREATE */
+    .triangle-right {
+      left: 50%;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 75%);
+      background: var(--right-gradient);
+      z-index: 1;
+    }
+
+    /* Hover expansion - Left triangle hovered */
+    .triangle-container.hover-left .triangle-left {
+      width: var(--hover-width);
+      clip-path: polygon(0 0, 100% 0, 100% 77%, 0 100%);
+    }
+    .triangle-container.hover-left .triangle-right {
+      width: var(--other-width);
+      left: var(--hover-width);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 77%);
+    }
+    .triangle-container.hover-left .triangle-bottom {
+      top: 77%;
+      height: 23%;
+      clip-path: polygon(0 100%, 54% 0%, 100% 100%);
+    }
+
+    /* Hover expansion - Right triangle hovered */
+    .triangle-container.hover-right .triangle-right {
+      width: var(--hover-width);
+      left: var(--other-width);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 77%);
+    }
+    .triangle-container.hover-right .triangle-left {
+      width: var(--other-width);
+      clip-path: polygon(0 0, 100% 0, 100% 77%, 0 100%);
+    }
+    .triangle-container.hover-right .triangle-bottom {
+      top: 77%;
+      height: 23%;
+      clip-path: polygon(0 100%, 46% 0%, 100% 100%);
+    }
+
+    /* Hover expansion - Bottom triangle hovered */
+    .triangle-container.hover-bottom .triangle-bottom {
+      top: 71%;
+      height: 29%;
+    }
+    .triangle-container.hover-bottom .triangle-left {
+      clip-path: polygon(0 0, 100% 0, 100% 71%, 0 100%);
+    }
+    .triangle-container.hover-bottom .triangle-right {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 71%);
+    }
+
+    /* Adjust top triangles for very wide screens */
+    @media (min-aspect-ratio: 16/9) {
+      .triangle-left {
+        clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+      }
+      .triangle-right {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 70%);
+      }
+    }
+
+    @media (min-aspect-ratio: 21/9) {
+      .triangle-left {
+        clip-path: polygon(0 0, 100% 0, 100% 65%, 0 100%);
+      }
+      .triangle-right {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 65%);
+      }
+    }
+
+    /* Bottom Triangle - CONTACT */
+    .triangle-bottom {
+      left: 0;
+      top: 75%;
+      width: 100%;
+      height: 25%;
+      clip-path: polygon(0 100%, 50% 0%, 100% 100%);
+      background: var(--contact-gradient);
+      z-index: 2;
+      transition: top var(--hover-speed) ease-in-out, height var(--hover-speed) ease-in-out, clip-path var(--hover-speed) ease-in-out, filter 150ms ease, box-shadow 150ms ease;
+      cursor: pointer;
+    }
+
+    .triangle-bottom:hover {
+      filter: brightness(1.08) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+    }
+
+    .triangle-bottom:active {
+      filter: brightness(1.05) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Adjust for very wide screens */
+    @media (min-aspect-ratio: 16/9) {
+      .triangle-bottom {
+        top: 70%;
+        height: 30%;
+      }
+      .triangle-container.hover-bottom .triangle-bottom {
+        top: 66%;
+        height: 34%;
+      }
+      .triangle-container.hover-bottom .triangle-left {
+        clip-path: polygon(0 0, 100% 0, 100% 66%, 0 100%);
+      }
+      .triangle-container.hover-bottom .triangle-right {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 66%);
+      }
+    }
+
+    @media (min-aspect-ratio: 21/9) {
+      .triangle-bottom {
+        top: 65%;
+        height: 35%;
+      }
+      .triangle-container.hover-bottom .triangle-bottom {
+        top: 61%;
+        height: 39%;
+      }
+      .triangle-container.hover-bottom .triangle-left {
+        clip-path: polygon(0 0, 100% 0, 100% 61%, 0 100%);
+      }
+      .triangle-container.hover-bottom .triangle-right {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 61%);
+      }
+    }
+
+    /* Hover effects */
+    .triangle:hover {
+      z-index: 3;
+    }
+
+    /* When any triangle is hovered, prepare for card animations */
+    .triangle-container:has(.triangle:hover) .triangle:not(:hover) .triangle-card {
+      transform: scale(0.85);
+      opacity: 0.75;
+    }
+
+    /* Content Styling */
+    .triangle-content {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: white;
+      text-align: center;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .triangle-left .triangle-content {
+      padding-right: 0%;
+      padding-left: 30%;
+      padding-bottom: 0%;
+      padding-top: 15%;
+      transition: padding var(--hover-speed) ease-in-out;
+    }
+
+    .triangle-right .triangle-content {
+      padding-right: 30%;
+      padding-left: 0%;
+      padding-bottom: 0%;
+      padding-top: 15%;
+      transition: padding var(--hover-speed) ease-in-out;
+    }
+
+    /* Keep cards from moving during hover expansion */
+    .triangle-container.hover-left .triangle-left .triangle-content {
+      padding-left: 26%;
+    }
+    .triangle-container.hover-left .triangle-right .triangle-content {
+      padding-right: 34%;
+    }
+    .triangle-container.hover-right .triangle-right .triangle-content {
+      padding-right: 26%;
+    }
+    .triangle-container.hover-right .triangle-left .triangle-content {
+      padding-left: 34%;
+    }
+
+    .triangle-bottom .triangle-content {
+      padding-top: 8%;
+      padding-bottom: 2%;
+    }
+
+    /* Enhanced hover effect for hovered triangle's card */
+    .triangle:hover .triangle-card {
+      transform: scale(1.06);
+      opacity: 1;
+    }
+
+    .triangle-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border-left);
+      background: var(--card-bg-left);
+      backdrop-filter: blur(6px);
+      max-width: min(280px, 75vw);
+      pointer-events: auto;
+      color: var(--text-left);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    }
+
+    .triangle-right .triangle-card {
+      background: var(--card-bg-right);
+      border-color: var(--card-border-right);
+      color: var(--text-right);
+    }
+
+    .triangle-bottom .triangle-card {
+      background: var(--card-bg-bottom);
+      padding: 12px 16px;
+      gap: 12px;
+      max-width: min(340px, 85vw);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .triangle-bottom .contact-icon-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .triangle-bottom .contact-text-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      text-align: left;
+    }
+
+    .triangle-bottom .triangle-icon {
+      font-size: 42px;
+    }
+
+    .triangle-bottom .triangle-label {
+      font-size: clamp(20px, 2.8vw, 28px);
+      letter-spacing: 2px;
+    }
+
+    .triangle-bottom .triangle-desc {
+      font-size: clamp(12px, 1.4vw, 14px);
+      max-width: 100%;
+    }
+
+    /* Keep contact text white in both themes */
+    .triangle-bottom .triangle-label,
+    .triangle-bottom .triangle-desc,
+    body.theme-dark .triangle-bottom .triangle-label,
+    body.theme-dark .triangle-bottom .triangle-desc {
+      color: #ffffff;
+    }
+
+    .triangle-icon {
+      font-size: 56px;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    }
+
+    .triangle-label {
+      font-size: clamp(26px, 3.5vw, 42px);
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .triangle-desc {
+      font-size: clamp(13px, 1.6vw, 16px);
+      font-family: 'Inter', sans-serif;
+      opacity: 0.95;
+      max-width: 260px;
+      line-height: 1.6;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .triangle-right .triangle-desc {
+      text-shadow: none;
+      color: var(--text-right-muted);
+    }
+
+    .triangle-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--right-btn-border);
+      background: var(--right-btn-bg);
+      color: var(--right-btn-text);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      cursor: pointer;
+      transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+    }
+
+    .triangle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.25);
+      background: #2563eb;
+    }
+
+    .triangle-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 12px rgba(59, 130, 246, 0.15);
+    }
+
+
+    .landing-controls {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      right: 24px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .landing-controls a {
+      appearance: none;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #ffffff;
+      color: #1f2937;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      transition: all 200ms ease;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .landing-controls a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--contact-gradient);
+      opacity: 0;
+      transition: opacity 200ms ease;
+      z-index: -1;
+    }
+
+    .landing-controls a:hover::before {
+      opacity: 0.08;
+    }
+
+    .landing-controls a:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+      border-color: #3b82f6;
+    }
+
+    body.theme-dark .landing-controls a {
+      background: rgba(11, 29, 51, 0.92);
+      border-color: rgba(230, 238, 249, 0.18);
+      color: #ffffff;
+    }
+
+    .landing-controls a svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .landing-controls button {
+      appearance: none;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #ffffff;
+      color: #1f2937;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      transition: all 200ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .landing-controls button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--contact-gradient);
+      opacity: 0;
+      transition: opacity 200ms ease;
+      z-index: -1;
+    }
+
+    .landing-controls button:hover::before {
+      opacity: 0.08;
+    }
+
+    .landing-controls button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+      border-color: #3b82f6;
+    }
+
+    body.theme-dark .landing-controls button {
+      background: rgba(11, 29, 51, 0.92);
+      border-color: rgba(230, 238, 249, 0.18);
+      color: #ffffff;
+    }
+
+    .landing-controls #themeBtn.sun-icon {
+      color: #f59e0b;
+    }
+
+    .landing-controls #themeBtn.moon-icon {
+      color: #60a5fa;
+    }
+
+    body.theme-dark .landing-controls #themeBtn.sun-icon,
+    body.theme-dark .landing-controls #themeBtn.moon-icon {
+      filter: saturate(1.05);
+    }
+
+    .landing-controls .material-symbols-outlined {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    /* Ancestrio Title */
+    .ancestrio-brand {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(0px, 0.2vw, 2px);
+      transition: transform var(--hover-speed) ease-in-out, left var(--hover-speed) ease-in-out, top var(--hover-speed) ease-in-out, opacity var(--hover-speed) ease-in-out;
+    }
+
+    .ancestrio-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(48px, 8vw, 120px);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #1f2937;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      opacity: 1;
+    }
+
+    .ancestrio-subtitle {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(12px, 1.8vw, 18px);
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: #1f2937;
+      opacity: 0.85;
+    }
+
+    body.theme-dark .ancestrio-title {
+      color: #e6eef9;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    body.theme-dark .ancestrio-subtitle {
+      color: #e6eef9;
+    }
+
+    /* Title shifts based on hover */
+    .triangle-container.hover-left .ancestrio-brand {
+      left: 46%;
+      opacity: 0.5;
+    }
+
+    .triangle-container.hover-right .ancestrio-brand {
+      left: 54%;
+      opacity: 0.5;
+    }
+
+    .triangle-container.hover-bottom .ancestrio-brand {
+      top: 12%;
+      opacity: 0.5;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .ancestrio-title {
+        font-size: clamp(32px, 10vw, 64px);
+      }
+
+      .ancestrio-subtitle {
+        font-size: clamp(10px, 2.6vw, 14px);
+      }
+
+      .triangle-left .triangle-content,
+      .triangle-right .triangle-content {
+        padding-right: 8%;
+        padding-left: 8%;
+        padding-bottom: 18%;
+      }
+
+      .triangle-bottom .triangle-content {
+        padding-top: 8%;
+      }
+
+      .triangle-card {
+        padding: 16px 18px;
+        max-width: min(280px, 86vw);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .triangle-card {
+        padding: 14px 16px;
+      }
+
+      .triangle-bottom .triangle-card {
+        padding: 10px 14px;
+        max-width: min(300px, 88vw);
+        gap: 10px;
+      }
+
+      .triangle-bottom .triangle-icon {
+        font-size: 38px;
+      }
+
+      .triangle-bottom .triangle-label {
+        font-size: clamp(18px, 2.5vw, 24px);
+      }
+
+      .triangle-bottom .triangle-desc {
+        font-size: clamp(11px, 1.3vw, 13px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-controls">
+    <a href="https://www.google.com" aria-label="Google" title="Google">
+      <svg viewBox="-0.5 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g fill="none" fill-rule="evenodd">
+          <path d="M9.827 24c0-1.524.254-2.986.705-4.356L2.623 13.604A23.717 23.717 0 00.214 24c0 3.737.867 7.261 2.406 10.388l7.905-6.051A13.71 13.71 0 019.827 24" fill="#FBBC05"/>
+          <path d="M23.714 10.133c3.311 0 6.302 1.174 8.652 3.094l6.836-6.827C35.036 2.773 29.695.533 23.714.533 14.427.533 6.445 5.844 2.623 13.604l7.91 6.04c1.822-5.532 7.016-9.511 13.18-9.511" fill="#EB4335"/>
+          <path d="M23.714 37.867c-6.165 0-11.36-3.979-13.182-9.51l-7.909 6.038c3.822 7.76 11.804 13.072 21.091 13.072 5.732 0 11.204-2.036 15.311-5.849l-7.507-5.804c-2.118 1.335-4.786 2.053-7.804 2.053" fill="#34A853"/>
+          <path d="M46.145 24c0-1.387-.213-2.88-.534-4.267H23.714V28.8h12.604c-.63 3.091-2.346 5.468-4.8 7.014l7.507 5.804c4.314-3.994 7.12-9.969 7.12-17.618" fill="#4285F4"/>
+        </g>
+      </svg>
+    </a>
+    <button id="themeBtn" type="button" aria-pressed="false" aria-label="Switch theme" title="Switch theme">
+      <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
     </button>
-
-    <section id="birthdaySection" class="birthday-bar" aria-label="Family birthdays by month">
-      <div class="calendar-side-nav" aria-hidden="true">
-        <button id="calendarSidePrev" class="month-nav-btn" type="button" aria-label="Luna anterioara">&lt;</button>
-        <button id="calendarSideNext" class="month-nav-btn" type="button" aria-label="Luna urmatoare">&gt;</button>
-      </div>
-      <div id="birthdayMonths" class="birthday-months" aria-live="polite"></div>
-    </section>
-
-    <div id="birthdayTooltip" class="birthday-tooltip" role="status" aria-live="polite" hidden></div>
-
-    <!-- Photo Modal -->
-    <div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
-      <div class="modal-dialog">
-        <button id="modalClose" class="modal-close" aria-label="Close">&times;</button>
-        <img id="modalImg" class="modal-img" alt="Selected person photo" />
-        <div class="modal-meta">
-          <div id="modalTitle" class="modal-name"></div>
-          <div id="modalDob" class="modal-dob"></div>
-          <div id="modalExtendedInfo"></div>
-        </div>
-      </div>
+  </div>
+  <div class="triangle-container">
+    <!-- Ancestrio Title -->
+    <div class="ancestrio-brand">
+      <div class="ancestrio-title">Ancestrio</div>
+      <div class="ancestrio-subtitle">Tree, Calendar &amp; Globe</div>
     </div>
 
-    <!-- Help Modal -->
-    <div id="helpModal" class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" aria-hidden="true">
-      <div class="help-modal-dialog">
-        <button id="helpClose" class="modal-close" aria-label="Close">&times;</button>
-        <h2 id="helpTitle">Ajutor &amp; Scurtături</h2>
-
-        <h3>Statistici</h3>
-        <p class="stats-note">Din perspectiva lui Ioan și Ana Suătean.</p>
-        <div class="shortcut-grid stats-grid">
-          <span class="shortcut-key">Copii = <span id="statsKids">10</span></span>
-          <span class="shortcut-key">Nepoți = <span id="statsGrandkids">15</span></span>
-          <span class="shortcut-key">Strănepoți = <span id="statsGreatGrandkids">12</span></span>
+    <!-- Left Triangle - DEMO -->
+    <a href="pages/demo-tree.html" class="triangle triangle-left">
+      <div class="triangle-content">
+        <div class="triangle-card">
+          <div class="triangle-icon">🌳</div>
+          <div class="triangle-label">Demo</div>
+          <div class="triangle-desc">Explore a sample family tree</div>
         </div>
-
-        <h3>Navigare</h3>
-        <div class="shortcut-grid">
-          <span class="shortcut-key">Rotița mouse</span>
-          <span class="shortcut-desc">Zoom in/out</span>
-          <span class="shortcut-key">Click + Drag</span>
-          <span class="shortcut-desc">Mută vedere</span>
-          <span class="shortcut-key">+</span>
-          <span class="shortcut-desc">Zoom in</span>
-          <span class="shortcut-key">-</span>
-          <span class="shortcut-desc">Zoom out</span>
-          <span class="shortcut-key">R</span>
-          <span class="shortcut-desc">Resetează vedere</span>
-        </div>
-
-        <h3>Acțiuni</h3>
-        <div class="shortcut-grid">
-          <span class="shortcut-key">Esc</span>
-          <span class="shortcut-desc">Ieși din focus / Închide</span>
-          <span class="shortcut-key">F</span>
-          <span class="shortcut-desc">Mod focus</span>
-          <span class="shortcut-key">L</span>
-          <span class="shortcut-desc">Linii genealogie</span>
-          <span class="shortcut-key">T</span>
-          <span class="shortcut-desc">Schimbă tema (luminos/întunecat)</span>
-          <span class="shortcut-key">S sau /</span>
-          <span class="shortcut-desc">Deschide căutare</span>
-          <span class="shortcut-key">C</span>
-          <span class="shortcut-desc">Calendar</span>
-          <span class="shortcut-key">?</span>
-          <span class="shortcut-desc">Arată acest ajutor</span>
-        </div>
-
-        <h3>Funcții</h3>
-        <p><strong>Click pe o persoană</strong> pentru a vedea detalii și relații.</p>
-        <p><strong>Caută</strong> orice membru al familiei după nume.</p>
-        <p><strong>Calendar</strong> arată toate zilele de naștere organizate pe luni.</p>
       </div>
-    </div>
+    </a>
 
-    <noscript>
-      This page requires JavaScript to render the family tree.
-    </noscript>
+    <!-- Right Triangle - CREATE -->
+    <a href="pages/auth.html" class="triangle triangle-right">
+      <div class="triangle-content">
+        <div class="triangle-card">
+          <div class="triangle-icon">✨</div>
+          <div class="triangle-label">Create</div>
+          <div class="triangle-desc">Build your own family tree</div>
+        </div>
+      </div>
+    </a>
 
-    <!-- D3 for layout + zoom (loaded at runtime by the browser) -->
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
-    <script src="script.js"></script>
-  </body>
-  </html>
+    <!-- Bottom Triangle - CONTACT -->
+    <a href="pages/contact.html" class="triangle triangle-bottom">
+      <div class="triangle-content">
+        <div class="triangle-card">
+          <div class="contact-icon-section">
+            <div class="triangle-icon">📧</div>
+          </div>
+          <div class="contact-text-section">
+            <div class="triangle-label">Contact</div>
+            <div class="triangle-desc">Get in touch with us</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <script>
+    (function () {
+      const themeBtn = document.getElementById('themeBtn');
+      const themeKey = 'tree-theme';
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem(themeKey);
+      const shouldUseDark = savedTheme ? savedTheme === 'dark' : prefersDark || isNightTime();
 
+      function isNightTime() {
+        const hour = new Date().getHours();
+        return hour >= 20 || hour < 7;
+      }
+
+      function updateThemeIcon() {
+        if (!themeBtn) return;
+        const isDark = document.body.classList.contains('theme-dark');
+        const icon = themeBtn.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        }
+        themeBtn.classList.toggle('sun-icon', isDark);
+        themeBtn.classList.toggle('moon-icon', !isDark);
+        const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+        themeBtn.setAttribute('aria-label', label);
+        themeBtn.setAttribute('title', label);
+        themeBtn.setAttribute('aria-pressed', String(isDark));
+      }
+
+      function setTheme(isDark) {
+        document.body.classList.toggle('theme-dark', isDark);
+        localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
+        updateThemeIcon();
+      }
+
+      setTheme(shouldUseDark);
+
+      themeBtn?.addEventListener('click', function () {
+        const isDark = !document.body.classList.contains('theme-dark');
+        setTheme(isDark);
+      });
+
+      // Triangle hover animation
+      const container = document.querySelector('.triangle-container');
+      const leftTriangle = document.querySelector('.triangle-left');
+      const rightTriangle = document.querySelector('.triangle-right');
+      const bottomTriangle = document.querySelector('.triangle-bottom');
+
+      function clearHoverClasses() {
+        container?.classList.remove('hover-left', 'hover-right', 'hover-bottom');
+      }
+
+      leftTriangle?.addEventListener('mouseenter', () => {
+        clearHoverClasses();
+        container?.classList.add('hover-left');
+      });
+      leftTriangle?.addEventListener('mouseleave', () => {
+        container?.classList.remove('hover-left');
+      });
+
+      rightTriangle?.addEventListener('mouseenter', () => {
+        clearHoverClasses();
+        container?.classList.add('hover-right');
+      });
+      rightTriangle?.addEventListener('mouseleave', () => {
+        container?.classList.remove('hover-right');
+      });
+
+      bottomTriangle?.addEventListener('mouseenter', () => {
+        clearHoverClasses();
+        container?.classList.add('hover-bottom');
+      });
+      bottomTriangle?.addEventListener('mouseleave', () => {
+        container?.classList.remove('hover-bottom');
+      });
+    })();
+  </script>
+</body>
+</html>

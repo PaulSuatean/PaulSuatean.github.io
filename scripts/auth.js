@@ -5,17 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Theme toggle
   const themeBtn = document.getElementById('themeBtn');
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  if (savedTheme === 'dark') {
-    document.body.classList.add('theme-dark');
-    themeBtn.querySelector('.material-symbols-outlined').textContent = 'dark_mode';
-  }
-  
+  const themeKey = 'tree-theme';
+  const savedTheme = localStorage.getItem(themeKey);
+  const initialTheme = resolveInitialTheme(savedTheme);
+  document.body.classList.toggle('theme-dark', initialTheme === 'dark');
+  updateThemeIcon();
+
   themeBtn?.addEventListener('click', () => {
     document.body.classList.toggle('theme-dark');
     const isDark = document.body.classList.contains('theme-dark');
-    themeBtn.querySelector('.material-symbols-outlined').textContent = isDark ? 'dark_mode' : 'light_mode';
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
+    updateThemeIcon();
   });
   
   // Get DOM elements first
@@ -181,3 +181,35 @@ document.addEventListener('DOMContentLoaded', () => {
   
   console.log('All event listeners attached successfully');
 });
+
+function updateThemeIcon() {
+  const themeBtn = document.getElementById('themeBtn');
+  if (!themeBtn) return;
+  const isDark = document.body.classList.contains('theme-dark');
+  const icon = themeBtn.querySelector('.material-symbols-outlined');
+  const iconName = isDark ? 'light_mode' : 'dark_mode';
+  if (icon) {
+    icon.textContent = iconName;
+  } else {
+    themeBtn.textContent = iconName;
+  }
+  themeBtn.classList.toggle('sun-icon', isDark);
+  themeBtn.classList.toggle('moon-icon', !isDark);
+  const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+  themeBtn.setAttribute('aria-label', label);
+  themeBtn.setAttribute('title', label);
+  themeBtn.setAttribute('aria-pressed', String(isDark));
+}
+
+function resolveInitialTheme(saved) {
+  if (saved === 'dark' || saved === 'light') return saved;
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return isNightTime() ? 'dark' : 'light';
+}
+
+function isNightTime() {
+  const hour = new Date().getHours();
+  return hour >= 20 || hour < 7;
+}

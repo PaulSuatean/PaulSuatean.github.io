@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../styles/main.css" />
   </head>
   <body>
     <header class="topbar">
@@ -18,9 +18,14 @@
         <div class="brand" id="treeName">Loading...</div>
       </div>
       <div class="controls">
-        <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
-          <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
-        </button>
+        <div class="upcoming-birthday-button" id="upcomingContainer" style="display: none;">
+          <button id="upcomingBtn" class="upcoming-birthday-display" title="Upcoming birthday">
+            <span id="upcomingPrev" class="upcoming-nav-arrow" aria-label="Previous birthday">&lt;</span>
+            <span class="material-symbols-outlined" aria-hidden="true">cake</span>
+            <span id="upcomingName"></span>
+            <span id="upcomingNext" class="upcoming-nav-arrow" aria-label="Next birthday">&gt;</span>
+          </button>
+        </div>
         <button id="searchBtn" title="Search people" aria-label="Search people">
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
         </button>
@@ -35,20 +40,29 @@
         <button id="backBtn" title="Back" aria-label="Back to dashboard" style="margin-left: 8px;">
           <span class="material-symbols-outlined" aria-hidden="true">home</span>
         </button>
+        <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
+          <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+        </button>
       </div>
     </header>
 
-    <div id="upcomingBanner" class="upcoming-banner" hidden aria-live="polite"></div>
-
-    <div class="view-toggle" role="group" aria-label="Switch view">
-      <button class="view-toggle-btn is-active" type="button" data-view="tree" aria-pressed="true">
+    <div class="tw-toggle" role="group" aria-label="Switch view">
+      <input type="radio" name="view-toggle" id="view-tree" value="tree" checked>
+      <label for="view-tree" class="toggle toggle-yes">
         <span class="material-symbols-outlined tree-icon" aria-hidden="true">account_tree</span>
         <span class="view-label">Tree</span>
-      </button>
-      <button class="view-toggle-btn" type="button" data-view="globe" aria-pressed="false">
-        <span class="material-symbols-outlined" aria-hidden="true">public</span>
+      </label>
+      <input type="radio" name="view-toggle" id="view-calendar" value="calendar">
+      <label for="view-calendar" class="toggle toggle-yes">
+        <span class="material-symbols-outlined calendar-icon" aria-hidden="true">calendar_month</span>
+        <span class="view-label">Calendar</span>
+      </label>
+      <input type="radio" name="view-toggle" id="view-globe" value="globe">
+      <label for="view-globe" class="toggle toggle-yes">
+        <span class="material-symbols-outlined globe-icon" aria-hidden="true">public</span>
         <span class="view-label">Globe</span>
-      </button>
+      </label>
+      <span></span>
     </div>
 
     <!-- Search Bar -->
@@ -166,7 +180,7 @@
     <!-- D3 for layout + zoom -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
-    <script src="firebase-config.js"></script>
+    <script src="../scripts/firebase-config.js"></script>
     
     <!-- Load tree viewer before main script -->
     <script>
@@ -183,9 +197,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const treeId = urlParams.get('id');
         
+        // If no tree ID, use default name and let main.js load from rfamily.json
         if (!treeId) {
-          document.getElementById('treeName').textContent = 'No tree specified';
-          alert('No tree ID provided in URL');
+          document.getElementById('treeName').textContent = 'Family Tree';
+          console.log('No tree ID provided, will load local data');
           return;
         }
         
@@ -194,7 +209,7 @@
           
           if (!doc.exists) {
             document.getElementById('treeName').textContent = 'Tree not found';
-            alert('Tree not found');
+            console.warn('Tree not found:', treeId);
             return;
           }
           
@@ -204,7 +219,7 @@
           const currentUser = firebase.auth().currentUser;
           if (tree.privacy === 'private' && (!currentUser || currentUser.uid !== tree.userId)) {
             document.getElementById('treeName').textContent = 'Private tree';
-            alert('This tree is private');
+            console.warn('Tree is private');
             return;
           }
           
@@ -216,7 +231,7 @@
         } catch (error) {
           console.error('Error loading tree:', error);
           document.getElementById('treeName').textContent = 'Error loading tree';
-          alert('Error loading tree: ' + error.message);
+          // Still allow fallback to local data
         }
       })();
       
@@ -233,7 +248,6 @@
       });
     </script>
     
-    <script src="script.js"></script>
-    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="paulsuatean" data-description="Support me on Buy me a coffee!" data-message="Buy me a coffee?" data-color="#FFDD00" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+    <script src="../scripts/main.js"></script>
   </body>
 </html>

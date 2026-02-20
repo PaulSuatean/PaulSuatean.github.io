@@ -294,14 +294,6 @@ select.form-input {
   filter: drop-shadow(0 8px 24px rgba(59, 130, 246, 0.2));
 }
 
-/* Origin person highlight */
-#visualTree .person.origin-person rect {
-  stroke: var(--accent);
-  stroke-width: 2.5px;
-  stroke-dasharray: none;
-  filter: drop-shadow(0 4px 16px rgba(59, 130, 246, 0.25));
-}
-
 #visualTree .person .name {
   font-size: 14px;
   font-weight: 700;

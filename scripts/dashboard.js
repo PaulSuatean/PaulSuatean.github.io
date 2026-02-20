@@ -7,17 +7,17 @@ let treeToDelete = null;
 document.addEventListener('DOMContentLoaded', async () => {
   // Theme toggle
   const themeBtn = document.getElementById('themeBtn');
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  if (savedTheme === 'dark') {
-    document.body.classList.add('theme-dark');
-    themeBtn.querySelector('.material-symbols-outlined').textContent = 'dark_mode';
-  }
-  
+  const themeKey = 'tree-theme';
+  const savedTheme = localStorage.getItem(themeKey);
+  const initialTheme = resolveInitialTheme(savedTheme);
+  document.body.classList.toggle('theme-dark', initialTheme === 'dark');
+  updateThemeIcon();
+
   themeBtn?.addEventListener('click', () => {
     document.body.classList.toggle('theme-dark');
     const isDark = document.body.classList.contains('theme-dark');
-    themeBtn.querySelector('.material-symbols-outlined').textContent = isDark ? 'dark_mode' : 'light_mode';
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
+    updateThemeIcon();
   });
   
   // Initialize Firebase
@@ -48,6 +48,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteModal);
   document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
 });
+
+function updateThemeIcon() {
+  const themeBtn = document.getElementById('themeBtn');
+  if (!themeBtn) return;
+  const isDark = document.body.classList.contains('theme-dark');
+  const icon = themeBtn.querySelector('.material-symbols-outlined');
+  const iconName = isDark ? 'light_mode' : 'dark_mode';
+  if (icon) {
+    icon.textContent = iconName;
+  } else {
+    themeBtn.textContent = iconName;
+  }
+  themeBtn.classList.toggle('sun-icon', isDark);
+  themeBtn.classList.toggle('moon-icon', !isDark);
+  const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+  themeBtn.setAttribute('aria-label', label);
+  themeBtn.setAttribute('title', label);
+  themeBtn.setAttribute('aria-pressed', String(isDark));
+}
+
+function resolveInitialTheme(saved) {
+  if (saved === 'dark' || saved === 'light') return saved;
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return isNightTime() ? 'dark' : 'light';
+}
+
+function isNightTime() {
+  const hour = new Date().getHours();
+  return hour >= 20 || hour < 7;
+}
 
 async function loadTrees() {
   const treesGrid = document.getElementById('treesGrid');
@@ -198,16 +230,16 @@ async function createTree(e) {
   submitBtn.textContent = 'Creating...';
 
   try {
+    // Get user's name for the root person
+    const displayName = currentUser && currentUser.displayName ? currentUser.displayName.trim() : '';
+    const email = currentUser && currentUser.email ? currentUser.email.trim() : '';
+    const rootPersonName = displayName || (email && email.includes('@') ? email.split('@')[0] : 'Family Member');
+
     // Create initial tree structure
     const initialData = {
-      Grandparent: "Root Person",
+      Grandparent: rootPersonName,
       image: "",
       birthday: "",
-      spouse: {
-        name: "Spouse",
-        image: "",
-        birthday: ""
-      },
       Parent: []
     };
 

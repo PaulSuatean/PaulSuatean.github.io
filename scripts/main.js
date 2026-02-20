@@ -13,7 +13,23 @@
 */
 
 (function () {
+  // Verify D3 is loaded
+  if (typeof d3 === 'undefined') {
+    console.error('D3 library not loaded!');
+    document.body.innerHTML += '<div style="color:red; padding: 20px; font-size: 18px;">Error: D3 library failed to load. Please check your internet connection.</div>';
+    return;
+  }
+
   const svg = d3.select('#tree');
+  
+  // Verify SVG element exists
+  if (svg.empty()) {
+    console.error('SVG element #tree not found in DOM');
+    document.body.innerHTML += '<div style="color:red; padding: 20px; font-size: 18px;">Error: SVG element not found in page.</div>';
+    return;
+  }
+
+  console.log('Initializing family tree renderer...');
   const g = svg.append('g').attr('class', 'viewport');
   const defs = svg.append('defs');
   const personGradient = defs.append('linearGradient')
@@ -1865,7 +1881,34 @@
   }
 
   // Keep calendar closed unless the calendar view is selected.
-updateActiveMonthDisplay();
+  setCalendarOpen(false);
+
+  function setupCarouselControls() {
+    if (!birthdayMonthsEl) return;
+    applyMobileState = () => {
+      const mobileContext = mobileQuery.matches;
+      mobileShowAll = mobileContext;
+      birthdayMonthsEl.classList.toggle('mobile-show-all', mobileShowAll);
+      birthdayMonthsEl.classList.remove('mobile-carousel');
+      if (calendarSection) calendarSection.classList.toggle('calendar-full', mobileShowAll);
+      // show all months
+      birthdayMonthsEl.querySelectorAll('.month-card').forEach((card) => card.classList.remove('active'));
+      detachSwipe();
+      if (carouselControls) carouselControls.style.display = 'none';
+      if (calendarSideNav) calendarSideNav.style.display = 'none';
+    };
+    mobileQuery.addEventListener('change', () => applyMobileState && applyMobileState());
+    if (applyMobileState) applyMobileState();
+
+    [monthPrevBtn, calendarSidePrev].forEach(btn => btn && btn.addEventListener('click', () => shiftMonth(-1)));
+    [monthNextBtn, calendarSideNext].forEach(btn => btn && btn.addEventListener('click', () => shiftMonth(1)));
+  }
+
+  function shiftMonth(delta) {
+    const cards = Array.from(birthdayMonthsEl ? birthdayMonthsEl.querySelectorAll('.month-card') : []);
+    if (!cards.length) return;
+    mobileMonthIndex = (mobileMonthIndex + delta + cards.length) % cards.length;
+    updateActiveMonthDisplay();
   }
 
   function ensureActiveMonth() {

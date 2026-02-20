@@ -1,22 +1,22 @@
 :root {
   --bg: #ffffff;
   --panel: #ffffff;
-  --panel-2: #f2f6fb;
+  --panel-2: #f1f3f5;
   --font-body: "Inter", "Segoe UI", sans-serif;
   --font-display: "Space Grotesk", "Inter", sans-serif;
   --text: #1f2937;
   --muted: #5b6472;
-  --line: #cbd5e1;
+  --line: #d9dde2;
   --accent: #3b82f6;
   --accent-2: #2563eb;
   --accent-3: #60a5fa;
-  --page-bg: #f8fafb;
-  --page-bg-2: #eef2f7;
-  --page-bg-gradient: linear-gradient(160deg, #f8fafb 0%, #eef2f7 55%, #f8fafb 100%);
+  --page-bg: #ffffff;
+  --page-bg-2: #f1f3f5;
+  --page-bg-gradient: linear-gradient(160deg, #ffffff 0%, #f1f3f5 55%, #ffffff 100%);
   --surface: #ffffff;
-  --surface-2: #f2f6fb;
-  --surface-3: #e8eef7;
-  --border: #d6e0ec;
+  --surface-2: #f1f3f5;
+  --surface-3: #e7ebf0;
+  --border: #d9dde2;
   --ring: rgba(59, 130, 246, 0.25);
   --gradient-primary: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
   --gradient-secondary: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
@@ -24,15 +24,15 @@
   --calendar-panel-max: 36vh;
   --calendar-panel-max-mobile: 55vh;
   --calendar-toggle-clearance: 56px;
-  --calendar-day-bg: #eef3fb;
-  --calendar-day-border: rgba(15, 23, 42, 0.08);
+  --calendar-day-bg: #f1f3f5;
+  --calendar-day-border: rgba(31, 41, 55, 0.08);
   --calendar-day-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
   --calendar-bday-bg: linear-gradient(135deg, #f8f1d8 0%, #efcf85 100%);
   --calendar-bday-border: #c8a24b;
   --calendar-bday-shadow: inset 0 0 0 1.5px rgba(200, 162, 75, 0.9);
-  --calendar-today-bg: #e4efff;
-  --calendar-today-shadow: inset 0 0 0 1.5px rgba(200, 162, 75, 0.95), 0 3px 8px rgba(110, 142, 190, 0.28);
-  --calendar-today-text: #7a5600;
+  --calendar-today-bg: #e7ebf0;
+  --calendar-today-shadow: inset 0 0 0 1.5px rgba(31, 41, 55, 0.12), 0 3px 8px rgba(31, 41, 55, 0.12);
+  --calendar-today-text: #1f2937;
   --feature-banner-height: 0px;
   --view-toggle-top: calc(env(safe-area-inset-top) + 76px + var(--feature-banner-height));
   --month-card-height: 220px;
@@ -89,33 +89,33 @@ body {
 
 /* Dark theme variables - Modern gradient dark */
 body.theme-dark {
-  --bg: #0f1419;
-  --text: #ecf3ff;
-  --muted: #c2d1e7;
-  --line: rgba(165, 190, 225, 0.5);
+  --bg: #0b1d33;
+  --text: #e6eef9;
+  --muted: #b7c3d6;
+  --line: rgba(230, 238, 249, 0.22);
   --accent: #3b82f6;
   --accent-2: #60a5fa;
   --accent-3: #93c5fd;
-  --page-bg: #1a2b45;
-  --page-bg-2: #233c5f;
-  --page-bg-gradient: linear-gradient(160deg, #1a2b45 0%, #244362 55%, #2b4f74 100%);
-  --surface: rgba(34, 54, 82, 0.92);
-  --surface-2: rgba(42, 65, 96, 0.94);
-  --surface-3: rgba(51, 77, 112, 0.92);
-  --border: rgba(155, 185, 225, 0.3);
-  --ring: rgba(120, 170, 235, 0.35);
+  --page-bg: #0b1d33;
+  --page-bg-2: #132a46;
+  --page-bg-gradient: linear-gradient(160deg, #0b1d33 0%, #132a46 55%, #0b1d33 100%);
+  --surface: #0b1d33;
+  --surface-2: #132a46;
+  --surface-3: #183255;
+  --border: rgba(230, 238, 249, 0.18);
+  --ring: rgba(59, 130, 246, 0.35);
   --gradient-primary: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
   --gradient-secondary: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
   --gradient-soft: linear-gradient(135deg, rgba(29, 78, 216, 0.25) 0%, rgba(96, 165, 250, 0.25) 100%);
-  --calendar-day-bg: rgba(43, 66, 98, 0.9);
-  --calendar-day-border: rgba(150, 180, 220, 0.3);
-  --calendar-day-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --calendar-day-bg: #132a46;
+  --calendar-day-border: rgba(230, 238, 249, 0.16);
+  --calendar-day-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   --calendar-bday-bg: linear-gradient(135deg, rgba(212, 175, 55, 0.28) 0%, rgba(241, 203, 104, 0.52) 100%);
   --calendar-bday-border: rgba(212, 175, 55, 0.85);
   --calendar-bday-shadow: inset 0 0 0 1.5px rgba(212, 175, 55, 0.9);
-  --calendar-today-bg: rgba(86, 140, 212, 0.28);
-  --calendar-today-shadow: inset 0 0 0 1.5px rgba(212, 175, 55, 0.9), 0 3px 8px rgba(74, 122, 190, 0.35);
-  --calendar-today-text: #f7dc9b;
+  --calendar-today-bg: #183255;
+  --calendar-today-shadow: inset 0 0 0 1.5px rgba(230, 238, 249, 0.14), 0 3px 8px rgba(6, 12, 22, 0.28);
+  --calendar-today-text: #e6eef9;
   --node-fill: var(--surface-2);
   --node-stroke: rgba(59, 130, 246, 0.35);
   --node-shadow: drop-shadow(0 10px 26px rgba(6, 12, 22, 0.35));
@@ -299,6 +299,93 @@ body.has-feature-banner {
 }
 .upcoming-banner .close-btn:hover { background: #eef5ff; }
 
+/* Simple upcoming birthday button in header */
+.upcoming-birthday-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+
+.upcoming-nav-arrow {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: background var(--transition-base), color var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.upcoming-nav-arrow:hover {
+  background: var(--border);
+  color: var(--accent);
+}
+
+.upcoming-nav-arrow:active {
+  transform: scale(0.95);
+}
+
+.upcoming-birthday-display {
+  appearance: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  min-height: 32px;
+}
+
+.upcoming-birthday-display:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upcoming-birthday-display:active {
+  transform: translateY(0);
+}
+
+.upcoming-birthday-display .material-symbols-outlined {
+  font-size: 18px;
+}
+
+body.theme-dark .upcoming-nav-arrow:hover {
+  background: var(--border);
+  color: var(--accent);
+}
+
+body.theme-dark .upcoming-birthday-display {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+body.theme-dark .upcoming-birthday-display:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
 @keyframes upcomingMarquee {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
@@ -339,10 +426,9 @@ body.has-feature-banner {
   box-shadow: none;
   padding: 1px 1px 10px;
   margin-top: 0;
-  display: flex;
+  display: none;
   flex-direction: column;
-  transform: translateY(100%) scale(0.98);
-  transition: transform 260ms ease, opacity 220ms ease;
+  transition: opacity 220ms ease;
   opacity: 0;
   z-index: -1;
   pointer-events: none;
@@ -353,7 +439,6 @@ body.has-feature-banner {
 }
 #birthdaySection { scroll-margin-top: 80px; }
 .calendar-open #birthdaySection {
-  transform: translateY(0) scale(1);
   opacity: 1;
   pointer-events: auto;
   z-index: 5;
@@ -423,7 +508,7 @@ body.has-feature-banner {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 6px 12px calc(1px + var(--calendar-toggle-clearance));
+  padding: 6px 12px 8px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -1104,9 +1189,8 @@ body.focus-mode #tree {
     align-items: center;
   }
   .birthday-bar {
-    bottom: 0;
     height: auto;
-    max-height: var(--calendar-panel-max-mobile);
+    max-height: none;
     padding: 12px 5px calc(8px + env(safe-area-inset-bottom));
     --mobile-card-width: min(72vw, 320px);
     --nav-btn-size: 34px;
@@ -1115,7 +1199,7 @@ body.focus-mode #tree {
     grid-template-columns: 1fr;
     max-width: 100%;
     margin: 0 0 8px;
-    padding: 6px 10px calc(4px + var(--calendar-toggle-clearance));
+    padding: 6px 10px 10px;
     flex: 0 0 auto;
   }
   .birthday-months.mobile-carousel {
@@ -1133,9 +1217,6 @@ body.focus-mode #tree {
     width: 100vw;
     left: 50%;
     padding: 0 calc((100vw - var(--mobile-card-width) - (2 * var(--nav-btn-size))) / 4);
-  }
-  .calendar-toggle {
-    bottom: 10px;
   }
   .calendar-full { height: var(--calendar-panel-max-mobile); }
   .calendar-full .birthday-months { flex: 1 1 auto; }
@@ -1602,6 +1683,75 @@ body.theme-dark .topbar {
   border-radius: 999px;
   box-shadow: var(--shadow-sm);
 }
+
+/* Legacy support - remove if not needed */
+.tw-toggle {
+  position: fixed;
+  top: var(--view-toggle-top);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-2);
+  transition: top var(--transition-base) ease;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tw-toggle input {
+  display: none;
+}
+
+.tw-toggle label {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  flex: 1 1 33.333%;
+  justify-content: center;
+  transition: background var(--transition-base) ease, color var(--transition-base) ease, transform var(--transition-base) ease;
+  margin: 0;
+}
+
+.tw-toggle label .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.tw-toggle label:hover {
+  transform: translateY(-1px);
+}
+
+.tw-toggle label:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.tw-toggle input#view-tree:checked + label,
+.tw-toggle input#view-calendar:checked + label,
+.tw-toggle input#view-globe:checked + label {
+  background: var(--gradient-secondary);
+  color: #ffffff;
+}
+
+body.theme-dark .tw-toggle {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+body.theme-dark .tw-toggle label {
+  color: var(--text);
+}
+
 .view-toggle-btn {
   border: none;
   background: transparent;
@@ -1908,7 +2058,6 @@ body.theme-dark .globe-tooltip {
 
 body.view-globe .page { display: none; }
 body.view-globe .globe-view { display: flex; }
-body.view-globe #calendarToggle,
 body.view-globe #birthdaySection,
 body.view-globe #upcomingBanner { display: none !important; }
 body.view-globe #dnaBtn,
@@ -1916,6 +2065,27 @@ body.view-globe #resetBtn,
 body.view-globe #focusBtn { display: none !important; }
 body.view-globe #zoomInBtn,
 body.view-globe #zoomOutBtn { display: inline-flex; }
+
+body.view-calendar .page,
+body.view-calendar .globe-view { display: none; }
+body.view-calendar #birthdaySection {
+  display: flex;
+  inset: calc(var(--view-toggle-top) + 56px) 0 0 0;
+  max-height: none;
+  height: auto;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  z-index: 5;
+  border-top: 1px solid var(--border);
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+}
+body.view-calendar #dnaBtn,
+body.view-calendar #resetBtn,
+body.view-calendar #focusBtn,
+body.view-calendar #zoomInBtn,
+body.view-calendar #zoomOutBtn { display: none !important; }
 
 .calendar-toggle {
   background: var(--accent);
