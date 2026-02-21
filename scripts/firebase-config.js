@@ -3,7 +3,7 @@
 // Get these from Firebase Console -> Project Settings -> General -> Your apps -> SDK setup and configuration
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBSRnThWQY70hht4RGFKi2VnrGxBUDeWw4",
+  apiKey: "AIzaSyDrWuTxMHuoGQvt9DWxelDl-3lDn0Sf20g",
   authDomain: "ancestrio.firebaseapp.com",
   projectId: "ancestrio",
   storageBucket: "ancestrio.firebasestorage.app",
