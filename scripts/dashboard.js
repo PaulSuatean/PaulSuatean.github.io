@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       currentUser = user;
-      document.getElementById('userName').textContent = user.displayName || user.email;
+      updateDashboardTitle(currentUser);
       await loadTrees();
     } else {
       window.location.href = 'auth.html';
@@ -43,10 +43,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('createTreeBtnEmpty')?.addEventListener('click', showCreateModal);
   document.getElementById('closeCreateModal').addEventListener('click', hideCreateModal);
   document.getElementById('cancelCreateBtn').addEventListener('click', hideCreateModal);
-  document.getElementById('createTreeForm').addEventListener('submit', createTree);
   document.getElementById('closeDeleteModal').addEventListener('click', hideDeleteModal);
   document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteModal);
   document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+  
+  // Wizard navigation
+  document.getElementById('nextStep1').addEventListener('click', () => {
+    const treeName = document.getElementById('treeName').value.trim();
+    const treeNameInput = document.getElementById('treeName');
+    const treeNameError = document.getElementById('treeNameError');
+    
+    if (!treeName) {
+      treeNameInput.classList.add('error');
+      treeNameError.style.display = 'block';
+      treeNameInput.focus();
+      return;
+    }
+    goToStep(2);
+  });
+  
+  // Clear error on input
+  document.getElementById('treeName').addEventListener('input', () => {
+    const treeNameInput = document.getElementById('treeName');
+    const treeNameError = document.getElementById('treeNameError');
+    if (treeNameInput.value.trim()) {
+      treeNameInput.classList.remove('error');
+      treeNameError.style.display = 'none';
+    }
+  });
+  
+  document.getElementById('backStep2').addEventListener('click', () => goToStep(1));
+  document.getElementById('nextStep2').addEventListener('click', () => goToStep(3));
+  document.getElementById('backStep3').addEventListener('click', () => goToStep(2));
+  
+  // Final create button in step 3
+  document.getElementById('finalCreateTreeBtn').addEventListener('click', createTreeFromWizard);
 });
 
 function updateThemeIcon() {
@@ -79,6 +110,22 @@ function resolveInitialTheme(saved) {
 function isNightTime() {
   const hour = new Date().getHours();
   return hour >= 20 || hour < 7;
+}
+
+function getCurrentUserName(user) {
+  if (!user) return '';
+  const displayName = user.displayName ? user.displayName.trim() : '';
+  if (displayName) return displayName;
+  const email = user.email ? user.email.trim() : '';
+  if (!email) return '';
+  return email.includes('@') ? email.split('@')[0] : email;
+}
+
+function updateDashboardTitle(user) {
+  const titleEl = document.getElementById('dashboardTitle');
+  if (!titleEl) return;
+  const username = getCurrentUserName(user);
+  titleEl.textContent = username ? `${username}'s Family Trees` : 'My Family Trees';
 }
 
 async function loadTrees() {
@@ -144,6 +191,17 @@ function renderTreeCard(tree) {
 
   const card = document.createElement('div');
   card.className = 'tree-card';
+  
+  // Generate preview HTML
+  const previewHtml = tree.thumbnailData 
+    ? `<div class="tree-card-preview"><img src="${tree.thumbnailData}" alt="Tree preview" /></div>`
+    : `<div class="tree-card-preview">
+         <div class="tree-card-preview-placeholder">
+           <span class="material-symbols-outlined">account_tree</span>
+           <span>No preview available</span>
+         </div>
+       </div>`;
+  
   card.innerHTML = `
     <div class="tree-card-header">
       <div>
@@ -156,6 +214,7 @@ function renderTreeCard(tree) {
         </button>
       </div>
     </div>
+    ${previewHtml}
     ${tree.description ? `<p class="tree-card-description">${escapeHtml(tree.description)}</p>` : ''}
     <div class="tree-card-meta">
       <span class="meta-item">
@@ -210,38 +269,115 @@ function countMembers(data) {
 
 function showCreateModal() {
   document.getElementById('createTreeModal').style.display = 'flex';
+  goToStep(1);
   document.getElementById('treeName').focus();
 }
 
 function hideCreateModal() {
   document.getElementById('createTreeModal').style.display = 'none';
-  document.getElementById('createTreeForm').reset();
+  resetWizard();
 }
 
-async function createTree(e) {
+function goToStep(step) {
+  // Hide all steps
+  document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+  
+  // Show selected step
+  const stepEl = document.getElementById(`step${step}`);
+  if (stepEl) {
+    stepEl.classList.add('active');
+  }
+  
+  // Update progress indicator
+  document.querySelectorAll('.progress-step').forEach(p => {
+    p.classList.remove('active');
+  });
+  const progressStep = document.querySelector(`.progress-step[data-step="${step}"]`);
+  if (progressStep) {
+    progressStep.classList.add('active');
+  }
+}
+
+function resetWizard() {
+  document.getElementById('treeName').value = '';
+  document.getElementById('treeDescription').value = '';
+  document.querySelector('input[name="privacy"][value="private"]').checked = true;
+  document.querySelector('input[name="hasSpouse"][value="no"]').checked = true;
+  document.getElementById('myChildren').value = '0';
+  document.getElementById('siblingCount').value = '0';
+  document.getElementById('generations').value = '3';
+  document.getElementById('uncles').value = '1';
+  document.getElementById('myGrandchildren').value = '0';
+  document.getElementById('ancestorChildren').value = '3';
+  document.querySelector('input[name="useTemplate"][value="yes"]').checked = true;
+  
+  // Clear error state
+  const treeNameInput = document.getElementById('treeName');
+  const treeNameError = document.getElementById('treeNameError');
+  treeNameInput.classList.remove('error');
+  treeNameError.style.display = 'none';
+  
+  goToStep(1);
+}
+
+async function createTreeFromWizard(e) {
   e.preventDefault();
   
-  const name = document.getElementById('treeName').value;
-  const description = document.getElementById('treeDescription').value;
+  // Get basic info
+  const name = document.getElementById('treeName').value.trim();
+  const description = document.getElementById('treeDescription').value.trim();
   const privacy = document.querySelector('input[name="privacy"]:checked').value;
-
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Creating...';
+  
+  if (!name) {
+    const treeNameInput = document.getElementById('treeName');
+    const treeNameError = document.getElementById('treeNameError');
+    treeNameInput.classList.add('error');
+    treeNameError.style.display = 'block';
+    goToStep(1);
+    treeNameInput.focus();
+    return;
+  }
+  
+  // Get wizard answers
+  const hasSpouse = document.querySelector('input[name="hasSpouse"]:checked').value === 'yes';
+  const generations = parseInt(document.getElementById('generations').value);
+  const ancestorChildren = parseInt(document.getElementById('ancestorChildren').value);
+  const uncles = parseInt(document.getElementById('uncles').value);
+  const myChildren = parseInt(document.getElementById('myChildren').value);
+  const myGrandchildren = parseInt(document.getElementById('myGrandchildren').value);
+  const siblingCount = parseInt(document.getElementById('siblingCount').value);
+  const useTemplate = document.querySelector('input[name="useTemplate"]:checked').value === 'yes';
+  
+  const createBtn = document.getElementById('finalCreateTreeBtn');
+  createBtn.disabled = true;
+  createBtn.textContent = 'Creating...';
 
   try {
     // Get user's name for the root person
-    const displayName = currentUser && currentUser.displayName ? currentUser.displayName.trim() : '';
-    const email = currentUser && currentUser.email ? currentUser.email.trim() : '';
-    const rootPersonName = displayName || (email && email.includes('@') ? email.split('@')[0] : 'Family Member');
+    const rootPersonName = getCurrentUserName(currentUser) || 'Family Member';
 
-    // Create initial tree structure
-    const initialData = {
-      Grandparent: rootPersonName,
-      image: "",
-      birthday: "",
-      Parent: []
-    };
+    // Generate template based on answers
+    let initialData;
+    if (useTemplate) {
+      initialData = generateFamilyTemplate({
+        rootName: rootPersonName,
+        hasSpouse,
+        generations,
+        ancestorChildren,
+        uncles,
+        myChildren,
+        myGrandchildren,
+        siblingCount
+      });
+    } else {
+      // Simple empty template
+      initialData = {
+        Grandparent: rootPersonName,
+        image: "",
+        birthday: "",
+        Parent: []
+      };
+    }
 
     const docRef = await db.collection('trees').add({
       userId: currentUser.uid,
@@ -262,9 +398,141 @@ async function createTree(e) {
     console.error('Error creating tree:', error);
     alert('Failed to create tree. Please try again.');
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Create Tree';
+    createBtn.disabled = false;
+    createBtn.textContent = 'Create Tree';
   }
+}
+
+function generateFamilyTemplate(options) {
+  const {
+    rootName,
+    hasSpouse,
+    generations,
+    ancestorChildren,
+    uncles,
+    myChildren,
+    myGrandchildren,
+    siblingCount
+  } = options;
+
+  const toSafeInt = (value) => (Number.isFinite(value) ? value : 0);
+  const safeGenerations = toSafeInt(generations);
+  const safeAncestorChildren = Math.max(0, toSafeInt(ancestorChildren));
+  const safeUncles = Math.max(0, toSafeInt(uncles));
+  const safeMyChildren = Math.max(0, toSafeInt(myChildren));
+  const safeMyGrandchildren = Math.max(0, toSafeInt(myGrandchildren));
+  const safeSiblingCount = Math.max(0, toSafeInt(siblingCount));
+
+  const maleFirst = ['James', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'John', 'Charles'];
+  const femaleFirst = ['Mary', 'Patricia', 'Jennifer', 'Linda', 'Barbara', 'Elizabeth', 'Susan', 'Jessica', 'Sarah', 'Karen'];
+  const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
+
+  function getRandomName(gender = 'any') {
+    let firstName;
+    if (gender === 'male') {
+      firstName = maleFirst[Math.floor(Math.random() * maleFirst.length)];
+    } else if (gender === 'female') {
+      firstName = femaleFirst[Math.floor(Math.random() * femaleFirst.length)];
+    } else {
+      firstName = Math.random() > 0.5 ? 
+        maleFirst[Math.floor(Math.random() * maleFirst.length)] :
+        femaleFirst[Math.floor(Math.random() * femaleFirst.length)];
+    }
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    return `${firstName} ${lastName}`;
+  }
+
+  const data = {
+    Grandparent: rootName,
+    image: '',
+    birthday: ''
+  };
+
+  // Oldest ancestor spouse (top generation in rfamily schema).
+  data.spouse = hasSpouse ? {
+    name: getRandomName('female'),
+    image: '',
+    birthday: ''
+  } : null;
+
+  const rootChild = {
+    name: rootName,
+    image: '',
+    birthday: '',
+    spouse: hasSpouse ? { name: getRandomName('female'), image: '', birthday: '' } : null,
+    grandchildren: []
+  };
+
+  // Add user's children as grandchildren of the oldest ancestor.
+  for (let i = 0; i < safeMyChildren; i++) {
+    const child = {
+      name: getRandomName(),
+      image: '',
+      birthday: ''
+    };
+
+    // Optionally add great-grandchildren through the first child.
+    if (safeMyGrandchildren > 0 && i === 0) {
+      child.grandchildren = [];
+      for (let g = 0; g < Math.min(safeMyGrandchildren, 5); g++) {
+        child.grandchildren.push({
+          name: getRandomName(),
+          image: '',
+          birthday: ''
+        });
+      }
+    }
+
+    rootChild.grandchildren.push(child);
+  }
+
+  const totalParents = Math.max(1, Math.max(safeAncestorChildren, safeUncles + 1));
+
+  data.Parent = [];
+  if (safeGenerations >= 2) {
+    for (let i = 0; i < totalParents; i++) {
+      const parent = {
+        name: getRandomName('male'),
+        image: '',
+        birthday: '',
+        spouse: { name: getRandomName('female'), image: '', birthday: '' },
+        children: []
+      };
+
+      if (i === 0) {
+        parent.children.push(rootChild);
+        for (let s = 0; s < safeSiblingCount; s++) {
+          parent.children.push({
+            name: getRandomName(),
+            image: '',
+            birthday: ''
+          });
+        }
+      }
+
+      data.Parent.push(parent);
+    }
+  }
+
+  // Add great-grandparents for the top generation if requested.
+  if (safeGenerations >= 4) {
+    data.parents = {
+      name: getRandomName('male'),
+      image: '',
+      birthday: '',
+      spouse: { name: getRandomName('female'), image: '', birthday: '' }
+    };
+    if (data.spouse) {
+      data.spouse.parents = {
+        name: getRandomName('male'),
+        image: '',
+        birthday: '',
+        spouse: { name: getRandomName('female'), image: '', birthday: '' }
+      };
+    }
+  }
+
+  return data;
 }
 
 function showDeleteModal(treeId, treeName) {
@@ -272,6 +540,7 @@ function showDeleteModal(treeId, treeName) {
   document.getElementById('deleteTreeName').textContent = treeName;
   document.getElementById('deleteModal').style.display = 'flex';
 }
+
 
 function hideDeleteModal() {
   document.getElementById('deleteModal').style.display = 'none';

@@ -217,6 +217,120 @@ function updateSaveButton() {
   }
 }
 
+async function generateTreeThumbnail() {
+  try {
+    if (!visualState.svg || !visualState.g) {
+      console.log('Visual editor not initialized, skipping thumbnail generation');
+      return null;
+    }
+    
+    // Get the SVG element
+    const svgNode = visualState.svg.node();
+    if (!svgNode) return null;
+    
+    // Get the bounding box of all content
+    const bbox = visualState.g.node().getBBox();
+    if (!bbox || bbox.width === 0 || bbox.height === 0) {
+      console.log('Empty tree, skipping thumbnail');
+      return null;
+    }
+    
+    // Fixed thumbnail dimensions
+    const thumbnailWidth = 800;
+    const thumbnailHeight = 600;
+    
+    // Add padding around the tree content
+    const padding = 100;
+    const contentWidth = bbox.width + padding * 2;
+    const contentHeight = bbox.height + padding * 2;
+    
+    // Calculate scale to fit the tree in the thumbnail while maintaining aspect ratio
+    const scaleX = thumbnailWidth / contentWidth;
+    const scaleY = thumbnailHeight / contentHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, max 1:1
+    
+    // Calculate centered position
+    const scaledWidth = bbox.width * scale;
+    const scaledHeight = bbox.height * scale;
+    const offsetX = (thumbnailWidth - scaledWidth) / 2 - bbox.x * scale;
+    const offsetY = (thumbnailHeight - scaledHeight) / 2 - bbox.y * scale;
+    
+    // Clone and prepare SVG
+    const clonedSvg = svgNode.cloneNode(true);
+    clonedSvg.setAttribute('width', thumbnailWidth.toString());
+    clonedSvg.setAttribute('height', thumbnailHeight.toString());
+    clonedSvg.setAttribute('viewBox', `0 0 ${thumbnailWidth} ${thumbnailHeight}`);
+    
+    // Find the g element in the clone and apply centering transform
+    const clonedG = clonedSvg.querySelector('g');
+    if (clonedG) {
+      clonedG.setAttribute('transform', `translate(${offsetX}, ${offsetY}) scale(${scale})`);
+    }
+    
+    // Get computed styles and inline them
+    const styleSheets = Array.from(document.styleSheets);
+    let cssText = '';
+    styleSheets.forEach(sheet => {
+      try {
+        if (sheet.cssRules) {
+          Array.from(sheet.cssRules).forEach(rule => {
+            cssText += rule.cssText + '\n';
+          });
+        }
+      } catch (e) {
+        // Cross-origin stylesheets may throw errors
+        console.log('Could not access stylesheet:', e);
+      }
+    });
+    
+    // Add a style element to the cloned SVG
+    const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styleElement.textContent = cssText;
+    clonedSvg.insertBefore(styleElement, clonedSvg.firstChild);
+    
+    // Serialize the SVG
+    const svgString = new XMLSerializer().serializeToString(clonedSvg);
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    
+    // Convert to PNG using canvas
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = thumbnailWidth;
+        canvas.height = thumbnailHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // Fill background with button blue
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw the image
+        ctx.drawImage(img, 0, 0, thumbnailWidth, thumbnailHeight);
+        
+        // Convert canvas to blob
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          resolve(blob);
+        }, 'image/png', 0.9);
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        console.error('Failed to load SVG image');
+        resolve(null);
+      };
+      
+      img.src = url;
+    });
+  } catch (error) {
+    console.error('Error generating thumbnail:', error);
+    return null;
+  }
+}
+
 async function saveTree() {
   const saveBtn = document.getElementById('saveBtn');
   saveBtn.disabled = true;
@@ -241,6 +355,9 @@ async function saveTree() {
       return;
     }
     
+    // Clean up any duplicate nodes before saving
+    treeData = cleanupTreeData(treeData);
+    
     // Get updated values
     const name = document.getElementById('editTreeName').value.trim();
     const description = document.getElementById('editTreeDescription').value.trim();
@@ -251,19 +368,74 @@ async function saveTree() {
       return;
     }
     
+    // Generate thumbnail as base64
+    let thumbnailData = null;
+    try {
+      // Ensure visual editor is initialized
+      if (!visualState.initialized) {
+        initVisualEditor();
+        // Wait a bit for initialization
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
+      // Always generate a new thumbnail on save
+      if (visualState.initialized) {
+        // Update the JSON editor with latest data
+        const jsonEditor = document.getElementById('jsonEditor');
+        jsonEditor.value = JSON.stringify(treeData, null, 2);
+        
+        // Force a synchronous render to update the visualization
+        renderVisualEditor(true);
+        
+        // Wait for render to complete and DOM to update
+        await new Promise(resolve => setTimeout(resolve, 150));
+        
+        // Now generate the thumbnail from the centered, rendered view
+        const thumbnailBlob = await generateTreeThumbnail();
+        if (thumbnailBlob) {
+          // Convert blob to base64
+          thumbnailData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(thumbnailBlob);
+          });
+          console.log('Thumbnail generated successfully');
+        } else {
+          console.log('No thumbnail blob generated - tree may be empty');
+        }
+      }
+    } catch (thumbnailError) {
+      console.error('Error generating thumbnail:', thumbnailError);
+      // Continue saving even if thumbnail fails
+    }
+    
     // Save to Firestore
-    await db.collection('trees').doc(treeId).update({
+    const updateData = {
       name: name,
       description: description,
       privacy: privacy,
       data: treeData,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    };
+    
+    // Only update thumbnailData if we have a new one
+    if (thumbnailData) {
+      updateData.thumbnailData = thumbnailData;
+    }
+    
+    await db.collection('trees').doc(treeId).update(updateData);
     
     currentTree.name = name;
     currentTree.description = description;
     currentTree.privacy = privacy;
     currentTree.data = treeData;
+    if (thumbnailData) {
+      currentTree.thumbnailData = thumbnailData;
+    }
+    
+    // Update JSON editor to reflect cleaned data
+    const jsonEditor = document.getElementById('jsonEditor');
+    jsonEditor.value = JSON.stringify(treeData, null, 2);
     
     document.getElementById('treeTitle').textContent = name;
     
@@ -446,6 +618,62 @@ function resetVisualView(forceReset) {
   scheduleVisualRender(true);
 }
 
+function restructureForOrigin(data) {
+  // Find the origin node (marked with isOrigin: true)
+  function findOrigin(node) {
+    if (node && node.isOrigin) return node;
+    if (node && Array.isArray(node.children)) {
+      for (let child of node.children) {
+        const found = findOrigin(child);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  const originNode = findOrigin(data);
+  if (!originNode) return data; // No origin found, return as-is
+
+  // Find parent of origin node
+  function findNodeAndParent(current, target, parent = null) {
+    if (current === target) return { node: current, parent };
+    if (current && Array.isArray(current.children)) {
+      for (let child of current.children) {
+        const result = findNodeAndParent(child, target, current);
+        if (result) return result;
+      }
+    }
+    return null;
+  }
+
+  const result = findNodeAndParent(data, originNode);
+  if (!result || !result.parent) return data; // Origin is root, return as-is
+
+  // Extract the origin and restructure
+  const newRoot = {
+    name: originNode.name,
+    image: originNode.image,
+    birthday: originNode.birthday,
+    spouse: originNode.spouse,
+    spouseImage: originNode.spouseImage,
+    spouseBirthday: originNode.spouseBirthday,
+    tags: originNode.tags,
+    spouseTags: originNode.spouseTags,
+    children: originNode.children || []
+  };
+
+  // Deep clone the parent and remove the origin node from its children
+  const parentCopy = JSON.parse(JSON.stringify(result.parent));
+  if (Array.isArray(parentCopy.children)) {
+    parentCopy.children = parentCopy.children.filter(child => child !== originNode);
+  }
+
+  // Store the parent hierarchy as "parents" property
+  newRoot.parents = parentCopy;
+
+  return newRoot;
+}
+
 function scheduleVisualRender(resetTransform) {
   if (!visualState.initialized) return;
   if (visualState.pendingRender) {
@@ -487,6 +715,9 @@ function renderVisualEditor(resetTransform) {
     visualState.g.selectAll('*').remove();
     return;
   }
+
+  // Restructure data so origin node is at root with parents as overlay
+  treeData = restructureForOrigin(treeData);
 
   // Match demo-tree dimensions
   const person = { width: 170, height: 120, spouseGap: 48 };
@@ -768,9 +999,55 @@ function centerVisualTree(nodes, nodeSize) {
 
 function ensureDefaultTreeData(data) {
   if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-    return data;
+    // Clean up duplicate root nodes created during setup
+    return cleanupTreeData(data);
   }
   return createDefaultTreeData(getDefaultPersonName());
+}
+
+function cleanupTreeData(data) {
+  if (!data || typeof data !== 'object') return data;
+  
+  // Clone to avoid mutating original
+  const cleaned = JSON.parse(JSON.stringify(data));
+  
+  // If this looks like an RFamilySchema, check for duplicates
+  if (cleaned.Grandparent && Array.isArray(cleaned.Parent)) {
+    const grandparentName = safeText(cleaned.Grandparent);
+    
+    if (grandparentName) {
+      // Check if Grandparent appears as a child in Parent array
+      // This happens when the setup creates a duplicate entry
+      cleaned.Parent = cleaned.Parent.filter(parent => {
+        const childrenNames = parent.children && Array.isArray(parent.children) 
+          ? parent.children.map(c => safeText(c.name))
+          : [];
+        
+        // Remove if this parent has only one child with the same name as Grandparent
+        // (this indicates it's a duplicate created during setup)
+        if (childrenNames.length === 1 && childrenNames[0] === grandparentName) {
+          // Only remove if this parent looks like it should have been in 'parents' property
+          // i.e., only one entry in Parent array with one child
+          if (cleaned.Parent.length === 1) {
+            // Move this parent to the parents property instead
+            const parentEntry = parent;
+            if (!cleaned.parents) {
+              cleaned.parents = {
+                name: parentEntry.name,
+                image: parentEntry.image || '',
+                birthday: parentEntry.birthday || '',
+                spouse: parentEntry.spouse || null
+              };
+            }
+            return false; // Remove from Parent array
+          }
+        }
+        return true; // Keep in Parent array
+      });
+    }
+  }
+  
+  return cleaned;
 }
 
 function createDefaultTreeData(name) {

@@ -13,6 +13,13 @@
     body {
       overflow: auto;
     }
+
+    /* Ensure opaque backgrounds in dark mode */
+    body.theme-dark {
+      background: #0b1d33 !important;
+    }
+
+    /* (Reverted header layout fix. No custom .topbar, .brand-group, .controls, or button styles here.) */
     
     .auth-container {
       min-height: calc(100vh - 80px);
@@ -20,6 +27,11 @@
       align-items: center;
       justify-content: center;
       padding: 40px 20px;
+      background: transparent;
+    }
+    
+    body.theme-dark .auth-container {
+      background: #0b1d33;
     }
     
     .auth-card {
@@ -31,6 +43,13 @@
       max-width: 480px;
       border: 1px solid var(--border);
       min-height: 520px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    body.theme-dark .auth-card {
+      background: #0b1d33 !important;
+      backdrop-filter: none !important;
     }
     
     .auth-header {
@@ -229,18 +248,18 @@
     }
   </style>
 </head>
-<body>
+<body class="auth-page">
   <header class="topbar">
     <div class="brand-group">
-      <a href="../index.html" class="icon-btn" title="Back to landing page" aria-label="Back to landing page">
-        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-      </a>
-      <div class="brand">Ancestrio</div>
-    </div>
-    <div class="controls">
       <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
       </button>
+      <div class="brand">Ancestrio</div>
+    </div>
+    <div class="controls controls-simple">
+      <a id="backBtn" href="../index.html" class="icon-btn" title="Back to landing page" aria-label="Back to landing page">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      </a>
     </div>
   </header>
   
@@ -307,6 +326,8 @@
   </div>
 
   <!-- Firebase SDK -->
+  <script src="../scripts/night-sky.js"></script>
+  <script src="../scripts/day-clouds.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>

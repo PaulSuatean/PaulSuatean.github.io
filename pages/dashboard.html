@@ -11,24 +11,19 @@
   <link rel="stylesheet" href="../styles/main.css" />
   <link rel="stylesheet" href="../styles/dashboard.css" />
 </head>
-<body>
+<body class="dashboard-page">
   <header class="topbar">
     <div class="brand-group">
-      <div class="brand">Ancestrio</div>
-    </div>
-    <div class="controls">
       <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
       </button>
-      <button id="createTreeBtn" title="Create new tree" aria-label="Create new tree">
-        <span class="material-symbols-outlined" aria-hidden="true">add</span>
-        New Tree
-      </button>
+      <div class="brand">Ancestrio</div>
+    </div>
+    <div class="controls controls-dashboard">
       <div class="user-info">
-        <span id="userName" class="user-name"></span>
         <button id="logoutBtn" title="Logout" aria-label="Logout">
           <span class="material-symbols-outlined" aria-hidden="true">logout</span>
-          Exit
+          <span class="logout-text">Exit</span>
         </button>
       </div>
     </div>
@@ -37,7 +32,7 @@
   <main class="dashboard-main">
     <div class="dashboard-container">
       <div class="dashboard-hero">
-        <h2>My Family Trees</h2>
+        <h2 id="dashboardTitle">My Family Trees</h2>
       </div>
 
       <div id="treesGrid" class="trees-grid">
@@ -61,18 +56,27 @@
     </div>
   </main>
 
-  <!-- Create Tree Modal -->
+  <button id="createTreeBtn" class="dashboard-fab" title="Create new tree" aria-label="Create new tree">
+    <span class="material-symbols-outlined" aria-hidden="true">add</span>
+    New Tree
+  </button>
+
+  <!-- Create Tree Wizard Modal -->
   <div id="createTreeModal" class="modal" style="display: none;">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-wizard">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Create New Family Tree</h3>
+          <h3 id="wizardTitle">Create Your Family Tree</h3>
           <button class="modal-close" id="closeCreateModal">&times;</button>
         </div>
-        <form id="createTreeForm">
+        
+        <!-- Step 1: Basic Info -->
+        <div id="step1" class="wizard-step active">
           <div class="modal-body">
+            <p class="step-subtitle">Let's set up your family tree foundation</p>
             <div class="form-group">
-              <label class="form-label" for="treeName">Tree Name</label>
+              <label class="form-label" for="treeName">Tree Name <span class="required">*</span></label>
+              <div id="treeNameError" class="form-error" style="display: none;">Tree name is required</div>
               <input type="text" class="form-input" id="treeName" required placeholder="e.g., Smith Family Tree" />
             </div>
             <div class="form-group">
@@ -84,20 +88,114 @@
               <div class="radio-group">
                 <label class="radio-label">
                   <input type="radio" name="privacy" value="private" checked />
-                  <span>Private (Only you can see)</span>
+                  <span>🔒 Private (Only you can see)</span>
                 </label>
                 <label class="radio-label">
                   <input type="radio" name="privacy" value="public" />
-                  <span>Public (Anyone with link can view)</span>
+                  <span>🌍 Public (Anyone with link can view)</span>
                 </label>
               </div>
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer wizard-footer">
             <button type="button" class="btn-secondary" id="cancelCreateBtn">Cancel</button>
-            <button type="submit" class="btn-primary">Create Tree</button>
+            <button type="button" class="btn-primary" id="nextStep1">Next</button>
           </div>
-        </form>
+        </div>
+
+        <!-- Step 2: Family Structure -->
+        <div id="step2" class="wizard-step">
+          <div class="modal-body">
+            <p class="step-subtitle">Tell us about your family</p>
+            
+            <div class="form-group">
+              <label class="form-label">Do you have a spouse/partner?</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="hasSpouse" value="yes" />
+                  <span>Yes</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="hasSpouse" value="no" checked />
+                  <span>No</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="myChildren">How many children do you have? <span class="hint">(0-20)</span></label>
+              <input type="number" class="form-input" id="myChildren" min="0" max="20" value="0" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="siblingCount">How many siblings do you have? <span class="hint">(0-20)</span></label>
+              <input type="number" class="form-input" id="siblingCount" min="0" max="20" value="0" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="generations">How many generations back should we include? <span class="hint">(your parents, grandparents, etc.)</span></label>
+              <select class="form-input" id="generations">
+                <option value="1">Just me</option>
+                <option value="2">Back to my parents</option>
+                <option value="3" selected>Back to my grandparents</option>
+                <option value="4">Back to my great-grandparents</option>
+                <option value="5">Back to my great-great-grandparents</option>
+                <option value="6">6+ generations back</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="uncles">How many aunts/uncles do you have (your parent's siblings)? <span class="hint">(0-10)</span></label>
+              <input type="number" class="form-input" id="uncles" min="0" max="10" value="1" />
+            </div>
+          </div>
+          <div class="modal-footer wizard-footer">
+            <button type="button" class="btn-secondary" id="backStep2">Back</button>
+            <button type="button" class="btn-primary" id="nextStep2">Next</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Additional Details -->
+        <div id="step3" class="wizard-step">
+          <div class="modal-body">
+            <p class="step-subtitle">Final details for your tree</p>
+            
+            <div class="form-group">
+              <label class="form-label" for="myGrandchildren">How many grandchildren do you have or expect?</label>
+              <input type="number" class="form-input" id="myGrandchildren" min="0" max="20" value="0" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ancestorChildren">How many children did your oldest ancestor have? <span class="hint">(for building the tree structure)</span></label>
+              <input type="number" class="form-input" id="ancestorChildren" min="1" max="10" value="3" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Would you like to start with a template?</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="useTemplate" value="yes" checked />
+                  <span>Yes, create a template with placeholder names (I'll edit them later)</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="useTemplate" value="empty" />
+                  <span>No, start with just the root person (I'll add family members manually)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer wizard-footer">
+            <button type="button" class="btn-secondary" id="backStep3">Back</button>
+            <button type="button" class="btn-primary" id="finalCreateTreeBtn">Create Tree</button>
+          </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="wizard-progress">
+          <div class="progress-step active" data-step="1">1</div>
+          <div class="progress-step" data-step="2">2</div>
+          <div class="progress-step" data-step="3">3</div>
+        </div>
       </div>
     </div>
   </div>
@@ -123,6 +221,8 @@
   </div>
 
   <!-- Firebase SDK -->
+  <script src="../scripts/night-sky.js"></script>
+  <script src="../scripts/day-clouds.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>

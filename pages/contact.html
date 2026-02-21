@@ -16,11 +16,21 @@
       overflow: auto;
     }
     
+    /* Ensure opaque backgrounds in dark mode */
+    body.theme-dark {
+      background: #0b1d33 !important;
+    }
+    
     .contact-page {
       min-height: calc(100vh - 80px);
       padding: 24px 20px;
       max-height: calc(100vh - 80px);
       overflow-y: auto;
+      background: transparent;
+    }
+    
+    body.theme-dark .contact-page {
+      background: #0b1d33;
     }
     
     .contact-container {
@@ -67,6 +77,13 @@
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border);
       height: 100%;
+      position: relative;
+      z-index: 2;
+    }
+    
+    body.theme-dark .content-section {
+      background: #0b1d33 !important;
+      backdrop-filter: none !important;
     }
     
     .section-title {
@@ -287,18 +304,18 @@
     }
   </style>
 </head>
-<body>
+<body class="contact-page-layout">
   <header class="topbar">
     <div class="brand-group">
-      <a href="../index.html" class="icon-btn" title="Back to landing page" aria-label="Back to landing page">
-        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-      </a>
-      <div class="brand">Ancestrio</div>
-    </div>
-    <div class="controls">
       <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
       </button>
+      <div class="brand">Ancestrio</div>
+    </div>
+    <div class="controls controls-simple">
+      <a href="../index.html" class="icon-btn" title="Back to landing page" aria-label="Back to landing page">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      </a>
     </div>
   </header>
 
@@ -418,6 +435,8 @@
     </div>
   </main>
 
+  <script src="../scripts/night-sky.js"></script>
+  <script src="../scripts/day-clouds.js"></script>
   <script src="../scripts/main.js"></script>
   <script>
     // Theme switcher

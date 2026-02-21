@@ -824,7 +824,18 @@
   });
 
   // Load data from Firebase (if available) or rfamily.json
-  function loadTreeData() {
+  async function loadTreeData() {
+    // Wait for Firebase tree data to be ready (if it's being loaded)
+    if (typeof window !== 'undefined' && window.FIREBASE_TREE_READY) {
+      console.log('Waiting for Firebase tree data to load...');
+      try {
+        await window.FIREBASE_TREE_READY;
+        console.log('Firebase tree data ready');
+      } catch (err) {
+        console.warn('Firebase tree data loading failed:', err);
+      }
+    }
+    
     // Check if Firebase tree data is available (from tree.html)
     if (typeof window !== 'undefined' && window.FIREBASE_TREE_DATA) {
       console.log('Loading data from Firebase:', window.FIREBASE_TREE_DATA);
@@ -2214,10 +2225,68 @@
     return d3.hierarchy(data, (d) => d.children || []);
   }
 
+  function restructureForOrigin(data) {
+    // Find the origin node (marked with isOrigin: true)
+    function findOrigin(node) {
+      if (node && node.isOrigin) return node;
+      if (node && Array.isArray(node.children)) {
+        for (let child of node.children) {
+          const found = findOrigin(child);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    const originNode = findOrigin(data);
+    if (!originNode) return data; // No origin found, return as-is
+
+    // Find parent of origin node
+    function findNodeAndParent(current, target, parent = null) {
+      if (current === target) return { node: current, parent };
+      if (current && Array.isArray(current.children)) {
+        for (let child of current.children) {
+          const result = findNodeAndParent(child, target, current);
+          if (result) return result;
+        }
+      }
+      return null;
+    }
+
+    const result = findNodeAndParent(data, originNode);
+    if (!result || !result.parent) return data; // Origin is root, return as-is
+
+    // Extract the origin and restructure
+    const newRoot = {
+      name: originNode.name,
+      image: originNode.image,
+      birthday: originNode.birthday,
+      spouse: originNode.spouse,
+      spouseImage: originNode.spouseImage,
+      spouseBirthday: originNode.spouseBirthday,
+      tags: originNode.tags,
+      spouseTags: originNode.spouseTags,
+      children: originNode.children || []
+    };
+
+    // Deep clone the parent and remove the origin node from its children
+    const parentCopy = JSON.parse(JSON.stringify(result.parent));
+    if (Array.isArray(parentCopy.children)) {
+      parentCopy.children = parentCopy.children.filter(child => child !== originNode);
+    }
+
+    // Store the parent hierarchy as "parents" property
+    newRoot.parents = parentCopy;
+
+    return newRoot;
+  }
+
   function render(data) {
     g.selectAll('*').remove();
 
-    const root = asHierarchy(data);
+    // Restructure data so origin node is at root with parents as overlay
+    const restructuredData = restructureForOrigin(data);
+    const root = asHierarchy(restructuredData);
 
     // Top-to-bottom layout: x = horizontal, y = vertical
     const tree = d3.tree()

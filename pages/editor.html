@@ -11,15 +11,15 @@
   <link rel="stylesheet" href="../styles/main.css" />
   <link rel="stylesheet" href="../styles/editor.css" />
 </head>
-<body>
+<body class="editor-page">
   <header class="topbar">
     <div class="brand-group">
-      <div class="brand" id="treeTitle">Loading...</div>
-    </div>
-    <div class="controls">
       <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
       </button>
+      <div class="brand" id="treeTitle">Loading...</div>
+    </div>
+    <div class="controls controls-editor">
       <button id="saveBtn" title="Save changes" aria-label="Save changes" disabled>
         <span class="material-symbols-outlined" aria-hidden="true">save</span>
         Save
@@ -283,6 +283,8 @@
 
 
   <!-- Firebase SDK -->
+  <script src="../scripts/night-sky.js"></script>
+  <script src="../scripts/day-clouds.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
