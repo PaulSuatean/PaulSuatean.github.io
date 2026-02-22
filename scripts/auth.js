@@ -5,19 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const USERNAME_EMAIL_DOMAIN = 'users.ancestrio.local';
   
   // Theme toggle
-  const themeBtn = document.getElementById('themeBtn');
-  const themeKey = 'tree-theme';
-  const savedTheme = localStorage.getItem(themeKey);
-  const initialTheme = resolveInitialTheme(savedTheme);
-  document.body.classList.toggle('theme-dark', initialTheme === 'dark');
-  updateThemeIcon();
-
-  themeBtn?.addEventListener('click', () => {
-    document.body.classList.toggle('theme-dark');
-    const isDark = document.body.classList.contains('theme-dark');
-    localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
-    updateThemeIcon();
-  });
+  window.AncestrioTheme?.initThemeToggle();
   
   // Get DOM elements first
   const loginForm = document.getElementById('loginForm');
@@ -27,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabButtons = document.querySelectorAll('.auth-tab');
   const forms = document.querySelectorAll('.auth-form');
   const anonymousSignInBtn = document.getElementById('anonymousSignIn');
+  const compactAuthLayout = window.matchMedia('(max-width: 768px)');
+  const scheduleFormHeightSync = debounce(syncAuthFormHeights, 120);
 
   console.log('DOM elements found:', { loginForm, signupForm, errorMessage });
 
@@ -54,8 +44,15 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Clear error
       hideError();
+
+      // Keep card size stable when switching between login/signup layouts.
+      syncAuthFormHeights();
     });
   });
+
+  syncAuthFormHeights();
+  window.addEventListener('resize', scheduleFormHeightSync);
+  window.addEventListener('load', syncAuthFormHeights);
 
   // Login with email/password
   loginForm.addEventListener('submit', async (e) => {
@@ -78,13 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     try {
       showLoading(loginForm);
-      await auth.signInWithEmailAndPassword(resolvedLogin.email, password);
+      await signInWithPasswordIdentifier(resolvedLogin, password);
       localStorage.removeItem('guestMode');
       console.log('Login successful, redirecting...');
       window.location.href = 'dashboard.html';
     } catch (error) {
       console.error('Login error:', error);
-      showError(getErrorMessage(error.code));
+      showError(getLoginErrorMessageForIdentifier(error.code, resolvedLogin));
     } finally {
       hideLoading(loginForm);
     }
@@ -180,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (anonymousSignInBtn) {
     anonymousSignInBtn.addEventListener('click', () => {
       localStorage.setItem('guestMode', 'true');
-      window.location.href = 'editor.html?guest=1';
+      window.location.href = 'dashboard.html?guest=1';
     });
   }
 
@@ -206,6 +203,61 @@ document.addEventListener('DOMContentLoaded', () => {
     button.textContent = form.id === 'loginForm' ? 'Login' : 'Create Account';
   }
 
+  function syncAuthFormHeights() {
+    if (!forms.length) return;
+
+    if (compactAuthLayout.matches) {
+      forms.forEach((form) => {
+        form.style.minHeight = '';
+      });
+      return;
+    }
+
+    const props = ['display', 'visibility', 'position', 'left', 'top', 'width'];
+    const originalStyles = new Map();
+    const parentWidth = forms[0].parentElement ? forms[0].parentElement.clientWidth : 0;
+    let maxHeight = 0;
+
+    forms.forEach((form) => {
+      const previous = {};
+      props.forEach((prop) => {
+        previous[prop] = form.style[prop];
+      });
+      originalStyles.set(form, previous);
+
+      if (!form.classList.contains('active')) {
+        form.style.display = 'block';
+        form.style.visibility = 'hidden';
+        form.style.position = 'absolute';
+        form.style.left = '-9999px';
+        form.style.top = '0';
+        if (parentWidth > 0) {
+          form.style.width = `${parentWidth}px`;
+        }
+      }
+
+      maxHeight = Math.max(maxHeight, form.offsetHeight);
+    });
+
+    forms.forEach((form) => {
+      const previous = originalStyles.get(form);
+      props.forEach((prop) => {
+        form.style[prop] = previous[prop] || '';
+      });
+      form.style.minHeight = maxHeight > 0 ? `${Math.ceil(maxHeight)}px` : '';
+    });
+  }
+
+  function debounce(fn, waitMs) {
+    let timeoutId = null;
+    return (...args) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => fn(...args), waitMs);
+    };
+  }
+
   function getErrorMessage(code) {
     const messages = {
       'auth/email-already-in-use': 'This email or username is already registered.',
@@ -216,8 +268,13 @@ document.addEventListener('DOMContentLoaded', () => {
       'auth/user-not-found': 'No account found with this email or username.',
       'auth/wrong-password': 'Incorrect password.',
       'auth/invalid-login-credentials': 'Invalid credentials. Check email/username and password.',
+      'auth/invalid-credential': 'Invalid credentials. Check email/username and password.',
       'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
-      'auth/network-request-failed': 'Network error. Please check your connection.'
+      'auth/network-request-failed': 'Network error. Please check your connection.',
+      'auth/popup-blocked': 'Popup was blocked. Allow popups for this site and try Google sign-in again.',
+      'auth/popup-closed-by-user': 'Google sign-in was cancelled before completion.',
+      'auth/cancelled-popup-request': 'Another sign-in popup was opened. Close extra popups and try again.',
+      'auth/unauthorized-domain': 'This domain is not authorized for Firebase sign-in.'
     };
     return messages[code] || 'An error occurred. Please try again.';
   }
@@ -246,7 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return { error: 'Enter your email or username.' };
     }
     if (input.includes('@')) {
-      return { email: input };
+      return {
+        inputType: 'email',
+        email: input,
+        identifier: input
+      };
     }
 
     const username = normalizeUsername(input);
@@ -256,7 +317,31 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    return { email: toSyntheticEmail(username) };
+    return {
+      inputType: 'username',
+      username,
+      email: toSyntheticEmail(username),
+      identifier: input
+    };
+  }
+
+  async function signInWithPasswordIdentifier(resolvedLogin, password) {
+    if (!resolvedLogin || !resolvedLogin.email) {
+      throw new Error('Missing login email.');
+    }
+    await auth.signInWithEmailAndPassword(resolvedLogin.email, password);
+  }
+
+  function getLoginErrorMessageForIdentifier(code, resolvedLogin) {
+    if (resolvedLogin?.inputType === 'username' && (
+      code === 'auth/user-not-found' ||
+      code === 'auth/invalid-login-credentials' ||
+      code === 'auth/invalid-credential'
+    )) {
+      return 'Username not found. If this account was created with email or Google, use that instead.';
+    }
+
+    return getErrorMessage(code);
   }
 
   function resolveSignupIdentity(emailRaw, usernameRaw) {
@@ -326,35 +411,3 @@ document.addEventListener('DOMContentLoaded', () => {
   
   console.log('All event listeners attached successfully');
 });
-
-function updateThemeIcon() {
-  const themeBtn = document.getElementById('themeBtn');
-  if (!themeBtn) return;
-  const isDark = document.body.classList.contains('theme-dark');
-  const icon = themeBtn.querySelector('.material-symbols-outlined');
-  const iconName = isDark ? 'light_mode' : 'dark_mode';
-  if (icon) {
-    icon.textContent = iconName;
-  } else {
-    themeBtn.textContent = iconName;
-  }
-  themeBtn.classList.toggle('sun-icon', isDark);
-  themeBtn.classList.toggle('moon-icon', !isDark);
-  const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
-  themeBtn.setAttribute('aria-label', label);
-  themeBtn.setAttribute('title', label);
-  themeBtn.setAttribute('aria-pressed', String(isDark));
-}
-
-function resolveInitialTheme(saved) {
-  if (saved === 'dark' || saved === 'light') return saved;
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return isNightTime() ? 'dark' : 'light';
-}
-
-function isNightTime() {
-  const hour = new Date().getHours();
-  return hour >= 20 || hour < 7;
-}

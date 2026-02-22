@@ -1,4 +1,4 @@
-// Editor Logic
+﻿// Editor Logic
 
 let currentUser = null;
 let currentTree = null;
@@ -31,19 +31,7 @@ const LOCAL_GUEST_TREE_KEY = 'ancestrio:guest-tree:v1';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Theme toggle
-  const themeBtn = document.getElementById('themeBtn');
-  const themeKey = 'tree-theme';
-  const savedTheme = localStorage.getItem(themeKey);
-  const initialTheme = resolveInitialTheme(savedTheme);
-  document.body.classList.toggle('theme-dark', initialTheme === 'dark');
-  updateThemeIcon();
-
-  themeBtn?.addEventListener('click', () => {
-    document.body.classList.toggle('theme-dark');
-    const isDark = document.body.classList.contains('theme-dark');
-    localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
-    updateThemeIcon();
-  });
+  window.AncestrioTheme?.initThemeToggle();
   
   const urlParams = new URLSearchParams(window.location.search);
   isLocalGuestMode = localStorage.getItem('guestMode') === 'true' || urlParams.get('guest') === '1';
@@ -139,38 +127,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-function updateThemeIcon() {
-  const themeBtn = document.getElementById('themeBtn');
-  if (!themeBtn) return;
-  const isDark = document.body.classList.contains('theme-dark');
-  const icon = themeBtn.querySelector('.material-symbols-outlined');
-  const iconName = isDark ? 'light_mode' : 'dark_mode';
-  if (icon) {
-    icon.textContent = iconName;
-  } else {
-    themeBtn.textContent = iconName;
-  }
-  themeBtn.classList.toggle('sun-icon', isDark);
-  themeBtn.classList.toggle('moon-icon', !isDark);
-  const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
-  themeBtn.setAttribute('aria-label', label);
-  themeBtn.setAttribute('title', label);
-  themeBtn.setAttribute('aria-pressed', String(isDark));
-}
-
-function resolveInitialTheme(saved) {
-  if (saved === 'dark' || saved === 'light') return saved;
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return isNightTime() ? 'dark' : 'light';
-}
-
-function isNightTime() {
-  const hour = new Date().getHours();
-  return hour >= 20 || hour < 7;
-}
-
 async function loadTree() {
   try {
     const doc = await db.collection('trees').doc(treeId).get();
@@ -217,10 +173,7 @@ async function loadTree() {
 }
 
 function configureGuestModeUI() {
-  const saveBtn = document.getElementById('saveBtn');
-  if (saveBtn) {
-    saveBtn.style.display = 'none';
-  }
+  window.AncestrioDomDisplay.hide('saveBtn');
 
   const cloudInstruction = Array.from(document.querySelectorAll('.instructions-list li'))
     .find((item) => /saved to the cloud/i.test(item.textContent || ''));
@@ -230,18 +183,14 @@ function configureGuestModeUI() {
 
   const backLink = document.querySelector('.controls-editor a[href="dashboard.html"]');
   if (backLink) {
-    backLink.href = 'auth.html';
+    backLink.href = 'dashboard.html?guest=1';
   }
 
   const container = document.querySelector('.editor-container');
   if (container && !document.getElementById('guestModeNotice')) {
     const notice = document.createElement('div');
     notice.id = 'guestModeNotice';
-    notice.style.marginBottom = '12px';
-    notice.style.padding = '10px 12px';
-    notice.style.border = '1px solid var(--border)';
-    notice.style.borderRadius = '8px';
-    notice.style.background = 'var(--surface-2)';
+    notice.className = 'guest-mode-notice';
     notice.innerHTML = '<strong>Guest mode:</strong> This data is stored only in this browser. <a href="auth.html">Create an account</a> to save online (email optional).';
     container.prepend(notice);
   }
@@ -356,7 +305,7 @@ function updateSaveButton() {
   const saveBtn = document.getElementById('saveBtn');
   if (!saveBtn) return;
   if (isLocalGuestMode) {
-    saveBtn.style.display = 'none';
+    window.AncestrioDomDisplay.hide(saveBtn);
     return;
   }
   saveBtn.disabled = !hasUnsavedChanges;
@@ -771,7 +720,7 @@ function validateJson() {
   const jsonEditor = document.getElementById('jsonEditor');
   try {
     JSON.parse(jsonEditor.value);
-    showJsonStatus('Valid JSON ✓', 'valid');
+    showJsonStatus('Valid JSON - OK', 'valid');
   } catch (e) {
     showJsonStatus('Invalid JSON: ' + e.message, 'invalid');
   }
@@ -805,11 +754,11 @@ function exportJson() {
 }
 
 function showImportModal() {
-  document.getElementById('importModal').style.display = 'flex';
+  window.AncestrioDomDisplay.show('importModal', 'flex');
 }
 
 function hideImportModal() {
-  document.getElementById('importModal').style.display = 'none';
+  window.AncestrioDomDisplay.hide('importModal');
   document.getElementById('fileInput').value = '';
   document.getElementById('pasteJson').value = '';
 }
@@ -1419,7 +1368,7 @@ function renderVisualEditor(resetTransform) {
     })
     .call((g) => {
       g.append('circle').attr('r', 12);
-      g.append('text').text('−').attr('y', 1);
+      g.append('text').text('-').attr('y', 1);
     });
 
   // Update all nodes
@@ -2078,17 +2027,11 @@ function deleteMember(meta) {
 }
 
 function showDeleteConfirmModal() {
-  const modal = document.getElementById('deleteConfirmModal');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
+  window.AncestrioDomDisplay.show('deleteConfirmModal', 'flex');
 }
 
 function hideDeleteConfirmModal() {
-  const modal = document.getElementById('deleteConfirmModal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
+  window.AncestrioDomDisplay.hide('deleteConfirmModal');
   pendingDeleteMeta = null;
 }
 
@@ -2419,15 +2362,15 @@ function updateMemberPhotoPreview(imageValue) {
   if (photoImg) {
     if (memberPhotoValue) {
       photoImg.src = memberPhotoValue;
-      photoImg.style.display = 'block';
+      window.AncestrioDomDisplay.show(photoImg);
     } else {
       photoImg.src = '';
-      photoImg.style.display = 'none';
+      window.AncestrioDomDisplay.hide(photoImg);
     }
   }
 
   if (photoIcon) {
-    photoIcon.style.display = memberPhotoValue ? 'none' : 'block';
+    window.AncestrioDomDisplay.setDisplay(photoIcon, memberPhotoValue ? 'none' : 'block');
   }
 }
 
@@ -2740,4 +2683,5 @@ function updateMemberAt(meta, memberData) {
   scheduleVisualRender(false);
   return true;
 }
+
 

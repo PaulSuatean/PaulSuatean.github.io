@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../styles/editor.css" />
 </head>
 <body class="editor-page">
-  <header class="topbar">
+  <header class="topbar app-header">
     <div class="brand-group">
       <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
@@ -28,7 +28,7 @@
         <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
         Preview
       </button>
-      <a href="dashboard.html" style="text-decoration: none;">
+      <a href="dashboard.html" class="dashboard-link">
         <button title="Back to Dashboard" aria-label="Back to dashboard">
           <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
           Dashboard
@@ -57,8 +57,8 @@
             <div class="form-group">
               <label class="form-label">Privacy</label>
               <select id="editTreePrivacy" class="form-input">
-                <option value="private">🔒 Private</option>
-                <option value="public">🌍 Public</option>
+                <option value="private">Private</option>
+                <option value="public">Public</option>
               </select>
             </div>
           </div>
@@ -273,7 +273,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="../scripts/theme-toggle.js"></script>
+  <script src="../scripts/dom-display.js"></script>
   <script src="../scripts/firebase-config.js"></script>
-  <script src="../scripts/editor.js"></script>
+  <script src="../scripts/editor.js?v=3"></script>
 </body>
 </html>
+

@@ -1,0 +1,253 @@
+:root {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f1f3f5;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --text: #1f2937;
+  --muted: #5b6472;
+  --line: #d9dde2;
+  --accent: #3b82f6;
+  --accent-2: #2563eb;
+  --accent-3: #60a5fa;
+  --page-bg: #ffffff;
+  --page-bg-2: #f1f3f5;
+  --page-bg-gradient: linear-gradient(160deg, #ffffff 0%, #f1f3f5 55%, #ffffff 100%);
+  --surface: #ffffff;
+  --surface-2: #f1f3f5;
+  --surface-3: #e7ebf0;
+  --border: #d9dde2;
+  --ring: rgba(59, 130, 246, 0.25);
+  --gradient-primary: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  --gradient-secondary: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  --gradient-soft: linear-gradient(135deg, rgba(29, 78, 216, 0.16) 0%, rgba(59, 130, 246, 0.12) 100%);
+  --calendar-panel-max: 36vh;
+  --calendar-panel-max-mobile: 55vh;
+  --calendar-toggle-clearance: 56px;
+  --calendar-day-bg: #f1f3f5;
+  --calendar-day-border: rgba(31, 41, 55, 0.08);
+  --calendar-day-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  --calendar-bday-bg: linear-gradient(135deg, #f8f1d8 0%, #efcf85 100%);
+  --calendar-bday-border: #c8a24b;
+  --calendar-bday-shadow: inset 0 0 0 1.5px rgba(200, 162, 75, 0.9);
+  --calendar-today-bg: #e7ebf0;
+  --calendar-today-shadow: inset 0 0 0 1.5px rgba(31, 41, 55, 0.12), 0 3px 8px rgba(31, 41, 55, 0.12);
+  --calendar-today-text: #1f2937;
+  --feature-banner-height: 0px;
+  --view-toggle-top: calc(env(safe-area-inset-top) + 76px + var(--feature-banner-height));
+  --view-toggle-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  --month-card-height: 220px;
+  --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 12px 24px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 22px 44px rgba(15, 23, 42, 0.18);
+  --shadow-xl: 0 32px 60px rgba(15, 23, 42, 0.22);
+  --radius-sm: 8px;
+  --radius-control: 12px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --transition-slow: 300ms;
+  --button-hover-overlay-opacity: 0.08;
+  --node-fill: var(--surface-2);
+  --node-stroke: rgba(15, 23, 42, 0.12);
+  --node-shadow: drop-shadow(0 6px 16px rgba(15, 23, 42, 0.12));
+}
+
+@supports (height: 100svh) {
+  :root {
+    --calendar-panel-max: 36svh;
+    --calendar-panel-max-mobile: 55svh;
+  }
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.tree-icon {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--page-bg-gradient);
+  background-attachment: fixed;
+  overflow: hidden; /* prevent stray page scroll bar; zoom handles wheel input */
+  line-height: 1.5;
+  transition: background var(--transition-slow) ease, color var(--transition-base) ease;
+}
+
+/* Shared hover animation used by landing page theme button, reused project-wide */
+button:not(.upcoming-birthday-display) {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+button:not(.upcoming-birthday-display)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-base) ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+button:not(.upcoming-birthday-display) > * {
+  position: relative;
+  z-index: 1;
+}
+
+button:not(.upcoming-birthday-display):not(:disabled):hover::after {
+  opacity: var(--button-hover-overlay-opacity);
+}
+
+button:not(.upcoming-birthday-display):not(:disabled):hover {
+  box-shadow: var(--shadow-md);
+}
+
+header,
+.topbar,
+.page,
+.globe-view,
+.tw-toggle,
+.search-bar,
+.birthday-bar,
+.feature-banner,
+.landing-controls,
+.triangle-container {
+  position: relative;
+  z-index: 1;
+}
+
+.night-sky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-slow) ease;
+}
+
+body.theme-dark .night-sky {
+  opacity: 1;
+}
+
+.night-sky__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Day clouds - Floating silver clouds for light mode */
+.day-clouds {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity var(--transition-slow) ease;
+}
+
+body.theme-dark .day-clouds {
+  opacity: 0;
+}
+
+.day-cloud {
+  position: absolute;
+  left: -150px;
+  height: auto;
+  animation-name: cloudFloat, cloudFade;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+  animation-timing-function: linear;
+  will-change: transform, opacity;
+}
+
+.day-cloud svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  fill: #c8cdd4;
+}
+
+.day-cloud.cloud-foreground {
+  z-index: 3;
+}
+
+.day-cloud.cloud-foreground svg {
+  fill: #d9dde2;
+}
+
+.day-cloud.cloud-background {
+  z-index: 2;
+}
+
+.day-cloud.cloud-background svg {
+  fill: #e7ebf0;
+}
+
+@keyframes cloudFloat {
+  from { transform: translateX(0) translateZ(0); }
+  to { transform: translateX(calc(100vw + 150px)) translateZ(0); }
+}
+
+@keyframes cloudFade {
+  0%, 100% { opacity: 0; }
+  5%, 90% { opacity: var(--cloud-base-opacity, 0.3); }
+}
+
+/* Dark theme variables - Modern gradient dark */
+body.theme-dark {
+  --bg: #0b1d33;
+  --text: #e6eef9;
+  --muted: #b7c3d6;
+  --line: rgba(230, 238, 249, 0.22);
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --accent-3: #93c5fd;
+  --page-bg: #0b1d33;
+  --page-bg-2: #132a46;
+  --page-bg-gradient: linear-gradient(160deg, #0b1d33 0%, #132a46 55%, #0b1d33 100%);
+  --surface: #0b1d33;
+  --surface-2: #132a46;
+  --surface-3: #183255;
+  --border: rgba(230, 238, 249, 0.18);
+  --ring: rgba(59, 130, 246, 0.35);
+  --gradient-primary: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  --gradient-secondary: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  --gradient-soft: linear-gradient(135deg, rgba(29, 78, 216, 0.25) 0%, rgba(96, 165, 250, 0.25) 100%);
+  --calendar-day-bg: #132a46;
+  --calendar-day-border: rgba(230, 238, 249, 0.16);
+  --calendar-day-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --calendar-bday-bg: linear-gradient(135deg, rgba(212, 175, 55, 0.28) 0%, rgba(241, 203, 104, 0.52) 100%);
+  --calendar-bday-border: rgba(212, 175, 55, 0.85);
+  --calendar-bday-shadow: inset 0 0 0 1.5px rgba(212, 175, 55, 0.9);
+  --calendar-today-bg: #183255;
+  --calendar-today-shadow: inset 0 0 0 1.5px rgba(230, 238, 249, 0.14), 0 3px 8px rgba(6, 12, 22, 0.28);
+  --calendar-today-text: #e6eef9;
+  --node-fill: var(--surface-2);
+  --node-stroke: rgba(59, 130, 246, 0.35);
+  --node-shadow: drop-shadow(0 10px 26px rgba(6, 12, 22, 0.35));
+  background: #0b1d33;
+}

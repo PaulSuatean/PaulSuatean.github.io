@@ -1,8 +1,8 @@
-# 🔧 Firebase Setup Instructions for Ancestrio
+﻿# ðŸ”§ Firebase Setup Instructions for Ancestrio
 
 Your site is deployed at **https://ancestrio.web.app**, but you need to enable Firebase services for login/signup to work.
 
-## ✅ Quick Setup Checklist
+## âœ… Quick Setup Checklist
 
 ### 1. Enable Firebase Authentication
 
@@ -60,7 +60,7 @@ service cloud.firestore {
 
 3. Click **"Publish"**
 
-## 🧪 Test Your Setup
+## ðŸ§ª Test Your Setup
 
 After completing the steps above:
 
@@ -74,11 +74,11 @@ After completing the steps above:
 
 You should be redirected to the dashboard!
 
-## 🔍 Troubleshooting
+## ðŸ” Troubleshooting
 
 ### "Nothing happens when I click Login"
 - Make sure you've enabled Email/Password authentication in Firebase Console
-- Check browser console for errors (F12 → Console tab)
+- Check browser console for errors (F12 â†’ Console tab)
 - Verify you're using the Sign Up tab first (you need to create an account)
 
 ### "Sign Up tab doesn't work"
@@ -91,14 +91,14 @@ You should be redirected to the dashboard!
 - Make sure you selected a support email
 - Try using email/password first to verify basic setup
 
-## 📋 Quick Links
+## ðŸ“‹ Quick Links
 
 - [Firebase Console](https://console.firebase.google.com/project/ancestrio/overview)
 - [Authentication Settings](https://console.firebase.google.com/project/ancestrio/authentication)
 - [Firestore Database](https://console.firebase.google.com/project/ancestrio/firestore)
 - [Hosting Settings](https://console.firebase.google.com/project/ancestrio/hosting)
 
-## 🚀 After Setup
+## ðŸš€ After Setup
 
 Once everything is working:
 
@@ -108,3 +108,5 @@ Once everything is working:
 4. Make trees public or private
 
 Need help? Check the browser console (F12) for specific error messages!
+
+

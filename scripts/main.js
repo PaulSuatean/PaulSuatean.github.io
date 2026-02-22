@@ -330,67 +330,14 @@
     dnaBtn.setAttribute('title', 'Genealogie');
   }
   const themeBtn = document.getElementById('themeBtn');
-  let autoThemeTimer = null;
-  if (themeBtn) {
-    const savedTheme = localStorage.getItem('tree-theme');
-    const initialTheme = resolveInitialTheme(savedTheme);
-    document.body.classList.toggle('theme-dark', initialTheme === 'dark');
-    updateThemeIcon();
-
-    if (!savedTheme) {
-      autoThemeTimer = setInterval(() => {
-        if (localStorage.getItem('tree-theme')) {
-          clearInterval(autoThemeTimer);
-          autoThemeTimer = null;
-          return;
-        }
-        const desiredTheme = resolveInitialTheme(null);
-        const isDark = document.body.classList.contains('theme-dark');
-        if ((desiredTheme === 'dark') !== isDark) {
-          document.body.classList.toggle('theme-dark', desiredTheme === 'dark');
-          updateThemeIcon();
-        }
-      }, 30 * 60 * 1000);
-    }
-
-    themeBtn.addEventListener('click', () => {
-      document.body.classList.toggle('theme-dark');
-      const isDark = document.body.classList.contains('theme-dark');
-      localStorage.setItem('tree-theme', isDark ? 'dark' : 'light');
-      if (autoThemeTimer) {
-        clearInterval(autoThemeTimer);
-        autoThemeTimer = null;
-      }
-      updateThemeIcon();
-    });
-  }
-  function updateThemeIcon() {
-    if (!themeBtn) return;
-    const isDark = document.body.classList.contains('theme-dark');
-    const icon = themeBtn.querySelector('.material-symbols-outlined');
-    const iconName = isDark ? 'dark_mode' : 'light_mode';
-    if (icon) {
-      icon.textContent = iconName;
-    } else {
-      themeBtn.textContent = iconName;
-    }
-    themeBtn.classList.toggle('sun-icon', !isDark);
-    themeBtn.classList.toggle('moon-icon', isDark);
-    const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
-    themeBtn.setAttribute('aria-label', label);
-    themeBtn.setAttribute('title', label);
-  }
-  function resolveInitialTheme(saved) {
-    if (saved === 'dark' || saved === 'light') return saved;
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return isNightTime() ? 'dark' : 'light';
-  }
-  function isNightTime() {
-    const hour = new Date().getHours();
-    return hour >= 20 || hour < 7;
-  }
+  window.AncestrioTheme?.initThemeToggle({
+    button: themeBtn,
+    iconWhenDark: 'dark_mode',
+    iconWhenLight: 'light_mode',
+    darkButtonClass: 'moon-icon',
+    lightButtonClass: 'sun-icon',
+    autoRefreshMs: 30 * 60 * 1000
+  });
   const zoomInBtn = document.getElementById('zoomInBtn');
   const zoomOutBtn = document.getElementById('zoomOutBtn');
   const resetBtn = document.getElementById('resetBtn');

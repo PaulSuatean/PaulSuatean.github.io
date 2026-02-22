@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../styles/main.css" />
   </head>
   <body class="tree-viewer-page">
-    <header class="topbar">
+    <header class="topbar app-header">
       <div class="brand-group">
         <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
           <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
@@ -178,13 +178,10 @@
     <script src="../scripts/day-clouds.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+    <script src="../scripts/theme-toggle.js"></script>
     
     <!-- Load demo tree (no Firebase required) -->
-    <script>
-      // For demo tree, load from rfamily.json
-      window.FIREBASE_TREE_DATA = null;
-      window.FIREBASE_TREE_NAME = 'Ascentrio - Tree Demo';
-    </script>
+    <script src="../scripts/demo-tree-bootstrap.js"></script>
     
     <script src="../scripts/main.js"></script>
   </body>

@@ -1,4 +1,4 @@
-# Local Development Setup with Firebase Emulator
+﻿# Local Development Setup with Firebase Emulator
 
 This guide will help you test your application locally without deploying to Firebase each time.
 
@@ -36,15 +36,15 @@ firebase emulators:start --only auth,firestore,storage
 
 You should see output like:
 ```
-✔ All emulators ready! It is now safe to open the emulator UI.
+âœ” All emulators ready! It is now safe to open the emulator UI.
 
-┌─────────────────────────────────────────────────────────────┐
-│ Emulator UI (Web): http://localhost:4000                    │
-├─────────────────────────────────────────────────────────────┤
-│ Authentication Emulator: http://localhost:9099              │
-│ Cloud Firestore Emulator: http://localhost:8080             │
-│ Storage Emulator: http://localhost:5001                     │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Emulator UI (Web): http://localhost:4000                    â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Authentication Emulator: http://localhost:9099              â”‚
+â”‚ Cloud Firestore Emulator: http://localhost:8080             â”‚
+â”‚ Storage Emulator: http://localhost:5001                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Step 3: Start a Local Web Server
@@ -69,11 +69,11 @@ node -e "require('http').createServer((q,s)=>require('fs').createReadStream('.'+
 
 Open your browser and go to: `http://localhost:5000`
 
-The `firebase-config.js` will **automatically detect** you're on localhost and connect to the local emulator instead of your production Firebase.
+The `scripts/firebase-config.js` will **automatically detect** you're on localhost and connect to the local emulator instead of your production Firebase.
 
 ## How It Works
 
-Your updated `firebase-config.js` checks if:
+Your updated `scripts/firebase-config.js` checks if:
 - Hostname is `localhost` or `127.0.0.1`
 - Port is `5000` (Firebase Emulator default)
 
@@ -90,7 +90,7 @@ While the emulator is running, you can view live data at:
 1. **Terminal 1**: `firebase emulators:start --only auth,firestore,storage`
 2. **Terminal 2**: `python -m http.server 5000` (or your preferred server)
 3. **Browser**: http://localhost:5000
-4. Make code changes → Refresh browser (F5)
+4. Make code changes â†’ Refresh browser (F5)
 5. No deployment needed!
 
 ## Useful Commands
@@ -139,4 +139,6 @@ http-server -p 5000
 
 ---
 
-💡 **Tip**: You can use VS Code's "Live Server" extension for even easier local development!
+ðŸ’¡ **Tip**: You can use VS Code's "Live Server" extension for even easier local development!
+
+

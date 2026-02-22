@@ -12,7 +12,6 @@
       "reorganize.ps1",
       "reorganize.bat",
       "REORGANIZATION_GUIDE.md",
-      "config/**",
       "docs/**"
     ],
     "headers": [

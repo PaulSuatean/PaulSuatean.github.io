@@ -1,0 +1,922 @@
+/* Landing-like corner controls across app pages */
+body.tree-viewer-page:not(.focus-mode),
+body.dashboard-page:not(.focus-mode),
+body.editor-page:not(.focus-mode),
+body.auth-page:not(.focus-mode),
+body.contact-page-layout:not(.focus-mode) {
+  --floating-header-space: 80px;
+  --corner-controls-top: 24px;
+  --corner-controls-inset: 24px;
+  --corner-control-size: 48px;
+}
+
+body.tree-viewer-page:not(.focus-mode) .topbar,
+body.dashboard-page:not(.focus-mode) .topbar,
+body.editor-page:not(.focus-mode) .topbar,
+body.auth-page:not(.focus-mode) .topbar,
+body.contact-page-layout:not(.focus-mode) .topbar {
+  position: relative;
+  height: var(--floating-header-space);
+  min-height: var(--floating-header-space);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  display: block;
+  z-index: 7;
+  pointer-events: none;
+  overflow: visible;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group,
+body.dashboard-page:not(.focus-mode) .brand-group,
+body.editor-page:not(.focus-mode) .brand-group,
+body.auth-page:not(.focus-mode) .brand-group,
+body.contact-page-layout:not(.focus-mode) .brand-group {
+  position: fixed;
+  top: var(--corner-controls-top);
+  left: var(--corner-controls-inset);
+  z-index: 8;
+  width: auto;
+  min-width: 48px;
+  padding: 0;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  pointer-events: auto;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn {
+  position: static;
+  transform: none;
+  margin: 0;
+  width: var(--corner-control-size);
+  height: var(--corner-control-size);
+  min-width: var(--corner-control-size);
+  min-height: var(--corner-control-size);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+
+/* Keep corner controls visually identical to landing page controls. */
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn,
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn,
+body.editor-page:not(.focus-mode) .controls .icon-btn,
+body.auth-page:not(.focus-mode) .controls .icon-btn,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn,
+body.tree-viewer-page:not(.focus-mode) #backBtn,
+body.dashboard-page:not(.focus-mode) #backBtn,
+body.editor-page:not(.focus-mode) #backBtn,
+body.auth-page:not(.focus-mode) #backBtn,
+body.contact-page-layout:not(.focus-mode) #backBtn {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  transition: transform var(--transition-base) ease, box-shadow var(--transition-base) ease, border-color var(--transition-base) ease, background var(--transition-base) ease, color var(--transition-base) ease;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn::after,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn::after,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn::after,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn::after,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn::after,
+body.tree-viewer-page:not(.focus-mode) #backBtn::after,
+body.dashboard-page:not(.focus-mode) #backBtn::after,
+body.editor-page:not(.focus-mode) #backBtn::after,
+body.auth-page:not(.focus-mode) #backBtn::after,
+body.contact-page-layout:not(.focus-mode) #backBtn::after {
+  content: none;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn::before,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn::before,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn::before,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn::before,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn::before,
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn::before,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn::before,
+body.editor-page:not(.focus-mode) .controls .icon-btn::before,
+body.auth-page:not(.focus-mode) .controls .icon-btn::before,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn::before,
+body.tree-viewer-page:not(.focus-mode) #backBtn::before,
+body.dashboard-page:not(.focus-mode) #backBtn::before,
+body.editor-page:not(.focus-mode) #backBtn::before,
+body.auth-page:not(.focus-mode) #backBtn::before,
+body.contact-page-layout:not(.focus-mode) #backBtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-base) ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn > *,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn > *,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn > *,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn > *,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn > *,
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn > *,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn > *,
+body.editor-page:not(.focus-mode) .controls .icon-btn > *,
+body.auth-page:not(.focus-mode) .controls .icon-btn > *,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn > *,
+body.tree-viewer-page:not(.focus-mode) #backBtn > *,
+body.dashboard-page:not(.focus-mode) #backBtn > *,
+body.editor-page:not(.focus-mode) #backBtn > *,
+body.auth-page:not(.focus-mode) #backBtn > *,
+body.contact-page-layout:not(.focus-mode) #backBtn > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn:hover::before,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn:hover::before,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn:hover::before,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn:hover::before,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn:hover::before,
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn:hover::before,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn:hover::before,
+body.editor-page:not(.focus-mode) .controls .icon-btn:hover::before,
+body.auth-page:not(.focus-mode) .controls .icon-btn:hover::before,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn:hover::before,
+body.tree-viewer-page:not(.focus-mode) #backBtn:hover::before,
+body.dashboard-page:not(.focus-mode) #backBtn:hover::before,
+body.editor-page:not(.focus-mode) #backBtn:hover::before,
+body.auth-page:not(.focus-mode) #backBtn:hover::before,
+body.contact-page-layout:not(.focus-mode) #backBtn:hover::before {
+  opacity: 0.08;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.dashboard-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.editor-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.auth-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.contact-page-layout:not(.focus-mode) .brand-group #themeBtn:hover,
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn:hover,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn:hover,
+body.editor-page:not(.focus-mode) .controls .icon-btn:hover,
+body.auth-page:not(.focus-mode) .controls .icon-btn:hover,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn:hover,
+body.tree-viewer-page:not(.focus-mode) #backBtn:hover,
+body.dashboard-page:not(.focus-mode) #backBtn:hover,
+body.editor-page:not(.focus-mode) #backBtn:hover,
+body.auth-page:not(.focus-mode) #backBtn:hover,
+body.contact-page-layout:not(.focus-mode) #backBtn:hover {
+  background: #ffffff;
+  color: #1f2937;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  border-color: #3b82f6;
+}
+
+body.theme-dark.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.theme-dark.dashboard-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.theme-dark.editor-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.theme-dark.auth-page:not(.focus-mode) .brand-group #themeBtn:hover,
+body.theme-dark.contact-page-layout:not(.focus-mode) .brand-group #themeBtn:hover,
+body.theme-dark.tree-viewer-page:not(.focus-mode) .controls .icon-btn:hover,
+body.theme-dark.dashboard-page:not(.focus-mode) .controls .icon-btn:hover,
+body.theme-dark.editor-page:not(.focus-mode) .controls .icon-btn:hover,
+body.theme-dark.auth-page:not(.focus-mode) .controls .icon-btn:hover,
+body.theme-dark.contact-page-layout:not(.focus-mode) .controls .icon-btn:hover,
+body.theme-dark.tree-viewer-page:not(.focus-mode) #backBtn:hover,
+body.theme-dark.dashboard-page:not(.focus-mode) #backBtn:hover,
+body.theme-dark.editor-page:not(.focus-mode) #backBtn:hover,
+body.theme-dark.auth-page:not(.focus-mode) #backBtn:hover,
+body.theme-dark.contact-page-layout:not(.focus-mode) #backBtn:hover {
+  background: rgba(11, 29, 51, 0.92);
+  color: #ffffff;
+}
+
+body.theme-dark.tree-viewer-page:not(.focus-mode) .brand-group #themeBtn,
+body.theme-dark.dashboard-page:not(.focus-mode) .brand-group #themeBtn,
+body.theme-dark.editor-page:not(.focus-mode) .brand-group #themeBtn,
+body.theme-dark.auth-page:not(.focus-mode) .brand-group #themeBtn,
+body.theme-dark.contact-page-layout:not(.focus-mode) .brand-group #themeBtn {
+  background: rgba(11, 29, 51, 0.92);
+}
+
+body.theme-dark.tree-viewer-page:not(.focus-mode) .controls .icon-btn,
+body.theme-dark.dashboard-page:not(.focus-mode) .controls .icon-btn,
+body.theme-dark.editor-page:not(.focus-mode) .controls .icon-btn,
+body.theme-dark.auth-page:not(.focus-mode) .controls .icon-btn,
+body.theme-dark.contact-page-layout:not(.focus-mode) .controls .icon-btn,
+body.theme-dark.tree-viewer-page:not(.focus-mode) #backBtn,
+body.theme-dark.dashboard-page:not(.focus-mode) #backBtn,
+body.theme-dark.editor-page:not(.focus-mode) #backBtn,
+body.theme-dark.auth-page:not(.focus-mode) #backBtn,
+body.theme-dark.contact-page-layout:not(.focus-mode) #backBtn {
+  border-color: rgba(230, 238, 249, 0.18);
+  background: rgba(11, 29, 51, 0.92);
+  color: #ffffff;
+}
+
+body.tree-viewer-page:not(.focus-mode) .brand,
+body.dashboard-page:not(.focus-mode) .brand,
+body.editor-page:not(.focus-mode) .brand,
+body.auth-page:not(.focus-mode) .brand,
+body.contact-page-layout:not(.focus-mode) .brand {
+  display: none;
+}
+
+body.tree-viewer-page:not(.focus-mode) .controls,
+body.dashboard-page:not(.focus-mode) .controls,
+body.editor-page:not(.focus-mode) .controls,
+body.auth-page:not(.focus-mode) .controls,
+body.contact-page-layout:not(.focus-mode) .controls {
+  position: fixed;
+  top: var(--corner-controls-top);
+  right: var(--corner-controls-inset);
+  left: auto;
+  bottom: auto;
+  transform: none;
+  z-index: 8;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: min(80vw, 1080px);
+  margin-left: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  pointer-events: auto;
+}
+
+/* Neutralize legacy mobile header transforms for simple/dashboard control groups. */
+body.auth-page:not(.focus-mode) .controls-simple,
+body.contact-page-layout:not(.focus-mode) .controls-simple,
+body.dashboard-page:not(.focus-mode) .controls-dashboard {
+  position: fixed;
+  top: var(--corner-controls-top);
+  right: var(--corner-controls-inset);
+  left: auto;
+  bottom: auto;
+  transform: none;
+}
+
+body.tree-viewer-page:not(.focus-mode) .controls::-webkit-scrollbar,
+body.dashboard-page:not(.focus-mode) .controls::-webkit-scrollbar,
+body.editor-page:not(.focus-mode) .controls::-webkit-scrollbar,
+body.auth-page:not(.focus-mode) .controls::-webkit-scrollbar,
+body.contact-page-layout:not(.focus-mode) .controls::-webkit-scrollbar {
+  display: none;
+}
+
+body.tree-viewer-page:not(.focus-mode) .controls > button,
+body.dashboard-page:not(.focus-mode) .controls > button,
+body.editor-page:not(.focus-mode) .controls > button,
+body.auth-page:not(.focus-mode) .controls > button,
+body.contact-page-layout:not(.focus-mode) .controls > button,
+body.tree-viewer-page:not(.focus-mode) .controls > a,
+body.dashboard-page:not(.focus-mode) .controls > a,
+body.editor-page:not(.focus-mode) .controls > a,
+body.auth-page:not(.focus-mode) .controls > a,
+body.contact-page-layout:not(.focus-mode) .controls > a,
+body.tree-viewer-page:not(.focus-mode) .controls > a > button,
+body.dashboard-page:not(.focus-mode) .controls > a > button,
+body.editor-page:not(.focus-mode) .controls > a > button,
+body.auth-page:not(.focus-mode) .controls > a > button,
+body.contact-page-layout:not(.focus-mode) .controls > a > button,
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn,
+body.editor-page:not(.focus-mode) .controls .icon-btn,
+body.auth-page:not(.focus-mode) .controls .icon-btn,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn,
+body.tree-viewer-page:not(.focus-mode) #upcomingBtn,
+body.dashboard-page:not(.focus-mode) #upcomingBtn,
+body.editor-page:not(.focus-mode) #upcomingBtn,
+body.auth-page:not(.focus-mode) #upcomingBtn,
+body.contact-page-layout:not(.focus-mode) #upcomingBtn {
+  min-height: var(--corner-control-size);
+  border-radius: var(--radius-control);
+}
+
+body.tree-viewer-page:not(.focus-mode) .controls .icon-btn,
+body.dashboard-page:not(.focus-mode) .controls .icon-btn,
+body.editor-page:not(.focus-mode) .controls .icon-btn,
+body.auth-page:not(.focus-mode) .controls .icon-btn,
+body.contact-page-layout:not(.focus-mode) .controls .icon-btn,
+body.tree-viewer-page:not(.focus-mode) #backBtn,
+body.dashboard-page:not(.focus-mode) #backBtn,
+body.editor-page:not(.focus-mode) #backBtn,
+body.auth-page:not(.focus-mode) #backBtn,
+body.contact-page-layout:not(.focus-mode) #backBtn {
+  width: var(--corner-control-size);
+  height: var(--corner-control-size);
+  min-width: var(--corner-control-size);
+  padding: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+body.tree-viewer-page:not(.focus-mode) .controls-tree,
+body.editor-page:not(.focus-mode) .controls-editor {
+  max-width: min(80vw, 1160px);
+}
+
+@media (max-width: 768px) {
+  body.tree-viewer-page:not(.focus-mode),
+  body.dashboard-page:not(.focus-mode),
+  body.editor-page:not(.focus-mode),
+  body.auth-page:not(.focus-mode),
+  body.contact-page-layout:not(.focus-mode) {
+    --corner-controls-top: calc(env(safe-area-inset-top) + 12px);
+    --corner-controls-inset: 12px;
+    --corner-control-size: 44px;
+    --floating-header-space: calc(var(--corner-controls-top) + var(--corner-control-size) + 8px);
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .topbar,
+  body.dashboard-page:not(.focus-mode) .topbar,
+  body.editor-page:not(.focus-mode) .topbar,
+  body.auth-page:not(.focus-mode) .topbar,
+  body.contact-page-layout:not(.focus-mode) .topbar {
+    height: var(--floating-header-space);
+    min-height: var(--floating-header-space);
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .controls,
+  body.dashboard-page:not(.focus-mode) .controls,
+  body.editor-page:not(.focus-mode) .controls,
+  body.auth-page:not(.focus-mode) .controls,
+  body.contact-page-layout:not(.focus-mode) .controls {
+    gap: 6px;
+    max-width: min(74vw, 560px);
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .controls > button,
+  body.dashboard-page:not(.focus-mode) .controls > button,
+  body.editor-page:not(.focus-mode) .controls > button,
+  body.auth-page:not(.focus-mode) .controls > button,
+  body.contact-page-layout:not(.focus-mode) .controls > button,
+  body.tree-viewer-page:not(.focus-mode) .controls > a,
+  body.dashboard-page:not(.focus-mode) .controls > a,
+  body.editor-page:not(.focus-mode) .controls > a,
+  body.auth-page:not(.focus-mode) .controls > a,
+  body.contact-page-layout:not(.focus-mode) .controls > a,
+  body.tree-viewer-page:not(.focus-mode) .controls > a > button,
+  body.dashboard-page:not(.focus-mode) .controls > a > button,
+  body.editor-page:not(.focus-mode) .controls > a > button,
+  body.auth-page:not(.focus-mode) .controls > a > button,
+  body.contact-page-layout:not(.focus-mode) .controls > a > button,
+  body.tree-viewer-page:not(.focus-mode) .controls .icon-btn,
+  body.dashboard-page:not(.focus-mode) .controls .icon-btn,
+  body.editor-page:not(.focus-mode) .controls .icon-btn,
+  body.auth-page:not(.focus-mode) .controls .icon-btn,
+  body.contact-page-layout:not(.focus-mode) .controls .icon-btn,
+  body.tree-viewer-page:not(.focus-mode) #upcomingBtn,
+  body.dashboard-page:not(.focus-mode) #upcomingBtn,
+  body.editor-page:not(.focus-mode) #upcomingBtn,
+  body.auth-page:not(.focus-mode) #upcomingBtn,
+  body.contact-page-layout:not(.focus-mode) #upcomingBtn {
+    min-height: 44px;
+    border-radius: var(--radius-control);
+    padding: 0 10px;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .controls .icon-btn,
+  body.dashboard-page:not(.focus-mode) .controls .icon-btn,
+  body.editor-page:not(.focus-mode) .controls .icon-btn,
+  body.auth-page:not(.focus-mode) .controls .icon-btn,
+  body.contact-page-layout:not(.focus-mode) .controls .icon-btn,
+  body.tree-viewer-page:not(.focus-mode) #backBtn,
+  body.dashboard-page:not(.focus-mode) #backBtn,
+  body.editor-page:not(.focus-mode) #backBtn,
+  body.auth-page:not(.focus-mode) #backBtn,
+  body.contact-page-layout:not(.focus-mode) #backBtn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .controls-tree,
+  body.editor-page:not(.focus-mode) .controls-editor {
+    max-width: min(74vw, 620px);
+  }
+}
+
+@media (max-width: 640px) {
+  body.tree-viewer-page:not(.focus-mode),
+  body.dashboard-page:not(.focus-mode),
+  body.editor-page:not(.focus-mode),
+  body.auth-page:not(.focus-mode),
+  body.contact-page-layout:not(.focus-mode) {
+    --corner-controls-inset: 8px;
+  }
+}
+
+/* Keep header control hover/pulse effects fully visible (no clipping). */
+body.tree-viewer-page:not(.focus-mode) .topbar,
+body.dashboard-page:not(.focus-mode) .topbar,
+body.editor-page:not(.focus-mode) .topbar,
+body.auth-page:not(.focus-mode) .topbar,
+body.contact-page-layout:not(.focus-mode) .topbar {
+  overflow: visible;
+  padding: 0;
+}
+
+body.tree-viewer-page:not(.focus-mode) .controls,
+body.dashboard-page:not(.focus-mode) .controls,
+body.editor-page:not(.focus-mode) .controls,
+body.auth-page:not(.focus-mode) .controls,
+body.contact-page-layout:not(.focus-mode) .controls,
+body.tree-viewer-page:not(.focus-mode) .controls-tree,
+body.editor-page:not(.focus-mode) .controls-editor {
+  overflow-y: visible;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Universal header controls: identical structure/position/appearance across all pages. */
+:root {
+  --header-corner-top: 24px;
+  --header-corner-inset: 24px;
+  --header-corner-size: 48px;
+  --header-corner-gap: 8px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --header-corner-top: calc(env(safe-area-inset-top) + 12px);
+    --header-corner-inset: 12px;
+    --header-corner-size: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --header-corner-inset: 8px;
+  }
+}
+
+body:not(.focus-mode) .app-header {
+  position: relative;
+  height: calc(var(--header-corner-top) + var(--header-corner-size) + 8px);
+  min-height: calc(var(--header-corner-top) + var(--header-corner-size) + 8px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 20;
+}
+
+body:not(.focus-mode) .app-header .brand-group {
+  position: fixed;
+  top: var(--header-corner-top);
+  left: var(--header-corner-inset);
+  z-index: 21;
+  width: auto;
+  min-width: var(--header-corner-size);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  pointer-events: auto;
+}
+
+body:not(.focus-mode) .app-header .brand {
+  display: none;
+}
+
+body:not(.focus-mode) .app-header .controls {
+  position: fixed;
+  top: var(--header-corner-top);
+  right: var(--header-corner-inset);
+  left: auto;
+  bottom: auto;
+  transform: none;
+  z-index: 21;
+  width: auto;
+  max-width: min(80vw, 1080px);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--header-corner-gap);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: visible;
+  pointer-events: auto;
+  scrollbar-width: none;
+}
+
+body:not(.focus-mode) .app-header .controls::-webkit-scrollbar {
+  display: none;
+}
+
+body:not(.focus-mode) .app-header .controls > * {
+  flex: 0 0 auto;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn,
+body:not(.focus-mode) .app-header .controls .icon-btn,
+body:not(.focus-mode) .app-header #backBtn {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #1f2937;
+  width: var(--header-corner-size);
+  height: var(--header-corner-size);
+  min-width: var(--header-corner-size);
+  min-height: var(--header-corner-size);
+  padding: 0;
+  border-radius: var(--radius-control);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  line-height: 1;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform var(--transition-base) ease, box-shadow var(--transition-base) ease, border-color var(--transition-base) ease, background var(--transition-base) ease, color var(--transition-base) ease;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn::before,
+body:not(.focus-mode) .app-header .controls .icon-btn::before,
+body:not(.focus-mode) .app-header #backBtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-base) ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn > *,
+body:not(.focus-mode) .app-header .controls .icon-btn > *,
+body:not(.focus-mode) .app-header #backBtn > * {
+  position: relative;
+  z-index: 1;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn:hover::before,
+body:not(.focus-mode) .app-header .controls .icon-btn:hover::before,
+body:not(.focus-mode) .app-header #backBtn:hover::before {
+  opacity: 0.08;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn:hover,
+body:not(.focus-mode) .app-header .controls .icon-btn:hover,
+body:not(.focus-mode) .app-header #backBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  border-color: #3b82f6;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn:active,
+body:not(.focus-mode) .app-header .controls .icon-btn:active,
+body:not(.focus-mode) .app-header #backBtn:active {
+  transform: translateY(0);
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn:focus-visible,
+body:not(.focus-mode) .app-header .controls .icon-btn:focus-visible,
+body:not(.focus-mode) .app-header #backBtn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn .material-symbols-outlined,
+body:not(.focus-mode) .app-header .controls .icon-btn .material-symbols-outlined,
+body:not(.focus-mode) .app-header #backBtn .material-symbols-outlined {
+  font-size: 22px;
+  line-height: 1;
+}
+
+body:not(.focus-mode) .app-header .controls .icon-btn svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn.sun-icon {
+  color: #f59e0b;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn.moon-icon {
+  color: #60a5fa;
+}
+
+body.theme-dark:not(.focus-mode) .app-header .brand-group #themeBtn,
+body.theme-dark:not(.focus-mode) .app-header .controls .icon-btn,
+body.theme-dark:not(.focus-mode) .app-header #backBtn {
+  border-color: rgba(230, 238, 249, 0.18);
+  background: rgba(11, 29, 51, 0.92);
+  color: #ffffff;
+}
+
+body.theme-dark:not(.focus-mode) .app-header .brand-group #themeBtn.sun-icon,
+body.theme-dark:not(.focus-mode) .app-header .brand-group #themeBtn.moon-icon {
+  filter: saturate(1.05);
+}
+
+/* Final header consistency overrides (do not redesign beyond controls). */
+body.landing-page:not(.focus-mode) .app-header {
+  height: 0;
+  min-height: 0;
+}
+
+body:not(.focus-mode) .app-header .brand-group #themeBtn,
+body:not(.focus-mode) .app-header .controls .icon-btn,
+body:not(.focus-mode) .app-header #backBtn {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #1f2937;
+}
+
+body.theme-dark:not(.focus-mode) .app-header .brand-group #themeBtn,
+body.theme-dark:not(.focus-mode) .app-header .controls .icon-btn,
+body.theme-dark:not(.focus-mode) .app-header #backBtn {
+  background: rgba(11, 29, 51, 0.92);
+  border-color: rgba(230, 238, 249, 0.18);
+  color: #ffffff;
+}
+
+body:not(.focus-mode) .app-header .controls.controls-simple,
+body:not(.focus-mode) .app-header .controls.controls-dashboard {
+  overflow: visible;
+}
+
+body:not(.focus-mode) .app-header .controls .icon-btn:hover,
+body:not(.focus-mode) .app-header #backBtn:hover {
+  transform: translateY(0);
+}
+
+/* Project-wide preference: no upward hover movement on buttons. */
+button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+.icon-btn:hover,
+[class*="btn-"]:hover,
+[class$="-btn"]:hover,
+.dashboard-fab:hover,
+.form-button:hover,
+.google-button:hover,
+.github-link:hover,
+.coffee-btn:hover,
+.triangle-btn:hover {
+  transform: none !important;
+}
+
+@media (max-width: 768px) {
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree {
+    left: calc(var(--header-corner-inset) + var(--header-corner-size) + 8px);
+    right: var(--header-corner-inset);
+    width: auto;
+    max-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header {
+    height: calc(var(--header-corner-top) + var(--header-corner-size) + 56px);
+    min-height: calc(var(--header-corner-top) + var(--header-corner-size) + 56px);
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree > button {
+    flex: 0 0 auto;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 10px;
+    font-size: 0.86rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #dnaBtn,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #focusBtn {
+    flex: 1 1 0;
+    min-width: 76px;
+    justify-content: center;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #searchBtn,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #helpBtn,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #backBtn {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #searchBtn .material-symbols-outlined,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #helpBtn .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #backBtn .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #upcomingContainer {
+    position: fixed;
+    top: calc(var(--header-corner-top) + var(--header-corner-size) + 8px);
+    left: var(--header-corner-inset);
+    right: var(--header-corner-inset);
+    z-index: 21;
+    order: 1;
+    flex: 0 0 auto;
+    min-width: 0;
+    width: auto;
+    margin: 0;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #upcomingBtn {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding-inline: 10px;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #upcomingName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  body.tree-viewer-page:not(.focus-mode) .app-header {
+    height: calc(var(--header-corner-top) + var(--header-corner-size) + 52px);
+    min-height: calc(var(--header-corner-top) + var(--header-corner-size) + 52px);
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree > button {
+    height: 46px;
+    min-height: 46px;
+    font-size: 0.82rem;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #dnaBtn,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #focusBtn {
+    min-width: 72px;
+    padding: 0 8px;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #searchBtn,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #helpBtn,
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #backBtn {
+    flex-basis: 42px;
+    width: 42px;
+    min-width: 42px;
+  }
+
+  body.tree-viewer-page:not(.focus-mode) .app-header .controls.controls-tree #upcomingBtn {
+    font-size: 0.82rem;
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header {
+    height: calc(var(--header-corner-top) + var(--header-corner-size) + 56px);
+    min-height: calc(var(--header-corner-top) + var(--header-corner-size) + 56px);
+  }
+
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header {
+    height: calc(var(--header-corner-top) + var(--header-corner-size) + 8px);
+    min-height: calc(var(--header-corner-top) + var(--header-corner-size) + 8px);
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree {
+    left: auto;
+    right: var(--header-corner-inset);
+    width: auto;
+    max-width: min(76vw, 460px);
+    justify-content: flex-end;
+    gap: 8px;
+    overflow-x: visible;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) #birthdaySection {
+    inset: calc(var(--header-corner-top) + var(--header-corner-size) + 64px) 0 0 0;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #upcomingContainer {
+    position: fixed;
+    top: calc(var(--header-corner-top) + var(--header-corner-size) + 8px);
+    left: var(--header-corner-inset);
+    right: var(--header-corner-inset);
+    z-index: 21;
+    display: flex;
+    justify-content: flex-start;
+    margin: 0;
+    min-width: 0;
+    width: auto;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #upcomingBtn {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding-inline: 10px;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #upcomingName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree #upcomingContainer {
+    display: none !important;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree > button,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree > button {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #searchBtn .material-symbols-outlined,
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #helpBtn .material-symbols-outlined,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree #searchBtn .material-symbols-outlined,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree #helpBtn .material-symbols-outlined,
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #backBtn .material-symbols-outlined,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree #backBtn .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree #zoomInBtn,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree #zoomOutBtn {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header {
+    height: calc(var(--header-corner-top) + var(--header-corner-size) + 52px);
+    min-height: calc(var(--header-corner-top) + var(--header-corner-size) + 52px);
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) #birthdaySection {
+    inset: calc(var(--header-corner-top) + var(--header-corner-size) + 60px) 0 0 0;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree > button,
+  body.tree-viewer-page.view-globe:not(.focus-mode) .app-header .controls.controls-tree > button {
+    flex-basis: 42px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+
+  body.tree-viewer-page.view-calendar:not(.focus-mode) .app-header .controls.controls-tree #upcomingBtn {
+    font-size: 0.82rem;
+    padding-inline: 8px;
+  }
+}

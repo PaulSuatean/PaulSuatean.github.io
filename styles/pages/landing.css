@@ -1,0 +1,692 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --page-gradient: linear-gradient(160deg, #ffffff 0%, #f1f3f5 55%, #ffffff 100%);
+  --left-gradient: linear-gradient(160deg, #ffffff 0%, #ffffff 55%, #ffffff 100%);
+  --right-gradient: linear-gradient(160deg, #f1f3f5 0%, #f1f3f5 55%, #f1f3f5 100%);
+  --contact-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  --card-bg-left: rgba(241, 243, 245, 0.95);
+  --card-bg-right: rgba(255, 255, 255, 0.95);
+  --card-bg-bottom: rgba(59, 130, 246, 0.12);
+  --card-border-left: #d9dde2;
+  --card-border-right: #d9dde2;
+  --text-left: #1f2937;
+  --text-right: #1f2937;
+  --text-right-muted: #5b6472;
+  --right-btn-bg: #3b82f6;
+  --right-btn-text: #ffffff;
+  --right-btn-border: transparent;
+  /* Hover animation variables */
+  --hover-width: 54%;
+  --other-width: 46%;
+  --hover-speed: 600ms;
+  --corner-controls-top: 24px;
+  --corner-controls-inset: 24px;
+  --corner-control-size: 48px;
+}
+
+body.theme-dark {
+  --page-gradient: linear-gradient(160deg, #0b1d33 0%, #132a46 55%, #0b1d33 100%);
+  --left-gradient: linear-gradient(160deg, #0b1d33 0%, #0b1d33 55%, #0b1d33 100%);
+  --right-gradient: linear-gradient(160deg, #132a46 0%, #132a46 55%, #132a46 100%);
+  --contact-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  --card-bg-left: rgba(19, 42, 70, 0.92);
+  --card-bg-right: rgba(11, 29, 51, 0.92);
+  --card-bg-bottom: rgba(59, 130, 246, 0.16);
+  --card-border-left: rgba(230, 238, 249, 0.18);
+  --card-border-right: rgba(230, 238, 249, 0.18);
+  --text-left: #e6eef9;
+  --text-right: #e6eef9;
+  --text-right-muted: #b7c3d6;
+  --right-btn-bg: #3b82f6;
+  --right-btn-text: #ffffff;
+  --right-btn-border: transparent;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background: var(--page-gradient);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+
+.night-sky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.night-sky.night-sky--scoped {
+  position: absolute;
+}
+
+body.theme-dark .night-sky {
+  opacity: 1;
+}
+
+.night-sky__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.triangle-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--page-gradient);
+  z-index: 1;
+}
+
+.triangle {
+  position: absolute;
+  cursor: pointer;
+  transition: width var(--hover-speed) ease-in-out, left var(--hover-speed) ease-in-out, clip-path var(--hover-speed) ease-in-out;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+/* Left Triangle - DEMO */
+.triangle-left {
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  clip-path: polygon(0 0, 100% 0, 100% 75%, 0 100%);
+  background: var(--left-gradient);
+  z-index: 1;
+}
+
+.triangle-left .demo-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Right Triangle - CREATE */
+.triangle-right {
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 75%);
+  background: var(--right-gradient);
+  z-index: 1;
+}
+
+/* Hover expansion - Left triangle hovered */
+.triangle-container.hover-left .triangle-left {
+  width: var(--hover-width);
+  clip-path: polygon(0 0, 100% 0, 100% 77%, 0 100%);
+}
+.triangle-container.hover-left .triangle-right {
+  width: var(--other-width);
+  left: var(--hover-width);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 77%);
+}
+.triangle-container.hover-left .triangle-bottom {
+  top: 77%;
+  height: 23%;
+  clip-path: polygon(0 100%, 54% 0%, 100% 100%);
+}
+
+/* Hover expansion - Right triangle hovered */
+.triangle-container.hover-right .triangle-right {
+  width: var(--hover-width);
+  left: var(--other-width);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 77%);
+}
+.triangle-container.hover-right .triangle-left {
+  width: var(--other-width);
+  clip-path: polygon(0 0, 100% 0, 100% 77%, 0 100%);
+}
+.triangle-container.hover-right .triangle-bottom {
+  top: 77%;
+  height: 23%;
+  clip-path: polygon(0 100%, 46% 0%, 100% 100%);
+}
+
+/* Hover expansion - Bottom triangle hovered */
+.triangle-container.hover-bottom .triangle-bottom {
+  top: 71%;
+  height: 29%;
+}
+.triangle-container.hover-bottom .triangle-left {
+  clip-path: polygon(0 0, 100% 0, 100% 71%, 0 100%);
+}
+.triangle-container.hover-bottom .triangle-right {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 71%);
+}
+
+/* Adjust top triangles for very wide screens */
+@media (min-aspect-ratio: 16/9) {
+  .triangle-left {
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+  }
+  .triangle-right {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 70%);
+  }
+}
+
+@media (min-aspect-ratio: 21/9) {
+  .triangle-left {
+    clip-path: polygon(0 0, 100% 0, 100% 65%, 0 100%);
+  }
+  .triangle-right {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 65%);
+  }
+}
+
+/* Bottom Triangle - CONTACT */
+.triangle-bottom {
+  left: 0;
+  top: 75%;
+  width: 100%;
+  height: 25%;
+  clip-path: polygon(0 100%, 50% 0%, 100% 100%);
+  background: var(--contact-gradient);
+  z-index: 2;
+  transition: top var(--hover-speed) ease-in-out, height var(--hover-speed) ease-in-out, clip-path var(--hover-speed) ease-in-out, filter 150ms ease, box-shadow 150ms ease;
+  cursor: pointer;
+}
+
+.triangle-bottom:hover {
+  filter: brightness(1.08) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+}
+
+.triangle-bottom:active {
+  filter: brightness(1.05) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Adjust for very wide screens */
+@media (min-aspect-ratio: 16/9) {
+  .triangle-bottom {
+    top: 70%;
+    height: 30%;
+  }
+  .triangle-container.hover-bottom .triangle-bottom {
+    top: 66%;
+    height: 34%;
+  }
+  .triangle-container.hover-bottom .triangle-left {
+    clip-path: polygon(0 0, 100% 0, 100% 66%, 0 100%);
+  }
+  .triangle-container.hover-bottom .triangle-right {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 66%);
+  }
+}
+
+@media (min-aspect-ratio: 21/9) {
+  .triangle-bottom {
+    top: 65%;
+    height: 35%;
+  }
+  .triangle-container.hover-bottom .triangle-bottom {
+    top: 61%;
+    height: 39%;
+  }
+  .triangle-container.hover-bottom .triangle-left {
+    clip-path: polygon(0 0, 100% 0, 100% 61%, 0 100%);
+  }
+  .triangle-container.hover-bottom .triangle-right {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 61%);
+  }
+}
+
+/* Hover effects */
+.triangle:hover {
+  z-index: 3;
+}
+
+/* When any triangle is hovered, prepare for card animations */
+.triangle-container:has(.triangle:hover) .triangle:not(:hover) .triangle-card {
+  transform: scale(0.85);
+  opacity: 0.75;
+}
+
+/* Content Styling */
+.triangle-content {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: white;
+  text-align: center;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.triangle-left .triangle-content {
+  padding-right: 0%;
+  padding-left: 30%;
+  padding-bottom: 0%;
+  padding-top: 15%;
+  transition: padding var(--hover-speed) ease-in-out;
+}
+
+.triangle-right .triangle-content {
+  padding-right: 30%;
+  padding-left: 0%;
+  padding-bottom: 0%;
+  padding-top: 15%;
+  transition: padding var(--hover-speed) ease-in-out;
+}
+
+/* Keep cards from moving during hover expansion */
+.triangle-container.hover-left .triangle-left .triangle-content {
+  padding-left: 26%;
+}
+.triangle-container.hover-left .triangle-right .triangle-content {
+  padding-right: 34%;
+}
+.triangle-container.hover-right .triangle-right .triangle-content {
+  padding-right: 26%;
+}
+.triangle-container.hover-right .triangle-left .triangle-content {
+  padding-left: 34%;
+}
+
+.triangle-bottom .triangle-content {
+  padding-top: 8%;
+  padding-bottom: 2%;
+}
+
+/* Enhanced hover effect for hovered triangle's card */
+.triangle:hover .triangle-card {
+  transform: scale(1.06);
+  opacity: 1;
+}
+
+.triangle-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border-left);
+  background: var(--card-bg-left);
+  backdrop-filter: blur(6px);
+  max-width: min(280px, 75vw);
+  pointer-events: auto;
+  color: var(--text-left);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.triangle-right .triangle-card {
+  background: var(--card-bg-right);
+  border-color: var(--card-border-right);
+  color: var(--text-right);
+}
+
+.triangle-bottom .triangle-card {
+  background: var(--card-bg-bottom);
+  padding: 12px 16px;
+  gap: 12px;
+  max-width: min(340px, 85vw);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.triangle-bottom .contact-icon-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.triangle-bottom .contact-text-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  text-align: left;
+}
+
+.triangle-bottom .triangle-icon {
+  font-size: 42px;
+}
+
+.triangle-bottom .triangle-label {
+  font-size: clamp(20px, 2.8vw, 28px);
+  letter-spacing: 2px;
+}
+
+.triangle-bottom .triangle-desc {
+  font-size: clamp(12px, 1.4vw, 14px);
+  max-width: 100%;
+}
+
+/* Keep contact text white in both themes */
+.triangle-bottom .triangle-label,
+.triangle-bottom .triangle-desc,
+body.theme-dark .triangle-bottom .triangle-label,
+body.theme-dark .triangle-bottom .triangle-desc {
+  color: #ffffff;
+}
+
+.triangle-icon {
+  font-size: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.triangle-icon.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 48;
+}
+
+.triangle-label {
+  font-size: clamp(26px, 3.5vw, 42px);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.triangle-desc {
+  font-size: clamp(13px, 1.6vw, 16px);
+  font-family: 'Inter', sans-serif;
+  opacity: 0.95;
+  max-width: 260px;
+  line-height: 1.6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.triangle-right .triangle-desc {
+  text-shadow: none;
+  color: var(--text-right-muted);
+}
+
+.triangle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--right-btn-border);
+  background: var(--right-btn-bg);
+  color: var(--right-btn-text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+
+.triangle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.25);
+  background: #2563eb;
+}
+
+.triangle-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.15);
+}
+
+
+.landing-controls {
+  position: fixed;
+  top: var(--corner-controls-top);
+  left: var(--corner-controls-inset);
+  right: var(--corner-controls-inset);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-controls a {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #1f2937;
+  width: var(--corner-control-size);
+  height: var(--corner-control-size);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  transition: all 200ms ease;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.landing-controls a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--contact-gradient);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  z-index: -1;
+}
+
+.landing-controls a:hover::before {
+  opacity: 0.08;
+}
+
+.landing-controls a:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  border-color: #3b82f6;
+}
+
+body.theme-dark .landing-controls a {
+  background: rgba(11, 29, 51, 0.92);
+  border-color: rgba(230, 238, 249, 0.18);
+  color: #ffffff;
+}
+
+.landing-controls a svg {
+  width: 24px;
+  height: 24px;
+}
+
+.landing-controls button {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #1f2937;
+  width: var(--corner-control-size);
+  height: var(--corner-control-size);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  transition: all 200ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-controls button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--contact-gradient);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  z-index: -1;
+}
+
+.landing-controls button:hover::before {
+  opacity: 0.08;
+}
+
+.landing-controls button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  border-color: #3b82f6;
+}
+
+body.theme-dark .landing-controls button {
+  background: rgba(11, 29, 51, 0.92);
+  border-color: rgba(230, 238, 249, 0.18);
+  color: #ffffff;
+}
+
+.landing-controls #themeBtn.sun-icon {
+  color: #f59e0b;
+}
+
+.landing-controls #themeBtn.moon-icon {
+  color: #60a5fa;
+}
+
+body.theme-dark .landing-controls #themeBtn.sun-icon,
+body.theme-dark .landing-controls #themeBtn.moon-icon {
+  filter: saturate(1.05);
+}
+
+.landing-controls .material-symbols-outlined {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Ancestrio Title */
+.ancestrio-brand {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0px, 0.2vw, 2px);
+  transition: transform var(--hover-speed) ease-in-out, left var(--hover-speed) ease-in-out, top var(--hover-speed) ease-in-out, opacity var(--hover-speed) ease-in-out;
+}
+
+.ancestrio-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(48px, 8vw, 120px);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #1f2937;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+
+.ancestrio-subtitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(12px, 1.8vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: #1f2937;
+  opacity: 0.85;
+}
+
+body.theme-dark .ancestrio-title {
+  color: #e6eef9;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .ancestrio-subtitle {
+  color: #e6eef9;
+}
+
+/* Title shifts based on hover */
+.triangle-container.hover-left .ancestrio-brand {
+  left: 46%;
+  opacity: 0.5;
+}
+
+.triangle-container.hover-right .ancestrio-brand {
+  left: 54%;
+  opacity: 0.5;
+}
+
+.triangle-container.hover-bottom .ancestrio-brand {
+  top: 12%;
+  opacity: 0.5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .ancestrio-title {
+    font-size: clamp(32px, 10vw, 64px);
+  }
+
+  .ancestrio-subtitle {
+    font-size: clamp(10px, 2.6vw, 14px);
+  }
+
+  .triangle-left .triangle-content,
+  .triangle-right .triangle-content {
+    padding-right: 8%;
+    padding-left: 8%;
+    padding-bottom: 18%;
+  }
+
+  .triangle-bottom .triangle-content {
+    padding-top: 8%;
+  }
+
+  .triangle-card {
+    padding: 16px 18px;
+    max-width: min(280px, 86vw);
+  }
+}
+
+@media (max-width: 480px) {
+  .triangle-card {
+    padding: 14px 16px;
+  }
+
+  .triangle-bottom .triangle-card {
+    padding: 10px 14px;
+    max-width: min(300px, 88vw);
+    gap: 10px;
+  }
+
+  .triangle-bottom .triangle-icon {
+    font-size: 38px;
+  }
+
+  .triangle-bottom .triangle-label {
+    font-size: clamp(18px, 2.5vw, 24px);
+  }
+
+  .triangle-bottom .triangle-desc {
+    font-size: clamp(11px, 1.3vw, 13px);
+  }
+}

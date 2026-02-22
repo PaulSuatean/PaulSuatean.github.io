@@ -1,4 +1,4 @@
-# Family Tree Setup Wizard
+﻿# Family Tree Setup Wizard
 
 ## Overview
 The Family Tree application now includes an interactive 3-step wizard to help users create and set up their family trees.
@@ -14,9 +14,9 @@ The Family Tree application now includes an interactive 3-step wizard to help us
 Users are asked about their family structure to determine the base template:
 - **Does your ancestor have a spouse?** - Yes/No
 - **How many generations?** - 2 to 6+ generations
-  - 2 generations: Grandparent → Parent
-  - 3 generations: Grandparent → Parent → Me (default)
-  - 4 generations: Great-grandparent → Grandparent → Parent → Me
+  - 2 generations: Grandparent â†’ Parent
+  - 3 generations: Grandparent â†’ Parent â†’ Me (default)
+  - 4 generations: Great-grandparent â†’ Grandparent â†’ Parent â†’ Me
   - 5-6+ generations: Extended family line
 - **How many children did your ancestor have?** - 0-10 (default: 3)
 - **How many uncles/aunts did your parent have?** - 0-10 (default: 2)
@@ -64,14 +64,14 @@ Users can go back to previous steps at any time:
 
 ## Features
 
-✅ Multi-step wizard interface
-✅ Visual progress indicator
-✅ Input validation
-✅ Template generation based on user preferences
-✅ Placeholder names for template members
-✅ Customizable family structure
-✅ Option to start with empty tree
-✅ Automatic redirect to editor after creation
+âœ… Multi-step wizard interface
+âœ… Visual progress indicator
+âœ… Input validation
+âœ… Template generation based on user preferences
+âœ… Placeholder names for template members
+âœ… Customizable family structure
+âœ… Option to start with empty tree
+âœ… Automatic redirect to editor after creation
 
 ## Technical Implementation
 
@@ -97,3 +97,5 @@ Potential improvements:
 - More detailed relationship options
 - Age calculation suggestions
 - Photo batch upload during setup
+
+

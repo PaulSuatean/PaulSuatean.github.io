@@ -1,17 +1,17 @@
-# 🌳 Multi-User Family Tree Builder - Setup Guide
+﻿# ðŸŒ³ Multi-User Family Tree Builder - Setup Guide
 
 Your family tree website has been transformed into a **multi-user platform**! Anyone can now create their own family tree completely free using Firebase.
 
-## 📋 What's New
+## ðŸ“‹ What's New
 
-- ✅ **User Authentication** - Sign up with email/password or Google
-- ✅ **Personal Dashboard** - Create and manage multiple family trees
-- ✅ **Tree Editor** - Edit your family tree data (JSON editor)
-- ✅ **Privacy Controls** - Make trees private or public
-- ✅ **Cloud Storage** - All data saved to Firebase (free tier)
-- ✅ **Original Demo** - Your original tree still works at `index.html`
+- âœ… **User Authentication** - Sign up with email/password or Google
+- âœ… **Personal Dashboard** - Create and manage multiple family trees
+- âœ… **Tree Editor** - Edit your family tree data (JSON editor)
+- âœ… **Privacy Controls** - Make trees private or public
+- âœ… **Cloud Storage** - All data saved to Firebase (free tier)
+- âœ… **Original Demo** - Your original tree still works at `index.html`
 
-## 🚀 Quick Start Setup (15 minutes)
+## ðŸš€ Quick Start Setup (15 minutes)
 
 ### Step 1: Create a Firebase Project
 
@@ -98,7 +98,7 @@ service firebase.storage {
 
 ### Step 5: Get Your Firebase Configuration
 
-1. In Firebase Console, click the **gear icon** ⚙️ next to "Project Overview"
+1. In Firebase Console, click the **gear icon** âš™ï¸ next to "Project Overview"
 2. Click **"Project settings"**
 3. Scroll down to **"Your apps"**
 4. Click the **Web icon** `</>`
@@ -120,7 +120,7 @@ const firebaseConfig = {
 
 ### Step 6: Update Your Website
 
-1. Open the file `firebase-config.js` in your project
+1. Open the file `scripts/firebase-config.js` in your project
 2. **Replace** the placeholder config with your actual config:
 
 ```javascript
@@ -147,12 +147,12 @@ git push origin main
 
 2. Your site will be live at `https://paulsuatean.github.io/`
 
-## 🎯 How to Use
+## ðŸŽ¯ How to Use
 
 ### For Users
 
 1. **Visit your site** - Go to `https://paulsuatean.github.io/`
-2. **Click on "View Demo Tree"** link or navigate to `auth.html`
+2. **Click on "View Demo Tree"** link or navigate to `pages/auth.html`
 3. **Sign up** with email/password or Google
 4. **Create a tree** from your dashboard
 5. **Edit your tree** using the JSON editor
@@ -163,30 +163,30 @@ git push origin main
 
 ```
 Your Website Files:
-├── index.html          ← Original demo tree (still works!)
-├── auth.html           ← Login/Signup page (NEW)
-├── dashboard.html      ← User dashboard (NEW)
-├── editor.html         ← Tree editor (NEW)
-├── tree.html           ← Tree viewer for Firebase trees (NEW)
-├── firebase-config.js  ← Your Firebase credentials (NEW)
-├── auth.js            ← Authentication logic (NEW)
-├── dashboard.js       ← Dashboard logic (NEW)
-├── dashboard.css      ← Dashboard styles (NEW)
-├── editor.js          ← Editor logic (NEW)
-├── editor.css         ← Editor styles (NEW)
-├── script.js          ← Main tree rendering (MODIFIED)
-├── styles.css         ← Original styles
-└── rfamily.json       ← Original demo data
+â”œâ”€â”€ index.html          â† Original demo tree (still works!)
+â”œâ”€â”€ pages/auth.html           â† Login/Signup page (NEW)
+â”œâ”€â”€ pages/dashboard.html      â† User dashboard (NEW)
+â”œâ”€â”€ pages/editor.html         â† Tree editor (NEW)
+â”œâ”€â”€ pages/tree.html           â† Tree viewer for Firebase trees (NEW)
+â”œâ”€â”€ scripts/firebase-config.js  â† Your Firebase credentials (NEW)
+â”œâ”€â”€ scripts/auth.js            â† Authentication logic (NEW)
+â”œâ”€â”€ scripts/dashboard.js       â† Dashboard logic (NEW)
+â”œâ”€â”€ styles/dashboard.css      â† Dashboard styles (NEW)
+â”œâ”€â”€ scripts/editor.js          â† Editor logic (NEW)
+â”œâ”€â”€ styles/editor.css         â† Editor styles (NEW)
+â”œâ”€â”€ scripts/main.js          â† Main tree rendering (MODIFIED)
+â”œâ”€â”€ styles/main.css         â† Original styles
+â””â”€â”€ data/rfamily.json       â† Original demo data
 ```
 
-## 🔐 Security Notes
+## ðŸ” Security Notes
 
 - Your Firebase API key is **safe to expose** in client-side code
 - Security is enforced by **Firestore Security Rules** (set up in Step 3)
 - Users can only access their own trees
 - Public trees can be viewed by anyone with the link
 
-## 💰 Cost
+## ðŸ’° Cost
 
 **Free Forever** for typical usage:
 - Firebase Free tier includes:
@@ -197,23 +197,23 @@ Your Website Files:
 
 This supports **thousands of users** before any costs.
 
-## 🎨 Customization
+## ðŸŽ¨ Customization
 
 ### Change Site Branding
 
 Edit these files to customize:
-- `auth.html` - Change "Family Tree Builder" text
-- `dashboard.html` - Change header text
-- All pages use your existing `styles.css`
+- `pages/auth.html` - Change "Family Tree Builder" text
+- `pages/dashboard.html` - Change header text
+- All pages use your existing `styles/main.css`
 
 ### Add a Landing Page
 
-Create a new `landing.html` as your homepage that explains your service and links to `auth.html`.
+Use `index.html` as your homepage and link users to `pages/auth.html` to create or manage trees.
 
-## 🐛 Troubleshooting
+## ðŸ› Troubleshooting
 
 ### "Failed to initialize Firebase"
-- Check that `firebase-config.js` has your actual Firebase credentials
+- Check that `scripts/firebase-config.js` has your actual Firebase credentials
 - Make sure all values are inside quotes
 
 ### "Permission denied" errors
@@ -228,25 +228,25 @@ Create a new `landing.html` as your homepage that explains your service and link
 - Verify Authentication providers are enabled (Step 2)
 - For Google Sign-In, make sure you added a support email
 
-## 📱 Mobile Support
+## ðŸ“± Mobile Support
 
 All pages are fully responsive and work on mobile devices!
 
-## 🔄 Migrating Your Original Tree
+## ðŸ”„ Migrating Your Original Tree
 
-To move your `rfamily.json` data to Firebase:
+To move your `data/rfamily.json` data to Firebase:
 
 1. Log in to your site
-2. Create a new tree (e.g., "Suătean Family")
+2. Create a new tree (e.g., "SuÄƒtean Family")
 3. Go to Editor
 4. Click "Import JSON"
-5. Paste the contents of `rfamily.json`
+5. Paste the contents of `data/rfamily.json`
 6. Click Import
 7. Click Save
 
 Your original tree at `index.html` will still work!
 
-## 🌐 Custom Domain (Optional)
+## ðŸŒ Custom Domain (Optional)
 
 To use a custom domain like `www.yourfamilytree.com`:
 
@@ -256,7 +256,7 @@ To use a custom domain like `www.yourfamilytree.com`:
 4. Update DNS records at your domain registrar
 5. GitHub provides free SSL certificates
 
-## 🚀 Next Steps
+## ðŸš€ Next Steps
 
 Consider adding:
 - **Visual drag-and-drop editor** (currently JSON only)
@@ -267,7 +267,7 @@ Consider adding:
 - **GEDCOM import/export** (genealogy standard format)
 - **Family stories and notes**
 
-## 📞 Support
+## ðŸ“ž Support
 
 If you encounter issues:
 1. Check browser console (F12) for errors
@@ -275,7 +275,7 @@ If you encounter issues:
 3. Check that all files are uploaded to GitHub
 4. Test in incognito mode (clears cache)
 
-## ✨ What You've Built
+## âœ¨ What You've Built
 
 You now have a **production-ready, multi-user family tree platform** that:
 - Costs $0 to run
@@ -285,4 +285,6 @@ You now have a **production-ready, multi-user family tree platform** that:
 - Works on all devices
 - Has your beautiful tree visualization!
 
-Congratulations! 🎉
+Congratulations! ðŸŽ‰
+
+

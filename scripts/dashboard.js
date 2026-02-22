@@ -1,43 +1,24 @@
-// Dashboard Logic
+﻿// Dashboard Logic
 
 let currentUser = null;
 let trees = [];
 let treeToDelete = null;
 let wizardCenterNameTouched = false;
 let currentWizardStep = 1;
+let isLocalGuestMode = false;
+const AUTH_STATE_TIMEOUT_MS = 10000;
+const TREE_LOAD_TIMEOUT_MS = 12000;
+const LOCAL_GUEST_TREE_KEY = 'ancestrio:guest-tree:v1';
+
+function showErrorText(errorEl, message) {
+  if (!errorEl) return;
+  if (message) errorEl.textContent = message;
+  window.AncestrioDomDisplay.show(errorEl);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Theme toggle
-  const themeBtn = document.getElementById('themeBtn');
-  const themeKey = 'tree-theme';
-  const savedTheme = localStorage.getItem(themeKey);
-  const initialTheme = resolveInitialTheme(savedTheme);
-  document.body.classList.toggle('theme-dark', initialTheme === 'dark');
-  updateThemeIcon();
-
-  themeBtn?.addEventListener('click', () => {
-    document.body.classList.toggle('theme-dark');
-    const isDark = document.body.classList.contains('theme-dark');
-    localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
-    updateThemeIcon();
-  });
-  
-  // Initialize Firebase
-  if (!initializeFirebase()) {
-    window.location.href = 'auth.html';
-    return;
-  }
-
-  // Check authentication
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      currentUser = user;
-      updateDashboardTitle(currentUser);
-      await loadTrees();
-    } else {
-      window.location.href = 'auth.html';
-    }
-  });
+  window.AncestrioTheme?.initThemeToggle();
 
   // Event listeners
   document.getElementById('logoutBtn').addEventListener('click', logout);
@@ -49,6 +30,64 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
   
   setupWizardEventListeners();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  isLocalGuestMode = localStorage.getItem('guestMode') === 'true' || urlParams.get('guest') === '1';
+
+  if (isLocalGuestMode) {
+    localStorage.setItem('guestMode', 'true');
+    currentUser = {
+      uid: 'guest-local',
+      isAnonymous: true,
+      displayName: 'Guest',
+      email: ''
+    };
+    configureGuestDashboardUI();
+    updateDashboardTitle(currentUser);
+    await loadTrees();
+    if (!hasStoredGuestTree()) {
+      showCreateModal();
+    }
+    return;
+  }
+
+  localStorage.removeItem('guestMode');
+
+  // Initialize Firebase
+  if (!initializeFirebase()) {
+    window.location.href = 'auth.html';
+    return;
+  }
+
+  // Check authentication
+  let authStateResolved = false;
+  const authStateTimeoutId = window.setTimeout(() => {
+    if (authStateResolved) return;
+    console.error('Authentication state check timed out');
+    window.AncestrioDomDisplay.hide('loadingState');
+    showDashboardStatus('Authentication check timed out. Refresh this page and sign in again.');
+  }, AUTH_STATE_TIMEOUT_MS);
+
+  auth.onAuthStateChanged(
+    async (user) => {
+      authStateResolved = true;
+      window.clearTimeout(authStateTimeoutId);
+      if (user) {
+        currentUser = user;
+        updateDashboardTitle(currentUser);
+        await loadTrees();
+      } else {
+        window.location.href = 'auth.html';
+      }
+    },
+    (error) => {
+      authStateResolved = true;
+      window.clearTimeout(authStateTimeoutId);
+      console.error('Auth state listener error:', error);
+      window.AncestrioDomDisplay.hide('loadingState');
+      showDashboardStatus('Authentication failed. Please sign in again.');
+    }
+  );
 });
 
 function setupWizardEventListeners() {
@@ -214,7 +253,7 @@ function updateWizardPerspective() {
 
   const relationshipGroup = document.getElementById('relationshipGroup');
   if (relationshipGroup) {
-    relationshipGroup.style.display = isSelf ? 'none' : 'block';
+    window.AncestrioDomDisplay.setDisplay(relationshipGroup, isSelf ? 'none' : 'block');
   }
   if (isSelf) {
     document.getElementById('creatorRelationship').value = '';
@@ -228,14 +267,14 @@ function updateRelationshipOtherVisibility() {
   const shouldShow = getWizardCenterMode() === 'other' && relationship === 'other';
   const otherGroup = document.getElementById('relationshipOtherGroup');
   if (!otherGroup) return;
-  otherGroup.style.display = shouldShow ? 'block' : 'none';
+  window.AncestrioDomDisplay.setDisplay(otherGroup, shouldShow ? 'block' : 'none');
 }
 
 function updateSiblingsBlock() {
   const hasSiblings = document.querySelector('input[name="hasSiblings"]:checked')?.value === 'yes';
   const block = document.getElementById('siblingsBlock');
   if (!block) return;
-  block.style.display = hasSiblings ? 'block' : 'none';
+  window.AncestrioDomDisplay.setDisplay(block, hasSiblings ? 'block' : 'none');
   if (hasSiblings && !document.querySelector('#siblingsList .person-row')) {
     addSplitNameRow('siblingsList', 'Sibling');
   }
@@ -246,10 +285,10 @@ function updateChildrenBlock() {
   const block = document.getElementById('childrenBlock');
   const grandchildrenQuestionGroup = document.getElementById('grandchildrenQuestionGroup');
   if (block) {
-    block.style.display = hasChildren ? 'block' : 'none';
+    window.AncestrioDomDisplay.setDisplay(block, hasChildren ? 'block' : 'none');
   }
   if (grandchildrenQuestionGroup) {
-    grandchildrenQuestionGroup.style.display = hasChildren ? 'block' : 'none';
+    window.AncestrioDomDisplay.setDisplay(grandchildrenQuestionGroup, hasChildren ? 'block' : 'none');
   }
   if (hasChildren && !document.querySelector('#childrenList .person-row')) {
     addSplitNameRow('childrenList', 'Child');
@@ -266,7 +305,7 @@ function updateGrandchildrenBlock() {
   const hasGrandchildren = hasChildren && (document.querySelector('input[name="hasGrandchildren"]:checked')?.value === 'yes');
   const block = document.getElementById('grandchildrenBlock');
   if (!block) return;
-  block.style.display = hasGrandchildren ? 'block' : 'none';
+  window.AncestrioDomDisplay.setDisplay(block, hasGrandchildren ? 'block' : 'none');
   if (hasGrandchildren && !document.querySelector('#grandchildrenList .person-row')) {
     addSplitNameRow('grandchildrenList', 'Grandchild');
   }
@@ -373,7 +412,7 @@ function addSplitNameRow(listId, personLabel, values = {}, options = {}) {
   birthdateInput.setAttribute('aria-label', `${personLabel} birthdate`);
   birthdateInput.value = sanitizeText(values.birthdate);
   const birthdaysEnabled = areWizardBirthdaysEnabled();
-  birthdateGroup.style.display = birthdaysEnabled ? '' : 'none';
+  window.AncestrioDomDisplay.setDisplay(birthdateGroup, birthdaysEnabled ? '' : 'none');
   birthdateInput.disabled = !birthdaysEnabled;
   if (!birthdaysEnabled) birthdateInput.value = '';
   attachBirthdateMask(birthdateInput);
@@ -504,7 +543,7 @@ function clearWizardBirthdateValues() {
   });
   const birthdateInfo = document.getElementById('birthdateInfo');
   const birthdateInfoBtn = document.getElementById('birthdateInfoBtn');
-  if (birthdateInfo) birthdateInfo.style.display = 'none';
+  window.AncestrioDomDisplay.hide(birthdateInfo);
   if (birthdateInfoBtn) birthdateInfoBtn.setAttribute('aria-expanded', 'false');
 }
 
@@ -513,10 +552,10 @@ function updateBirthdaysPreferenceForWizard() {
   ['centralBirthdateGroup', 'fatherBirthdateGroup', 'motherBirthdateGroup', 'partnerBirthdateGroup'].forEach((groupId) => {
     const group = document.getElementById(groupId);
     if (!group) return;
-    group.style.display = birthdaysEnabled ? 'block' : 'none';
+    window.AncestrioDomDisplay.setDisplay(group, birthdaysEnabled ? 'block' : 'none');
   });
   document.querySelectorAll('.person-birthdate-group').forEach((group) => {
-    group.style.display = birthdaysEnabled ? '' : 'none';
+    window.AncestrioDomDisplay.setDisplay(group, birthdaysEnabled ? '' : 'none');
   });
   document.querySelectorAll('input[data-name-part="birthdate"]').forEach((input) => {
     input.disabled = !birthdaysEnabled;
@@ -531,8 +570,8 @@ function toggleBirthdateInfo() {
   const info = document.getElementById('birthdateInfo');
   const button = document.getElementById('birthdateInfoBtn');
   if (!info || !button) return;
-  const isOpen = info.style.display !== 'none';
-  info.style.display = isOpen ? 'none' : 'block';
+  const isOpen = window.AncestrioDomDisplay.isInlineVisible(info);
+  window.AncestrioDomDisplay.setDisplay(info, isOpen ? 'none' : 'block');
   button.setAttribute('aria-expanded', String(!isOpen));
 }
 
@@ -574,14 +613,14 @@ function clearFieldError(inputId, errorId) {
   const input = document.getElementById(inputId);
   const error = document.getElementById(errorId);
   if (input) input.classList.remove('error');
-  if (error) error.style.display = 'none';
+  window.AncestrioDomDisplay.hide(error);
 }
 
 function clearCentralNameError() {
   const error = document.getElementById('centralPersonNameError');
   const firstName = document.getElementById('centralPersonFirstName');
   const lastName = document.getElementById('centralPersonLastName');
-  if (error) error.style.display = 'none';
+  window.AncestrioDomDisplay.hide(error);
   setCentralNameFieldError(firstName, false);
   setCentralNameFieldError(lastName, false);
 }
@@ -604,7 +643,7 @@ function syncCentralNameValidationState() {
   const firstMissing = !firstName.value.trim();
   const lastMissing = !lastName.value.trim();
 
-  if (!error || error.style.display === 'none') {
+  if (!window.AncestrioDomDisplay.isInlineVisible(error)) {
     if (!firstMissing && !lastMissing) {
       setCentralNameFieldError(firstName, false);
       setCentralNameFieldError(lastName, false);
@@ -626,10 +665,7 @@ function setFieldError(inputId, errorId, message) {
   const input = document.getElementById(inputId);
   const error = document.getElementById(errorId);
   if (input) input.classList.add('error');
-  if (error) {
-    if (message) error.textContent = message;
-    error.style.display = 'block';
-  }
+  showErrorText(error, message);
 }
 
 function validateStep2() {
@@ -647,10 +683,7 @@ function validateStep2() {
   }
   if (!centralFirstName || !centralLastName) {
     const error = document.getElementById('centralPersonNameError');
-    if (error) {
-      error.textContent = 'First name and last name are required';
-      error.style.display = 'block';
-    }
+    showErrorText(error, 'First name and last name are required');
     setCentralNameFieldError(document.getElementById('centralPersonFirstName'), !centralFirstName);
     setCentralNameFieldError(document.getElementById('centralPersonLastName'), !centralLastName);
     valid = false;
@@ -665,38 +698,6 @@ function validateStep2() {
     }
   }
   return valid;
-}
-
-function updateThemeIcon() {
-  const themeBtn = document.getElementById('themeBtn');
-  if (!themeBtn) return;
-  const isDark = document.body.classList.contains('theme-dark');
-  const icon = themeBtn.querySelector('.material-symbols-outlined');
-  const iconName = isDark ? 'light_mode' : 'dark_mode';
-  if (icon) {
-    icon.textContent = iconName;
-  } else {
-    themeBtn.textContent = iconName;
-  }
-  themeBtn.classList.toggle('sun-icon', isDark);
-  themeBtn.classList.toggle('moon-icon', !isDark);
-  const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
-  themeBtn.setAttribute('aria-label', label);
-  themeBtn.setAttribute('title', label);
-  themeBtn.setAttribute('aria-pressed', String(isDark));
-}
-
-function resolveInitialTheme(saved) {
-  if (saved === 'dark' || saved === 'light') return saved;
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return isNightTime() ? 'dark' : 'light';
-}
-
-function isNightTime() {
-  const hour = new Date().getHours();
-  return hour >= 20 || hour < 7;
 }
 
 function getCurrentUserName(user) {
@@ -721,45 +722,210 @@ function updateDashboardTitle(user) {
   titleEl.textContent = username ? `${username}'s Family Trees` : 'Your Family Trees';
 }
 
+function withTimeout(promise, timeoutMs, timeoutCode) {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      const timeoutError = new Error('Operation timed out');
+      timeoutError.code = timeoutCode || 'timeout';
+      reject(timeoutError);
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
+
+function showDashboardStatus(message) {
+  const hero = document.querySelector('.dashboard-hero');
+  if (!hero) return;
+  let status = document.getElementById('dashboardStatus');
+  if (!status) {
+    status = document.createElement('p');
+    status.id = 'dashboardStatus';
+    status.className = 'dashboard-status';
+    hero.appendChild(status);
+  }
+  status.textContent = message;
+  window.AncestrioDomDisplay.show(status);
+}
+
+function clearDashboardStatus() {
+  const status = document.getElementById('dashboardStatus');
+  if (!status) return;
+  status.textContent = '';
+  window.AncestrioDomDisplay.hide(status);
+}
+
+function mapTreesFromSnapshot(snapshot) {
+  const mappedTrees = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+  mappedTrees.sort((a, b) => {
+    const dateA = a.createdAt ? a.createdAt.toMillis() : 0;
+    const dateB = b.createdAt ? b.createdAt.toMillis() : 0;
+    return dateB - dateA;
+  });
+
+  return mappedTrees;
+}
+
+function setCreateTreeButtonVisibility(visible) {
+  const createTreeActions = document.querySelector('.dashboard-hero-actions');
+  window.AncestrioDomDisplay.setDisplay(createTreeActions, visible ? 'block' : 'none');
+}
+
+function configureGuestDashboardUI() {
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.setAttribute('title', 'Exit guest mode');
+    logoutBtn.setAttribute('aria-label', 'Exit guest mode');
+  }
+  const logoutText = document.querySelector('#logoutBtn .logout-text');
+  if (logoutText) {
+    logoutText.textContent = 'Exit Guest';
+  }
+}
+
+function getStoredGuestTree() {
+  try {
+    const raw = localStorage.getItem(LOCAL_GUEST_TREE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  } catch (error) {
+    console.warn('Failed to read local guest tree:', error);
+    return null;
+  }
+}
+
+function hasStoredGuestTree() {
+  const stored = getStoredGuestTree();
+  return !!(stored && stored.data && typeof stored.data === 'object' && Object.keys(stored.data).length > 0);
+}
+
+function updateGuestEmptyState(hasTree) {
+  const emptyState = document.getElementById('emptyState');
+  if (!emptyState) return;
+
+  const heading = emptyState.querySelector('h3');
+  if (heading) {
+    heading.textContent = hasTree ? 'Continue your local family tree' : 'No local family tree yet';
+  }
+
+  const description = emptyState.querySelector('p');
+  if (description) {
+    description.textContent = hasTree
+      ? 'Your guest data is stored only in this browser.'
+      : 'Use the setup wizard to create your first local family tree.';
+  }
+
+  const createButton = document.getElementById('createTreeBtnEmpty');
+  if (createButton) {
+    createButton.innerHTML = hasTree
+      ? '<span class="material-symbols-outlined">add</span>Start a New Local Tree'
+      : '<span class="material-symbols-outlined">add</span>Create Your First Tree';
+  }
+
+  let continueButton = document.getElementById('continueGuestTreeBtn');
+  if (hasTree) {
+    if (!continueButton) {
+      continueButton = document.createElement('button');
+      continueButton.id = 'continueGuestTreeBtn';
+      continueButton.className = 'create-tree-btn-secondary continue-guest-tree-btn';
+      continueButton.innerHTML = '<span class="material-symbols-outlined">edit</span>Continue Local Tree';
+      continueButton.addEventListener('click', () => {
+        window.location.href = 'editor.html?guest=1';
+      });
+      if (createButton) {
+        createButton.insertAdjacentElement('beforebegin', continueButton);
+      } else {
+        emptyState.appendChild(continueButton);
+      }
+    }
+    return;
+  }
+
+  if (continueButton) {
+    continueButton.remove();
+  }
+}
+
+function renderTreesState(treesGrid, emptyState) {
+  if (treesGrid) treesGrid.innerHTML = '';
+  const hasTrees = trees.length > 0;
+  setCreateTreeButtonVisibility(hasTrees);
+  if (!hasTrees) {
+    window.AncestrioDomDisplay.show(emptyState);
+    return;
+  }
+  window.AncestrioDomDisplay.hide(emptyState);
+  trees.forEach((tree) => renderTreeCard(tree));
+}
+
 async function loadTrees() {
   const treesGrid = document.getElementById('treesGrid');
   const emptyState = document.getElementById('emptyState');
   const loadingState = document.getElementById('loadingState');
 
-  loadingState.style.display = 'block';
-  emptyState.style.display = 'none';
-  treesGrid.innerHTML = '';
+  if (isLocalGuestMode) {
+    trees = [];
+    clearDashboardStatus();
+    if (treesGrid) treesGrid.innerHTML = '';
+    window.AncestrioDomDisplay.hide(loadingState);
+    setCreateTreeButtonVisibility(false);
+    updateGuestEmptyState(hasStoredGuestTree());
+    window.AncestrioDomDisplay.show(emptyState);
+    return;
+  }
+
+  setCreateTreeButtonVisibility(false);
+  window.AncestrioDomDisplay.show(loadingState);
+  window.AncestrioDomDisplay.hide(emptyState);
+  if (treesGrid) treesGrid.innerHTML = '';
+  let renderedCachedTrees = false;
 
   try {
-    // Simple query without orderBy - no index needed
-    const snapshot = await db.collection('trees')
-      .where('userId', '==', currentUser.uid)
-      .get();
-
-    trees = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    // Sort in JavaScript
-    trees.sort((a, b) => {
-      const dateA = a.createdAt ? a.createdAt.toMillis() : 0;
-      const dateB = b.createdAt ? b.createdAt.toMillis() : 0;
-      return dateB - dateA;
-    });
-
-    loadingState.style.display = 'none';
-
-    if (trees.length === 0) {
-      emptyState.style.display = 'block';
-    } else {
-      trees.forEach(tree => renderTreeCard(tree));
+    // Show cached trees immediately if available, then refresh from network.
+    try {
+      const cachedSnapshot = await db.collection('trees')
+        .where('userId', '==', currentUser.uid)
+        .get({ source: 'cache' });
+      const cachedTrees = mapTreesFromSnapshot(cachedSnapshot);
+      if (cachedTrees.length) {
+        trees = cachedTrees;
+        renderTreesState(treesGrid, emptyState);
+        renderedCachedTrees = true;
+      }
+    } catch (cacheError) {
+      console.debug('No cached trees available:', cacheError?.message || cacheError);
     }
+
+    // Simple query without orderBy - no index needed
+    const snapshot = await withTimeout(
+      db.collection('trees')
+        .where('userId', '==', currentUser.uid)
+        .get(),
+      TREE_LOAD_TIMEOUT_MS,
+      'firestore/timeout'
+    );
+
+    trees = mapTreesFromSnapshot(snapshot);
+    clearDashboardStatus();
+    renderTreesState(treesGrid, emptyState);
   } catch (error) {
     console.error('Error loading trees:', error);
     console.error('Error code:', error.code);
     console.error('Error message:', error.message);
-    loadingState.style.display = 'none';
     
     // Show specific error message
     let errorMsg = 'Failed to load trees. ';
@@ -767,13 +933,20 @@ async function loadTrees() {
       errorMsg += 'Firestore is not enabled or security rules are blocking access. Please enable Firestore in Firebase Console.';
     } else if (error.code === 'unavailable') {
       errorMsg += 'Firestore service is unavailable. It may not be enabled yet.';
+    } else if (error.code === 'firestore/timeout') {
+      errorMsg += 'Loading timed out. Check your connection and try again.';
     } else {
       errorMsg += error.message;
     }
-    alert(errorMsg);
+    if (renderedCachedTrees) {
+      errorMsg += ' Showing cached trees.';
+    }
+    showDashboardStatus(errorMsg);
     
     // Show empty state so user can still create trees
-    emptyState.style.display = 'block';
+    if (!renderedCachedTrees) window.AncestrioDomDisplay.show(emptyState);
+  } finally {
+    window.AncestrioDomDisplay.hide(loadingState);
   }
 }
 
@@ -822,11 +995,11 @@ function renderTreeCard(tree) {
       </span>
     </div>
     <div class="tree-card-actions-bottom">
-      <button class="btn-view" onclick="viewTree('${tree.id}')">
+      <button class="btn-view" data-action="view-tree" data-tree-id="${tree.id}">
         <span class="material-symbols-outlined">visibility</span>
         View
       </button>
-      <button class="btn-edit" onclick="editTree('${tree.id}')">
+      <button class="btn-edit" data-action="edit-tree" data-tree-id="${tree.id}">
         <span class="material-symbols-outlined">edit</span>
         Edit
       </button>
@@ -836,6 +1009,18 @@ function renderTreeCard(tree) {
   // Attach delete handler
   card.querySelector('.icon-btn.delete').addEventListener('click', (e) => {
     showDeleteModal(e.currentTarget.dataset.id, e.currentTarget.dataset.name);
+  });
+  card.querySelector('[data-action="view-tree"]')?.addEventListener('click', (e) => {
+    const targetTreeId = e.currentTarget.dataset.treeId;
+    if (targetTreeId) {
+      viewTree(targetTreeId);
+    }
+  });
+  card.querySelector('[data-action="edit-tree"]')?.addEventListener('click', (e) => {
+    const targetTreeId = e.currentTarget.dataset.treeId;
+    if (targetTreeId) {
+      editTree(targetTreeId);
+    }
   });
 
   treesGrid.appendChild(card);
@@ -872,7 +1057,7 @@ function countMembers(data) {
   return count;
 }
 function showCreateModal() {
-  document.getElementById('createTreeModal').style.display = 'flex';
+  window.AncestrioDomDisplay.show('createTreeModal', 'flex');
   resetWizard();
   goToStep(1);
   const modeInput = document.querySelector('input[name="centerMode"][value="me"]');
@@ -880,7 +1065,7 @@ function showCreateModal() {
 }
 
 function hideCreateModal() {
-  document.getElementById('createTreeModal').style.display = 'none';
+  window.AncestrioDomDisplay.hide('createTreeModal');
   resetWizard();
 }
 
@@ -957,7 +1142,7 @@ function resetWizard() {
   clearCentralNameError();
   const birthdateInfo = document.getElementById('birthdateInfo');
   const birthdateInfoBtn = document.getElementById('birthdateInfoBtn');
-  if (birthdateInfo) birthdateInfo.style.display = 'none';
+  window.AncestrioDomDisplay.hide(birthdateInfo);
   if (birthdateInfoBtn) birthdateInfoBtn.setAttribute('aria-expanded', 'false');
   
   updateBirthdaysPreferenceForWizard();
@@ -1058,6 +1243,21 @@ async function createTreeFromWizard(e) {
       relationshipToCenter: relationshipToCenter || null,
       enableBirthdays: birthdaysEnabled
     };
+
+    if (isLocalGuestMode) {
+      localStorage.setItem(LOCAL_GUEST_TREE_KEY, JSON.stringify({
+        name,
+        description,
+        privacy,
+        data: initialData,
+        wizardContext,
+        updatedAt: Date.now()
+      }));
+
+      hideCreateModal();
+      window.location.href = 'editor.html?guest=1';
+      return;
+    }
 
     const docRef = await db.collection('trees').add({
       userId: currentUser.uid,
@@ -1226,12 +1426,12 @@ function generateFamilyTemplate(options) {
 function showDeleteModal(treeId, treeName) {
   treeToDelete = treeId;
   document.getElementById('deleteTreeName').textContent = treeName;
-  document.getElementById('deleteModal').style.display = 'flex';
+  window.AncestrioDomDisplay.show('deleteModal', 'flex');
 }
 
 
 function hideDeleteModal() {
-  document.getElementById('deleteModal').style.display = 'none';
+  window.AncestrioDomDisplay.hide('deleteModal');
   treeToDelete = null;
 }
 
@@ -1256,6 +1456,12 @@ async function confirmDelete() {
 }
 
 async function logout() {
+  if (isLocalGuestMode) {
+    localStorage.removeItem('guestMode');
+    window.location.href = 'auth.html';
+    return;
+  }
+
   try {
     await auth.signOut();
     window.location.href = 'auth.html';
@@ -1278,3 +1484,4 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+

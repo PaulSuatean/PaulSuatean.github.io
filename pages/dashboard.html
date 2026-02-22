@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../styles/dashboard.css" />
 </head>
 <body class="dashboard-page">
-  <header class="topbar">
+  <header class="topbar app-header">
     <div class="brand-group">
       <button id="themeBtn" title="Switch theme" aria-label="Switch theme">
         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
@@ -33,6 +33,12 @@
     <div class="dashboard-container">
       <div class="dashboard-hero">
         <h2 id="dashboardTitle">Your Family Trees</h2>
+        <div class="dashboard-hero-actions" style="display: none;">
+          <button id="createTreeBtn" class="dashboard-fab" title="Create new tree" aria-label="Create new tree">
+            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            New Tree
+          </button>
+        </div>
       </div>
 
       <div id="treesGrid" class="trees-grid">
@@ -55,11 +61,6 @@
       </div>
     </div>
   </main>
-
-  <button id="createTreeBtn" class="dashboard-fab" title="Create new tree" aria-label="Create new tree">
-    <span class="material-symbols-outlined" aria-hidden="true">add</span>
-    New Tree
-  </button>
 
   <!-- Create Tree Wizard Modal -->
   <div id="createTreeModal" class="modal" style="display: none;">
@@ -371,7 +372,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <script src="../scripts/firebase-config.js?v=2"></script>
-  <script src="../scripts/dashboard.js?v=2"></script>
+  <script src="../scripts/theme-toggle.js"></script>
+  <script src="../scripts/dom-display.js"></script>
+  <script src="../scripts/firebase-config.js?v=3"></script>
+  <script src="../scripts/dashboard.js?v=4"></script>
 </body>
 </html>

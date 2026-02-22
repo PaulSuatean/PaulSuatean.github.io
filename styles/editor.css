@@ -1,13 +1,5 @@
 /* Editor Styles */
-
-body {
-  overflow: auto;
-}
-
-/* Ensure opaque backgrounds in dark mode */
-body.theme-dark {
-  background: #0b1d33 !important;
-}
+@import url("./page-common.css");
 
 .editor-container {
   max-width: 1400px;
@@ -21,6 +13,10 @@ body.theme-dark {
   background: transparent;
   position: relative;
   z-index: 1;
+}
+
+.dashboard-link {
+  text-decoration: none;
 }
 
 body.theme-dark .editor-main {
@@ -70,17 +66,6 @@ body.theme-dark .editor-main {
   font-family: inherit;
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--ring);
-}
-
-textarea.form-input {
-  resize: vertical;
-  min-height: 80px;
-}
-
 select.form-input {
   cursor: pointer;
 }
@@ -96,9 +81,9 @@ select.form-input {
 }
 
 body.theme-dark .sidebar-section {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
-  z-index: 2 !important;
+  background: #0b1d33;
+  backdrop-filter: none;
+  z-index: 2;
 }
 
 .sidebar-section h3 {
@@ -153,6 +138,23 @@ body.theme-dark .sidebar-section {
   line-height: 1.8;
 }
 
+.guest-mode-notice {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+#guestModeNotice a {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+#guestModeNotice a:hover {
+  color: #1d4ed8;
+}
+
 .editor-content {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -174,9 +176,9 @@ body.theme-dark .sidebar-section {
 }
 
 body.theme-dark .editor-tabs {
-  background: #132a46 !important;
-  backdrop-filter: none !important;
-  z-index: 3 !important;
+  background: #132a46;
+  backdrop-filter: none;
+  z-index: 3;
 }
 
 .editor-tab {
@@ -229,8 +231,8 @@ body.theme-dark .editor-tabs {
 }
 
 body.theme-dark .visual-editor {
-  background: #0b1d33 !important;
-  z-index: 2 !important;
+  background: #0b1d33;
+  z-index: 2;
 }
 
 .editor-note {
@@ -281,8 +283,8 @@ body.theme-dark .visual-editor {
 }
 
 body.theme-dark .visual-toolbar {
-  background: #132a46 !important;
-  backdrop-filter: none !important;
+  background: #132a46;
+  backdrop-filter: none;
 }
 
 .visual-toolbar-group {
@@ -315,12 +317,12 @@ body.theme-dark .visual-toolbar {
 }
 
 body.theme-dark .visual-canvas {
-  background-color: #132a46 !important;
+  background-color: #132a46;
   background-image:
     linear-gradient(0deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.08)),
     linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
     linear-gradient(0deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-  backdrop-filter: none !important;
+  backdrop-filter: none;
 }
 
 #visualTree {
@@ -616,8 +618,8 @@ body.theme-dark .visual-canvas {
 }
 
 body.theme-dark .add-member-card {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
+  background: #0b1d33;
+  backdrop-filter: none;
 }
 
 .add-member-modal.show .add-member-card {
@@ -675,7 +677,6 @@ body.theme-dark .add-member-card {
 
 .photo-upload-preview:hover {
   border-color: var(--accent);
-  background: var(--accent);
   background: rgba(59, 130, 246, 0.1);
 }
 
@@ -773,10 +774,6 @@ body.theme-dark .add-member-card {
   display: flex;
   gap: 8px;
   align-items: stretch;
-}
-
-.person-row-input {
-  flex: 1;
 }
 
 .btn-inline {
@@ -942,11 +939,6 @@ body.theme-dark .add-member-card {
   z-index: 1001;
 }
 
-body.theme-dark .modal-dialog {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
-}
-
 .modal-dialog.modal-small {
   max-width: 400px;
 }
@@ -955,69 +947,12 @@ body.theme-dark .modal-dialog {
   padding: 24px;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.modal-header h3 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  font-size: 28px;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-base);
-}
-
-.modal-close:hover {
-  background: var(--surface-2);
-  color: var(--text);
-}
-
-.modal-body {
-  margin-bottom: 24px;
-}
-
-
-.modal-footer {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
 .btn-primary, .btn-secondary {
   padding: 10px 20px;
-  border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: var(--shadow-md);
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
@@ -1073,9 +1008,111 @@ body.theme-dark .modal-dialog {
   .editor-header .editor-container {
     flex-direction: column;
   }
+
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor {
+    left: calc(var(--header-corner-inset) + var(--header-corner-size) + 8px);
+    right: var(--header-corner-inset);
+    max-width: none;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    justify-content: stretch;
+    align-items: center;
+    gap: 6px;
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > a {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    display: flex;
+    flex: 1 1 auto;
+  }
+
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > * {
+    min-width: 0;
+  }
+
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > button,
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > a > button {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 5px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    justify-content: center;
+    gap: 4px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > button .material-symbols-outlined,
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > a > button .material-symbols-outlined {
+    font-size: 15px;
+  }
+
+  .visual-toolbar {
+    justify-content: flex-start;
+  }
+
+  .visual-toolbar-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: visible;
+  }
+
+  .visual-toolbar .tool-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 12px;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .visual-toolbar .tool-btn .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  .visual-toolbar-hint {
+    flex: 1 0 100%;
+  }
 }
 
 @media (max-width: 560px) {
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > button,
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > a > button {
+    height: 42px;
+    min-height: 42px;
+    padding: 0 4px;
+    font-size: 0.78rem;
+  }
+
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > button .material-symbols-outlined,
+  body.editor-page:not(.focus-mode) .app-header .controls.controls-editor > a > button .material-symbols-outlined {
+    font-size: 14px;
+  }
+
+  .visual-toolbar .tool-btn {
+    min-height: 36px;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+
   .field-row {
     grid-template-columns: 1fr;
   }
@@ -1105,43 +1142,39 @@ body.theme-dark .privacy-badge.private {
   color: #fc8181;
 }
 
-body.theme-dark .privacy-badge.public {
-  background: rgba(72, 187, 120, 0.2);
-  color: #9ae6b4;
-}
-
 /* JSON Editor Dark Mode - Ensure Solid Backgrounds */
 body.theme-dark .json-toolbar {
-  background: #132a46 !important;
-  backdrop-filter: none !important;
-  z-index: 3 !important;
+  background: #132a46;
+  backdrop-filter: none;
+  z-index: 3;
 }
 
 body.theme-dark .json-editor {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
-  z-index: 2 !important;
+  background: #0b1d33;
+  backdrop-filter: none;
+  z-index: 2;
 }
 
 body.theme-dark .json-editor-wrapper {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
-  z-index: 2 !important;
+  background: #0b1d33;
+  backdrop-filter: none;
+  z-index: 2;
 }
 
 body.theme-dark .tool-btn {
-  background: #132a46 !important;
-  z-index: 3 !important;
+  background: #132a46;
+  z-index: 3;
 }
 
 body.theme-dark .editor-content {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
-  z-index: 2 !important;
+  background: #0b1d33;
+  backdrop-filter: none;
+  z-index: 2;
 }
 
 body.theme-dark .tab-content {
-  background: #0b1d33 !important;
-  backdrop-filter: none !important;
-  z-index: 2 !important;
+  background: #0b1d33;
+  backdrop-filter: none;
+  z-index: 2;
 }
+

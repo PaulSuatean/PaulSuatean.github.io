@@ -1,4 +1,4 @@
-# 🎯 Quick Reference - Firebase Family Tree
+﻿# ðŸŽ¯ Quick Reference - Firebase Family Tree
 
 ## For Website Owner (Initial Setup)
 
@@ -7,7 +7,7 @@
 2. Enable Email & Google authentication
 3. Create Firestore database with security rules
 4. Enable Storage (optional, for images)
-5. Copy Firebase config to `firebase-config.js`
+5. Copy Firebase config to `scripts/firebase-config.js`
 6. Commit and push to GitHub
 
 **See FIREBASE_SETUP.md for detailed instructions**
@@ -25,29 +25,29 @@
 ## Key URLs
 
 - **Demo Tree**: `index.html` (your original tree)
-- **Login/Signup**: `auth.html`
-- **Dashboard**: `dashboard.html` (after login)
-- **Editor**: `editor.html?id=TREE_ID`
-- **Viewer**: `tree.html?id=TREE_ID`
+- **Login/Signup**: `pages/auth.html`
+- **Dashboard**: `pages/dashboard.html` (after login)
+- **Editor**: `pages/editor.html?id=TREE_ID`
+- **Viewer**: `pages/tree.html?id=TREE_ID`
 
 ## File Checklist
 
 New files to commit:
-- ✅ `firebase-config.js` (with your credentials)
-- ✅ `auth.html`
-- ✅ `auth.js`
-- ✅ `dashboard.html`
-- ✅ `dashboard.js`
-- ✅ `dashboard.css`
-- ✅ `editor.html`
-- ✅ `editor.js`
-- ✅ `editor.css`
-- ✅ `tree.html`
-- ✅ `FIREBASE_SETUP.md`
-- ✅ `QUICK_START.md`
+- âœ… `scripts/firebase-config.js` (with your credentials)
+- âœ… `pages/auth.html`
+- âœ… `scripts/auth.js`
+- âœ… `pages/dashboard.html`
+- âœ… `scripts/dashboard.js`
+- âœ… `styles/dashboard.css`
+- âœ… `pages/editor.html`
+- âœ… `scripts/editor.js`
+- âœ… `styles/editor.css`
+- âœ… `pages/tree.html`
+- âœ… `FIREBASE_SETUP.md`
+- âœ… `QUICK_START.md`
 
 Modified files:
-- ✅ `script.js` (supports Firebase trees)
+- âœ… `scripts/main.js` (supports Firebase trees)
 
 ## Common Commands
 
@@ -64,21 +64,21 @@ git status
 ## Testing Checklist
 
 After deployment:
-1. ✅ Visit auth.html - Can you sign up?
-2. ✅ Create account - Works?
-3. ✅ Login - Works?
-4. ✅ Dashboard loads - Shows empty state?
-5. ✅ Create tree - Editor opens?
-6. ✅ Edit JSON - Can save?
-7. ✅ Preview tree - Opens in new tab?
-8. ✅ Original demo - Still works at index.html?
+1. âœ… Visit pages/auth.html - Can you sign up?
+2. âœ… Create account - Works?
+3. âœ… Login - Works?
+4. âœ… Dashboard loads - Shows empty state?
+5. âœ… Create tree - Editor opens?
+6. âœ… Edit JSON - Can save?
+7. âœ… Preview tree - Opens in new tab?
+8. âœ… Original demo - Still works at index.html?
 
 ## Firebase Console Quick Links
 
 Once logged into [Firebase Console](https://console.firebase.google.com/):
-- **Users**: Authentication → Users
-- **Trees Data**: Firestore Database → trees collection
-- **Rules**: Firestore Database → Rules tab
+- **Users**: Authentication â†’ Users
+- **Trees Data**: Firestore Database â†’ trees collection
+- **Rules**: Firestore Database â†’ Rules tab
 - **Usage**: Analytics or Usage & Billing
 
 ## Default Tree Structure
@@ -113,14 +113,14 @@ Once logged into [Firebase Console](https://console.firebase.google.com/):
 
 Issues? Check:
 1. Browser console (F12)
-2. Firebase Console → Firestore → View data
-3. Firebase Console → Authentication → Users
+2. Firebase Console â†’ Firestore â†’ View data
+3. Firebase Console â†’ Authentication â†’ Users
 4. Network tab (F12) for failed requests
 
 ## Quick Wins
 
 Easy improvements to add later:
-- Landing page (create `landing.html`)
+- Landing page (create `index.html`)
 - About page
 - Custom domain
 - Logo/favicon
@@ -128,3 +128,5 @@ Easy improvements to add later:
 - Password reset
 - Tree templates
 - Export to PDF
+
+
