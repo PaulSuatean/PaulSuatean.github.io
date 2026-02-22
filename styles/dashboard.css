@@ -121,6 +121,8 @@ body.theme-dark .dashboard-container {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 24px;
+  display: flex;
+  flex-direction: column;
   transition: all var(--transition-base);
   position: relative;
   box-shadow: var(--shadow-sm);
@@ -184,7 +186,15 @@ body.theme-dark .tree-card {
   color: var(--muted);
   font-size: 14px;
   margin-bottom: 16px;
-  line-height: 1.5;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 1.4em;
+}
+
+.tree-card-description.is-empty {
+  visibility: hidden;
 }
 
 .tree-card-preview {
@@ -267,7 +277,7 @@ body.theme-dark .tree-card {
 .tree-card-actions-bottom {
   display: flex;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: auto;
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
@@ -546,6 +556,12 @@ input[type="number"].form-input {
   gap: 12px;
 }
 
+.radio-group.radio-group-inline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .radio-label {
   display: flex;
   align-items: center;
@@ -672,6 +688,89 @@ body.theme-dark .btn-danger:hover {
 /* Wizard Styles */
 .modal-wizard {
   max-width: 600px;
+  --wizard-control-height: 40px;
+}
+
+.modal-wizard .modal-content {
+  padding: 16px;
+}
+
+.modal-wizard .modal-header {
+  margin-bottom: 12px;
+}
+
+.modal-wizard .modal-header h3 {
+  font-size: 20px;
+}
+
+.modal-wizard .modal-body {
+  margin-bottom: 0;
+}
+
+.modal-wizard .form-group {
+  margin-bottom: 10px;
+}
+
+.modal-wizard .form-label {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.modal-wizard .form-input,
+.modal-wizard select.form-input,
+.modal-wizard .btn-primary,
+.modal-wizard .btn-secondary,
+.modal-wizard .btn-danger,
+.modal-wizard .radio-label,
+.modal-wizard .btn-inline {
+  min-height: var(--wizard-control-height);
+}
+
+.modal-wizard .form-input,
+.modal-wizard select.form-input {
+  height: var(--wizard-control-height);
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.modal-wizard select.form-input {
+  padding-right: 32px;
+  background-position: right 10px center;
+}
+
+.modal-wizard .btn-primary,
+.modal-wizard .btn-secondary,
+.modal-wizard .btn-danger {
+  height: var(--wizard-control-height);
+  padding: 0 14px;
+}
+
+.modal-wizard textarea.form-input {
+  height: var(--wizard-control-height);
+  min-height: var(--wizard-control-height);
+  resize: none;
+  padding-top: 9px;
+}
+
+.modal-wizard .radio-group {
+  gap: 8px;
+}
+
+.modal-wizard .radio-label {
+  padding: 0 10px;
+}
+
+.modal-wizard .name-input-group {
+  gap: 4px;
+}
+
+.modal-wizard .name-sub-label {
+  font-size: 11px;
+}
+
+.modal-wizard .field-info {
+  margin: 4px 0 0;
+  font-size: 11px;
 }
 
 .wizard-step {
@@ -685,37 +784,53 @@ body.theme-dark .btn-danger:hover {
 
 .step-subtitle {
   color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 24px;
+  font-size: 13px;
+  margin: 0 0 12px;
   font-weight: 500;
 }
 
-.wizard-footer {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+.step-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
 }
 
-.wizard-footer .btn-secondary {
-  flex: 0;
+.wizard-nav {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) auto minmax(96px, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
-.wizard-footer .btn-primary {
-  flex: 0;
+.wizard-nav-btn {
+  min-height: var(--wizard-control-height);
+  padding: 0 14px;
+}
+
+#wizardBackBtn {
+  justify-self: start;
+}
+
+#wizardNextBtn {
+  justify-self: end;
 }
 
 .wizard-progress {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  margin: 0;
+  padding: 0;
+  border-top: 0;
 }
 
 .progress-step {
-  width: 32px;
-  height: 32px;
+  width: var(--wizard-control-height);
+  height: var(--wizard-control-height);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -725,11 +840,11 @@ body.theme-dark .btn-danger:hover {
   font-weight: 600;
   font-size: 14px;
   transition: all var(--transition-base);
-  cursor: pointer;
+  cursor: default;
 }
 
 .progress-step.active {
-  background: var(--primary);
+  background: var(--accent);
   color: white;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
@@ -767,17 +882,83 @@ body.theme-dark .progress-step.active {
 }
 
 .radio-label:hover {
-  border-color: var(--primary);
+  border-color: #ef4444;
   background: var(--surface-2);
 }
 
 .radio-label input[type="radio"] {
   cursor: pointer;
+  accent-color: #ef4444;
 }
 
 .radio-label span {
   color: var(--text);
   font-weight: 500;
+}
+
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.form-label-row .form-label {
+  margin-bottom: 0;
+}
+
+.form-label-row .info-btn {
+  flex-shrink: 0;
+}
+
+.name-input-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.name-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.name-input-group.has-error .name-sub-label {
+  color: #ef4444;
+}
+
+.name-sub-label {
+  margin-bottom: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.info-btn {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+}
+
+.info-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.field-info {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 body.theme-dark .radio-label {
@@ -786,10 +967,163 @@ body.theme-dark .radio-label {
 }
 
 body.theme-dark .radio-label:hover {
-  border-color: #3b82f6;
+  border-color: #ef4444;
   background: var(--surface-2);
+}
+
+body.theme-dark .info-btn {
+  background: var(--surface);
+}
+
+body.theme-dark .name-input-group.has-error .name-sub-label {
+  color: #fc8181;
 }
 
 .required {
   color: #ef4444;
+}
+
+.conditional-block {
+  margin-top: 8px;
+}
+
+.person-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.person-row {
+  display: block;
+  padding: 6px 0;
+}
+
+.person-list.has-multiple-rows .person-row + .person-row {
+  border-top: 1px solid rgba(59, 130, 246, 0.55);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.person-row-name-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.person-birthdate-group {
+  grid-column: 1 / -1;
+}
+
+.person-list-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.person-row-input {
+  flex: 1;
+}
+
+.sibling-row {
+  align-items: center;
+}
+
+.btn-inline {
+  min-height: var(--wizard-control-height);
+  padding: 0 14px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-remove-person,
+.btn-add-person {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 8px;
+}
+
+.btn-person-control {
+  flex: 0 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.person-list-controls .btn-remove-person,
+.person-list-controls .btn-add-person {
+  width: 100%;
+  min-width: 0;
+  height: var(--wizard-control-height);
+  min-height: var(--wizard-control-height);
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.person-list-controls .btn-person-control {
+  flex: 1 1 auto;
+  gap: 8px;
+}
+
+.btn-person-control .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.person-list-controls .btn-person-control-text {
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .wizard-nav {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+  }
+
+  .wizard-nav-btn {
+    width: 100%;
+    padding: 0 8px;
+  }
+
+  #wizardBackBtn {
+    justify-self: stretch;
+  }
+
+  #wizardNextBtn {
+    justify-self: stretch;
+  }
+
+  .radio-group.radio-group-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .name-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .person-row.sibling-row {
+    flex-direction: row;
+  }
+
+  .person-row-name-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-person-control {
+    flex: 0 0 28px;
+  }
 }

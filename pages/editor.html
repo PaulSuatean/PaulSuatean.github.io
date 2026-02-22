@@ -250,28 +250,11 @@
           </div>
         </div>
 
-        <!-- Additional Section -->
-        <div class="additional-section">
-          <button type="button" class="additional-toggle" id="additionalToggle">
-            <span class="material-symbols-outlined">expand_more</span>
-            Additional Information
-          </button>
-          <div class="additional-fields" id="additionalFields">
-            <div class="veteran-toggle">
-              <span>Veteran</span>
-              <div class="toggle-switch" id="veteranToggle"></div>
-            </div>
-            <div class="field-group" style="margin-bottom: 16px;">
-              <label class="field-label">Home Country</label>
-              <input type="text" id="memberCountry" class="field-input" placeholder="United States">
-            </div>
-            <div class="field-group">
-              <label class="field-label">Visited Countries</label>
-              <div class="tags-container" id="visitedContainer">
-                <input type="text" class="tags-input" id="visitedInput" placeholder="Type and press Enter">
-              </div>
-            </div>
-          </div>
+        <!-- Countries Visited -->
+        <div class="countries-section">
+          <label class="field-label">Countries Visited</label>
+          <div id="visitedCountriesList" class="person-list"></div>
+          <button type="button" class="btn-secondary btn-inline" id="addVisitedCountryBtn">Add country</button>
         </div>
       </div>
       <div class="add-member-footer">

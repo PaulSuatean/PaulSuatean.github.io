@@ -6,11 +6,12 @@
   </svg>`;
 
   const cloudConfig = {
-    count: 8,
+    count: 18,
     duration: 120, // Base duration in seconds
+    verticalRange: [2, 96], // Spread clouds across almost full viewport height
     layers: [
-      { className: 'cloud-foreground', multiplier: 1, sizeRange: [60, 90], opacityRange: [0.25, 0.4] },
-      { className: 'cloud-background', multiplier: 1.75, sizeRange: [40, 70], opacityRange: [0.15, 0.3] }
+      { className: 'cloud-foreground', multiplier: 1, sizeRange: [42, 68], opacityRange: [0.25, 0.4] },
+      { className: 'cloud-background', multiplier: 1.75, sizeRange: [28, 50], opacityRange: [0.15, 0.3] }
     ]
   };
 
@@ -47,7 +48,8 @@
       cloudDiv.style.setProperty('--cloud-base-opacity', opacity);
       
       // Set random vertical position
-      const topPosition = Math.random() * 60; // 0-60%
+      const [minTop, maxTop] = cloudConfig.verticalRange;
+      const topPosition = minTop + Math.random() * (maxTop - minTop);
       cloudDiv.style.top = `${topPosition}%`;
       
       // Set animation delay and duration

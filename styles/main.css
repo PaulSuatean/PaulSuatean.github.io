@@ -619,6 +619,7 @@ body.theme-dark .upcoming-birthday-display:hover {
   margin: 0;
   grid-auto-rows: minmax(var(--month-card-height), auto);
   align-items: start;
+  align-content: start;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -690,6 +691,14 @@ body.theme-dark .upcoming-birthday-display:hover {
   overflow-y: auto;
   min-height: 0;
 }
+.month-card.expanded.expand-left .month-head { grid-column: 2; }
+.month-card.expanded.expand-left .month-count { grid-column: 2; }
+.month-card.expanded.expand-left .month-body {
+  grid-column: 2;
+  padding-right: 0;
+  padding-left: calc(4px + var(--expanded-grid-pad));
+}
+.month-card.expanded.expand-left .month-details { grid-column: 1; }
 .month-card.current {
   border-color: transparent;
   box-shadow: 0 0 0 2px rgba(200, 162, 75, 0.4), 0 4px 10px rgba(0,0,0,0.06);
@@ -953,6 +962,7 @@ body.theme-dark .upcoming-birthday-display:hover {
   gap: 8px var(--month-col-gap);
   margin: 0;
   grid-auto-rows: minmax(var(--month-card-height), auto);
+  align-content: start;
 }
 .birthday-months.mobile-show-all .month-card {
   display: flex;

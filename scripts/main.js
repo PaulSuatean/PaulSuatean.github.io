@@ -116,6 +116,10 @@
     height: 120,
     hGap: 48, // gap between spouses (tripled)
   };
+  const TREE_ZOOM_MIN = 0.05;
+  const TREE_ZOOM_MAX = 8;
+  const TREE_INITIAL_SCALE_CAP_DESKTOP = 0.86;
+  const TREE_INITIAL_SCALE_CAP_MOBILE = 0.92;
   const level = {
     vGap: 180, // vertical distance between generations (increased)
     hGap: 28,  // additional horizontal spacing
@@ -286,7 +290,7 @@
     }, 140);
   }
   const zoom = d3.zoom()
-    .scaleExtent([0.1, 4]) // Limit zoom bounds to prevent infinite zoom
+    .scaleExtent([TREE_ZOOM_MIN, TREE_ZOOM_MAX]) // Limit zoom bounds to prevent infinite zoom
     .wheelDelta((event) => {
       const base = event.deltaMode === 1 ? 0.02 : 0.002; // lines vs pixels
       return -event.deltaY * base;
@@ -483,6 +487,54 @@
 
   let currentView = localStorage.getItem('tree-view') || 'tree';
   let globeInitialized = false;
+  const UPCOMING_WINDOW_DAYS = 10;
+  const BIRTHDAY_POPUP_WINDOW_DAYS = 7;
+  const GLOBE_CENTER_THRESHOLD = 0.35;
+  const GLOBE_REMOTE_THRESHOLD = 0.6;
+  const GLOBE_VERTICAL_OFFSET = 34;
+  const GLOBE_ROTATION_DEFAULT = -15;
+  const GLOBE_TILT_DEFAULT = -18;
+  const GLOBE_TILT_MIN = -60;
+  const GLOBE_TILT_MAX = 60;
+  const GLOBE_TILT_SPEED = 0.22;
+  const GLOBE_ROTATE_SPEED = 0.3;
+  const GLOBE_ZOOM_MIN = 0.9;
+  const GLOBE_ZOOM_MAX = 2.56;
+  const GLOBE_ZOOM_STEP = 0.12;
+  const GLOBE_ZOOM_DEFAULT = 0.92;
+  let globeProjection = null;
+  let globePath = null;
+  let globeSvg = null;
+  let globeSpherePath = null;
+  let globeBasePaths = null;
+  let globeHighlightPaths = null;
+  let globeMovedStrokeBluePaths = null;
+  let globeMovedStrokeGoldPaths = null;
+  let globeCountries = [];
+  let globeVisitedFeatures = [];
+  let globeHighlightFeatures = [];
+  let globeRotation = GLOBE_ROTATION_DEFAULT;
+  let globeTilt = GLOBE_TILT_DEFAULT;
+  let globeZoom = GLOBE_ZOOM_DEFAULT;
+  let globePinchStartDistance = null;
+  let globePinchStartZoom = null;
+  let globeDragActive = false;
+  let globeVelocityX = 0;
+  let globeVelocityY = 0;
+  let globeLastDragTime = 0;
+  let globeInertiaId = null;
+  let globeCenterX = 0;
+  let globeCenterY = 0;
+  let globeBaseScale = 0;
+  let globeBaseSize = 0;
+  let globeRenderQueued = false;
+  let globeResizeObserver = null;
+  let globeResetPending = false;
+
+  function applyViewBodyClasses(view) {
+    document.body.classList.remove('view-globe', 'view-calendar', 'view-tree');
+    document.body.classList.add(`view-${view}`);
+  }
 
   function updateViewToggleUI() {
     // Handle new 3-way toggle
@@ -504,9 +556,7 @@
     const validViews = ['tree', 'calendar', 'globe'];
     const nextView = validViews.includes(view) ? view : 'tree';
     currentView = nextView;
-    document.body.classList.toggle('view-globe', nextView === 'globe');
-    document.body.classList.toggle('view-calendar', nextView === 'calendar');
-    document.body.classList.toggle('view-tree', nextView === 'tree');
+    applyViewBodyClasses(nextView);
     requestAnimationFrame(updateViewToggleOffset);
     if (globeView) globeView.setAttribute('aria-hidden', nextView === 'globe' ? 'false' : 'true');
     if (pageEl) pageEl.setAttribute('aria-hidden', nextView === 'globe' || nextView === 'calendar' ? 'true' : 'false');
@@ -523,7 +573,13 @@
         updateFocusModeUI();
       }
       setCalendarOpen(false);
-      initGlobe();
+      globeResetPending = true;
+      resetGlobeView();
+      if (!initGlobe()) {
+        console.warn('Globe view unavailable, falling back to tree view.');
+        setView('tree');
+        return;
+      }
       requestAnimationFrame(() => ensureGlobeVisible(60));
     } else if (nextView === 'calendar') {
       if (focusModeActive) {
@@ -601,13 +657,14 @@
       (h - padding * 2) / Math.max(bbox.height, 1)
     );
     const safeScale = Math.max(scale, 0.02);
-    const minScaleFactor = mobileQuery && mobileQuery.matches ? 0.95 : 0.85;
-    const minScale = Math.max(safeScale * minScaleFactor, 0.02);
-    const maxScale = Math.max(6, safeScale * 5);
-    const appliedScale = Math.min(safeScale, maxScale);
+    const initialCap = mobileQuery && mobileQuery.matches
+      ? TREE_INITIAL_SCALE_CAP_MOBILE
+      : TREE_INITIAL_SCALE_CAP_DESKTOP;
+    const appliedScale = Math.min(safeScale, initialCap);
+    const maxScale = Math.max(TREE_ZOOM_MAX, safeScale * 5);
     const tx = (w - bbox.width * appliedScale) / 2 - bbox.x * appliedScale;
     const ty = (h - bbox.height * appliedScale) / 2 - bbox.y * appliedScale + getTreeVerticalBias(h);
-    zoom.scaleExtent([minScale, maxScale]);
+    zoom.scaleExtent([TREE_ZOOM_MIN, maxScale]);
     const t = d3.zoomIdentity.translate(tx, ty).scale(appliedScale);
     svg.transition().duration(450).call(zoom.transform, t);
   }
@@ -811,6 +868,7 @@
     if (searchBar && searchBar.classList.contains('show')) {
       positionSearchBar();
     }
+    updateExpandedMonthPlacement();
     if (currentView === 'globe') {
       resizeGlobe();
     }
@@ -925,85 +983,175 @@
     console.log('After attachThumbs:', result);
     return result;
   }
+
+  function toSpouseEntries(rawSpouse) {
+    if (!rawSpouse) return [];
+    const rawList = Array.isArray(rawSpouse) ? rawSpouse : [rawSpouse];
+    const entries = [];
+
+    rawList.forEach((item) => {
+      if (!item) return;
+
+      if (typeof item === 'string') {
+        const name = safe(item).trim();
+        if (!name) return;
+        entries.push({ name, image: '', birthday: '', tags: [], parents: null });
+        return;
+      }
+
+      if (typeof item === 'object') {
+        const name = safe(item.name).trim();
+        const image = safe(item.image).trim();
+        const birthday = safe(item.birthday || item.dob).trim();
+        const tags = readTags(item.tags);
+        const parents = item.parents && typeof item.parents === 'object' ? item.parents : null;
+        const hasData = !!(name || image || birthday || tags.length || parents);
+        if (!hasData) return;
+        entries.push({ name, image, birthday, tags, parents });
+      }
+    });
+
+    return entries;
+  }
+
+  function pickSpouseSides(rawSpouse, legacyPrevSpouse) {
+    const entries = toSpouseEntries(rawSpouse);
+    const right = entries[0] || null;
+    let left = entries[1] || null;
+
+    if (!left && legacyPrevSpouse) {
+      const fallbackName = safe(legacyPrevSpouse.name).trim();
+      const fallbackImage = safe(legacyPrevSpouse.image).trim();
+      const fallbackBirthday = safe(legacyPrevSpouse.birthday || legacyPrevSpouse.dob).trim();
+      const fallbackTags = readTags(legacyPrevSpouse.tags);
+      if (fallbackName || fallbackImage || fallbackBirthday || fallbackTags.length) {
+        left = {
+          name: fallbackName,
+          image: fallbackImage,
+          birthday: fallbackBirthday,
+          tags: fallbackTags,
+          parents: legacyPrevSpouse.parents && typeof legacyPrevSpouse.parents === 'object'
+            ? legacyPrevSpouse.parents
+            : null
+        };
+      }
+    }
+
+    return { right, left, all: entries };
+  }
+
+  function toPrevSpouseField(entry) {
+    if (!entry) return undefined;
+    return {
+      name: safe(entry.name),
+      image: safe(entry.image),
+      birthday: safe(entry.birthday),
+      tags: readTags(entry.tags)
+    };
+  }
+
   // Transform rfamily.json into a uniform couple tree (preserving image + gender)
   function transformRFamily(src) {
+    const rootSpouses = pickSpouseSides(src.spouse, src.prevSpouse);
+    const rootPrimarySpouse = rootSpouses.right;
+    const rootPrevSpouse = rootSpouses.left;
     const paternal = src.parents ? src.parents : null;
-    const maternal = src.spouse && src.spouse.parents ? src.spouse.parents : null;
+    const paternalSpouses = paternal ? pickSpouseSides(paternal.spouse, paternal.prevSpouse) : null;
+    const maternal = rootSpouses.all.find((spouse) => spouse && spouse.parents)?.parents || null;
+    const maternalSpouses = maternal ? pickSpouseSides(maternal.spouse, maternal.prevSpouse) : null;
     const grandparentName = safe(src.Grandparent);
-    const grandparentSpouse = safe(src.spouse && src.spouse.name);
+    const grandparentSpouse = safe(rootPrimarySpouse && rootPrimarySpouse.name);
     const gpCouple = {
       name: grandparentName,
       image: safe(src.image),
       birthday: safe(src.birthday || src.dob),
       spouse: grandparentSpouse,
-      spouseImage: safe(src.spouse && src.spouse.image),
-      spouseBirthday: safe(src.spouse && (src.spouse.birthday || src.spouse.dob)),
+      spouseImage: safe(rootPrimarySpouse && rootPrimarySpouse.image),
+      spouseBirthday: safe(rootPrimarySpouse && rootPrimarySpouse.birthday),
       tags: readTags(src.tags),
-      spouseTags: readTags(src.spouse && src.spouse.tags),
+      spouseTags: readTags(rootPrimarySpouse && rootPrimarySpouse.tags),
       children: []
     };
-    if (paternal && (safe(paternal.name) || (paternal.spouse && safe(paternal.spouse.name)))) {
+    const normalizedRootPrev = toPrevSpouseField(rootPrevSpouse);
+    if (normalizedRootPrev) {
+      gpCouple.prevSpouse = normalizedRootPrev;
+    }
+    if (paternal && (safe(paternal.name) || (paternalSpouses && (paternalSpouses.right || paternalSpouses.left)))) {
       gpCouple.parents = {
         name: safe(paternal.name),
         image: safe(paternal.image),
         birthday: safe(paternal.birthday || paternal.dob),
-        spouse: paternal.spouse ? safe(paternal.spouse.name) : '',
-        spouseImage: paternal.spouse ? safe(paternal.spouse.image) : '',
-        spouseBirthday: paternal.spouse ? safe(paternal.spouse.birthday || paternal.spouse.dob) : '',
+        spouse: paternalSpouses.right ? safe(paternalSpouses.right.name) : '',
+        spouseImage: paternalSpouses.right ? safe(paternalSpouses.right.image) : '',
+        spouseBirthday: paternalSpouses.right ? safe(paternalSpouses.right.birthday) : '',
         tags: readTags(paternal.tags),
-        spouseTags: readTags(paternal.spouse && paternal.spouse.tags)
+        spouseTags: paternalSpouses.right ? readTags(paternalSpouses.right.tags) : []
       };
+      const paternalPrev = toPrevSpouseField(paternalSpouses.left);
+      if (paternalPrev) gpCouple.parents.prevSpouse = paternalPrev;
     }
-    if (maternal && (safe(maternal.name) || (maternal.spouse && safe(maternal.spouse.name)))) {
+    if (maternal && (safe(maternal.name) || (maternalSpouses && (maternalSpouses.right || maternalSpouses.left)))) {
       gpCouple.spouseParents = {
         name: safe(maternal.name),
         image: safe(maternal.image),
         birthday: safe(maternal.birthday || maternal.dob),
-        spouse: maternal.spouse ? safe(maternal.spouse.name) : '',
-        spouseImage: maternal.spouse ? safe(maternal.spouse.image) : '',
-        spouseBirthday: maternal.spouse ? safe(maternal.spouse.birthday || maternal.spouse.dob) : '',
+        spouse: maternalSpouses.right ? safe(maternalSpouses.right.name) : '',
+        spouseImage: maternalSpouses.right ? safe(maternalSpouses.right.image) : '',
+        spouseBirthday: maternalSpouses.right ? safe(maternalSpouses.right.birthday) : '',
         tags: readTags(maternal.tags),
-        spouseTags: readTags(maternal.spouse && maternal.spouse.tags)
+        spouseTags: maternalSpouses.right ? readTags(maternalSpouses.right.tags) : []
       };
+      const maternalPrev = toPrevSpouseField(maternalSpouses.left);
+      if (maternalPrev) gpCouple.spouseParents.prevSpouse = maternalPrev;
     }
 
     // Parents generation (children of Grandparents)
     const parents = Array.isArray(src.Parent) ? src.Parent : [];
     parents.forEach((p) => {
+      const parentSpouses = pickSpouseSides(p.spouse, p.prevSpouse);
+      const rawParentSpouseIndex = Number(p.fromSpouseIndex);
+      const parentFromSpouseIndex = Number.isFinite(rawParentSpouseIndex)
+        ? Math.max(0, Math.trunc(rawParentSpouseIndex))
+        : (p.fromPrevSpouse ? 1 : 0);
       const pc = {
         name: safe(p.name),
         image: safe(p.image),
         birthday: safe(p.birthday || p.dob),
-        prevSpouse: (p.prevSpouse ? {
-          name: safe(p.prevSpouse.name),
-          image: safe(p.prevSpouse.image),
-          birthday: safe(p.prevSpouse.birthday || p.prevSpouse.dob),
-          tags: readTags(p.prevSpouse.tags),
-          spouseTags: readTags(p.prevSpouse.spouse && p.prevSpouse.spouse.tags)
-        } : undefined),
-        spouse: safe(p.spouse && p.spouse.name),
-        spouseImage: safe(p.spouse && p.spouse.image),
-        spouseBirthday: safe(p.spouse && (p.spouse.birthday || p.spouse.dob)),
+        prevSpouse: toPrevSpouseField(parentSpouses.left),
+        spouse: parentSpouses.right ? safe(parentSpouses.right.name) : '',
+        spouseImage: parentSpouses.right ? safe(parentSpouses.right.image) : '',
+        spouseBirthday: parentSpouses.right ? safe(parentSpouses.right.birthday) : '',
         tags: readTags(p.tags),
-        spouseTags: readTags(p.spouse && p.spouse.tags),
-        children: []
+        spouseTags: parentSpouses.right ? readTags(parentSpouses.right.tags) : [],
+        children: [],
+        fromSpouseIndex: parentFromSpouseIndex,
+        fromPrevSpouse: !!p.fromPrevSpouse || parentFromSpouseIndex > 0
       };
       gpCouple.children.push(pc);
 
       // Children generation (children of each Parent)
-      const kids = Array.isArray(p.children) ? p.children : [];
+      const kids = Array.isArray(p.children)
+        ? p.children
+        : (Array.isArray(p.grandchildren) ? p.grandchildren : []);
       kids.forEach((k) => {
+        const rawFromSpouseIndex = Number(k.fromSpouseIndex);
+        const fromSpouseIndex = Number.isFinite(rawFromSpouseIndex)
+          ? Math.max(0, Math.trunc(rawFromSpouseIndex))
+          : (k.fromPrevSpouse ? 1 : 0);
+        const childSpouses = pickSpouseSides(k.spouse, k.prevSpouse);
         const kc = {
           name: safe(k.name),
           image: safe(k.image),
           birthday: safe(k.birthday || k.dob),
-          spouse: safe(k.spouse && k.spouse.name),
-          spouseImage: safe(k.spouse && k.spouse.image),
-          spouseBirthday: safe(k.spouse && (k.spouse.birthday || k.spouse.dob)),
+          prevSpouse: toPrevSpouseField(childSpouses.left),
+          spouse: childSpouses.right ? safe(childSpouses.right.name) : '',
+          spouseImage: childSpouses.right ? safe(childSpouses.right.image) : '',
+          spouseBirthday: childSpouses.right ? safe(childSpouses.right.birthday) : '',
           tags: readTags(k.tags),
-          spouseTags: readTags(k.spouse && k.spouse.tags),
+          spouseTags: childSpouses.right ? readTags(childSpouses.right.tags) : [],
           children: [],
-          fromPrevSpouse: !!k.fromPrevSpouse
+          fromSpouseIndex,
+          fromPrevSpouse: !!k.fromPrevSpouse || fromSpouseIndex > 0
         };
         pc.children.push(kc);
 
@@ -1176,6 +1324,7 @@
       card.className = 'month-card';
       if (idx === currentMonthIdx) card.classList.add('current');
       card.dataset.monthIndex = idx;
+      card.dataset.renderIndex = idx;
 
       const detailsId = `month-details-${idx}`;
       const head = document.createElement('button');
@@ -1233,20 +1382,59 @@
         details.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
         head.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
         expandIcon.textContent = isExpanded ? '-' : '+';
-        if (!isExpanded || !birthdayMonthsEl) return;
-        birthdayMonthsEl.querySelectorAll('.month-card.expanded').forEach((other) => {
-          if (other === card) return;
-          other.classList.remove('expanded');
-          const otherDetails = other.querySelector('.month-details');
-          if (otherDetails) otherDetails.setAttribute('aria-hidden', 'true');
-          const otherHead = other.querySelector('.month-head');
-          if (otherHead) otherHead.setAttribute('aria-expanded', 'false');
-          const otherIcon = other.querySelector('.month-expand-icon');
-          if (otherIcon) otherIcon.textContent = '+';
-        });
+        if (isExpanded && birthdayMonthsEl) {
+          birthdayMonthsEl.querySelectorAll('.month-card.expanded').forEach((other) => {
+            if (other === card) return;
+            other.classList.remove('expanded');
+            const otherDetails = other.querySelector('.month-details');
+            if (otherDetails) otherDetails.setAttribute('aria-hidden', 'true');
+            const otherHead = other.querySelector('.month-head');
+            if (otherHead) otherHead.setAttribute('aria-expanded', 'false');
+            const otherIcon = other.querySelector('.month-expand-icon');
+            if (otherIcon) otherIcon.textContent = '+';
+          });
+        }
+        updateExpandedMonthPlacement();
       });
       birthdayMonthsEl.appendChild(card);
     });
+  }
+
+  function getCalendarColumnCount() {
+    if (!birthdayMonthsEl) return 1;
+    const raw = Number.parseInt(getComputedStyle(birthdayMonthsEl).getPropertyValue('--month-cols'), 10);
+    return Number.isFinite(raw) && raw > 0 ? raw : 1;
+  }
+
+  function normalizeMonthCardOrder() {
+    if (!birthdayMonthsEl) return [];
+    const cards = Array.from(birthdayMonthsEl.querySelectorAll('.month-card'));
+    cards
+      .sort((a, b) => Number(a.dataset.renderIndex || 0) - Number(b.dataset.renderIndex || 0))
+      .forEach((card) => birthdayMonthsEl.appendChild(card));
+    return Array.from(birthdayMonthsEl.querySelectorAll('.month-card'));
+  }
+
+  function updateExpandedMonthPlacement() {
+    if (!birthdayMonthsEl) return;
+    const orderedCards = normalizeMonthCardOrder();
+    orderedCards.forEach((card) => card.classList.remove('expand-left'));
+
+    const cols = getCalendarColumnCount();
+    if (cols <= 1) return;
+
+    const expanded = birthdayMonthsEl.querySelector('.month-card.expanded');
+    if (!expanded) return;
+
+    const cards = Array.from(birthdayMonthsEl.querySelectorAll('.month-card'));
+    const idx = cards.indexOf(expanded);
+    if (idx <= 0) return;
+
+    const isLastColumn = ((idx + 1) % cols) === 0;
+    if (!isLastColumn) return;
+
+    birthdayMonthsEl.insertBefore(expanded, cards[idx - 1]);
+    expanded.classList.add('expand-left');
   }
 
   function formatCount(total) {
@@ -1254,46 +1442,6 @@
     return `${total} ${word}`;
   }
 
-  const UPCOMING_WINDOW_DAYS = 10;
-  const BIRTHDAY_POPUP_WINDOW_DAYS = 7;
-  const GLOBE_CENTER_THRESHOLD = 0.35;
-  const GLOBE_REMOTE_THRESHOLD = 0.6;
-  const GLOBE_TILT_DEFAULT = -18;
-  const GLOBE_TILT_MIN = -60;
-  const GLOBE_TILT_MAX = 60;
-  const GLOBE_TILT_SPEED = 0.22;
-  const GLOBE_ROTATE_SPEED = 0.3;
-  const GLOBE_ZOOM_MIN = 0.9;
-  const GLOBE_ZOOM_MAX = 2.56;
-  const GLOBE_ZOOM_STEP = 0.12;
-  const GLOBE_ZOOM_DEFAULT = isCoarsePointer() ? 1.1 : 1.08;
-  let globeProjection = null;
-  let globePath = null;
-  let globeSvg = null;
-  let globeSpherePath = null;
-  let globeBasePaths = null;
-  let globeHighlightPaths = null;
-  let globeMovedStrokeBluePaths = null;
-  let globeMovedStrokeGoldPaths = null;
-  let globeCountries = [];
-  let globeVisitedFeatures = [];
-  let globeHighlightFeatures = [];
-  let globeRotation = -15;
-  let globeTilt = GLOBE_TILT_DEFAULT;
-  let globeZoom = GLOBE_ZOOM_DEFAULT;
-  let globePinchStartDistance = null;
-  let globePinchStartZoom = null;
-  let globeDragActive = false;
-  let globeVelocityX = 0;
-  let globeVelocityY = 0;
-  let globeLastDragTime = 0;
-  let globeInertiaId = null;
-  let globeCenterX = 0;
-  let globeCenterY = 0;
-  let globeBaseScale = 0;
-  let globeBaseSize = 0;
-  let globeRenderQueued = false;
-  let globeResizeObserver = null;
   function shouldExcludeFromCalendar(name) {
     return calendarExcludeNames.has(String(name || '').toLowerCase());
   }
@@ -1563,6 +1711,25 @@
     globeInertiaId = null;
   }
 
+  function resetGlobeView() {
+    stopGlobeInertia();
+    globeResetPending = true;
+    globeRotation = GLOBE_ROTATION_DEFAULT;
+    globeTilt = GLOBE_TILT_DEFAULT;
+    globeZoom = GLOBE_ZOOM_DEFAULT;
+    globePinchStartDistance = null;
+    globePinchStartZoom = null;
+    globeDragActive = false;
+    globeVelocityX = 0;
+    globeVelocityY = 0;
+    globeLastDragTime = 0;
+    hideGlobeTooltip(true);
+    if (globeProjection) {
+      globeProjection.rotate([globeRotation, globeTilt]);
+      applyGlobeProjection();
+    }
+  }
+
   function renderGlobe() {
     if (!globePath || !globeSpherePath) return;
     globeSpherePath.attr('d', globePath({ type: 'Sphere' }));
@@ -1647,9 +1814,15 @@
     if (!rect.width || !rect.height) return;
     const size = Math.min(rect.width, rect.height);
     globeCenterX = rect.width / 2;
-    globeCenterY = rect.height / 2;
+    globeCenterY = (rect.height / 2) + GLOBE_VERTICAL_OFFSET;
     globeBaseScale = (size / 2) - 12;
     globeBaseSize = size;
+    if (globeResetPending) {
+      globeRotation = GLOBE_ROTATION_DEFAULT;
+      globeTilt = GLOBE_TILT_DEFAULT;
+      globeZoom = GLOBE_ZOOM_DEFAULT;
+      globeResetPending = false;
+    }
     applyGlobeProjection();
   }
 
@@ -1670,10 +1843,11 @@
   }
 
   function initGlobe() {
-    if (globeInitialized || !globeSvgEl) return;
+    if (!globeSvgEl) return false;
+    if (globeInitialized) return true;
     if (typeof topojson === 'undefined') {
       console.warn('TopoJSON client missing, globe view disabled.');
-      return;
+      return false;
     }
     globeInitialized = true;
     globeSvg = d3.select(globeSvgEl);
@@ -1717,7 +1891,11 @@
     globeSvgEl.addEventListener('touchcancel', handleGlobeTouchEnd);
 
     d3.json(GLOBE_DATA_URL).then((world) => {
-      if (!world || !world.objects || !world.objects.countries) return;
+      if (!world || !world.objects || !world.objects.countries) {
+        console.warn('Globe data is missing required countries data.');
+        if (currentView === 'globe') setView('tree');
+        return;
+      }
       globeCountries = topojson.feature(world, world.objects.countries).features || [];
       const byName = new Map(globeCountries.map((c) => [c.properties.name, c]));
       globeVisitedFeatures = Object.keys(globeVisits)
@@ -1864,12 +2042,11 @@
 
       resizeGlobe();
       ensureGlobeVisible();
-    }).catch(() => {
-      if (!globeTooltip) return;
-      globeTooltip.hidden = false;
-      globeTooltip.classList.add('show', 'centered');
-      globeTooltip.innerHTML = '<div class="tooltip-title">Globe data unavailable</div>';
+    }).catch((err) => {
+      console.warn('Failed to load globe data:', err);
+      if (currentView === 'globe') setView('tree');
     });
+    return true;
   }
 
   function queueCalendarScroll() {
@@ -1904,6 +2081,7 @@
       if (calendarSection) calendarSection.classList.toggle('calendar-full', mobileShowAll);
       // show all months
       birthdayMonthsEl.querySelectorAll('.month-card').forEach((card) => card.classList.remove('active'));
+      updateExpandedMonthPlacement();
       detachSwipe();
       if (carouselControls) carouselControls.style.display = 'none';
       if (calendarSideNav) calendarSideNav.style.display = 'none';
@@ -2284,8 +2462,29 @@
   function render(data) {
     g.selectAll('*').remove();
 
+    const getSpouseSortIndex = (nodeData) => {
+      if (!nodeData || typeof nodeData !== 'object') return 0;
+      const rawSpouseIndex = Number(nodeData.fromSpouseIndex);
+      if (Number.isFinite(rawSpouseIndex)) {
+        return Math.max(0, Math.trunc(rawSpouseIndex));
+      }
+      return nodeData.fromPrevSpouse ? 1 : 0;
+    };
+    const sortBySpouseGroup = (nodeData) => {
+      if (!nodeData || typeof nodeData !== 'object' || !Array.isArray(nodeData.children)) return nodeData;
+      nodeData.children = nodeData.children
+        .map((child, index) => ({ child, index }))
+        .sort((a, b) => {
+          const spouseDiff = getSpouseSortIndex(b.child) - getSpouseSortIndex(a.child);
+          if (spouseDiff !== 0) return spouseDiff;
+          return a.index - b.index;
+        })
+        .map((entry) => sortBySpouseGroup(entry.child));
+      return nodeData;
+    };
+
     // Restructure data so origin node is at root with parents as overlay
-    const restructuredData = restructureForOrigin(data);
+    const restructuredData = sortBySpouseGroup(JSON.parse(JSON.stringify(restructureForOrigin(data))));
     const root = asHierarchy(restructuredData);
 
     // Top-to-bottom layout: x = horizontal, y = vertical
@@ -2347,6 +2546,7 @@
     const mergePad = Math.max(24, person.height * 0.35);
     const mergeCurves = [];
     const trunkCommon = [];
+    const marriageNoKids = [];
     const branches = [];
     const overlayCouples = [];
 
@@ -2432,23 +2632,62 @@
         // Align mother (spouse) over Ioan; father sits to her left
         addOverlayCouple(p.data.parents, placementAnchor, childAnchor, 'spouse', false, false);
       }
-      if (!Array.isArray(p.children) || p.children.length === 0) return;
       const Lp = layoutFor(p.data || {});
+      const hasChildren = Array.isArray(p.children) && p.children.length > 0;
       // Start curves at the interior sides (center-right/center-left) of the parent bubbles
       const yCenter = p.y; // bubble vertical center in absolute coords
       const yMerge = yCenter + mergePad;
       const yJ = junctionBelow(p).y;
-      const anchors = [];
-      let hasLeftChild = false, hasRightChild = false;
-      p.children.forEach((c) => {
-        if (c.data && c.data.fromPrevSpouse) hasLeftChild = true; else hasRightChild = true;
-      });
       // Interior anchors on the sides facing inward
       const Lpi = layoutFor(p.data || {});
       const anchorPrimaryLeft  = { x: p.x + Lpi.xPrimary,              y: yCenter };
       const anchorPrimaryRight = { x: p.x + Lpi.xPrimary + person.width, y: yCenter };
       const anchorLeftSpouseRight = Lpi.hasLeft  ? { x: p.x + Lpi.xLeftSpouse  + person.width, y: yCenter } : null;
       const anchorRightSpouseLeft = Lpi.hasRight ? { x: p.x + Lpi.xRightSpouse,               y: yCenter } : null;
+
+      // Draw horizontal spouse-to-primary lines only for spouse pairs with no children.
+      if (!hasChildren) {
+        if (Lp.hasRight && anchorRightSpouseLeft) {
+          marriageNoKids.push({
+            x0: Math.min(anchorPrimaryRight.x, anchorRightSpouseLeft.x),
+            x1: Math.max(anchorPrimaryRight.x, anchorRightSpouseLeft.x),
+            y: yCenter,
+            isDNA: true
+          });
+        }
+        if (Lp.hasLeft && anchorLeftSpouseRight) {
+          marriageNoKids.push({
+            x0: Math.min(anchorLeftSpouseRight.x, anchorPrimaryLeft.x),
+            x1: Math.max(anchorLeftSpouseRight.x, anchorPrimaryLeft.x),
+            y: yCenter,
+            isDNA: true
+          });
+        }
+        return;
+      }
+
+      let hasLeftChild = false, hasRightChild = false;
+      p.children.forEach((c) => {
+        if (c.data && c.data.fromPrevSpouse) hasLeftChild = true; else hasRightChild = true;
+      });
+
+      if (Lp.hasLeft && !hasLeftChild && anchorLeftSpouseRight) {
+        marriageNoKids.push({
+          x0: Math.min(anchorLeftSpouseRight.x, anchorPrimaryLeft.x),
+          x1: Math.max(anchorLeftSpouseRight.x, anchorPrimaryLeft.x),
+          y: yCenter,
+          isDNA: true
+        });
+      }
+      if (Lp.hasRight && !hasRightChild && anchorRightSpouseLeft) {
+        marriageNoKids.push({
+          x0: Math.min(anchorPrimaryRight.x, anchorRightSpouseLeft.x),
+          x1: Math.max(anchorPrimaryRight.x, anchorRightSpouseLeft.x),
+          y: yCenter,
+          isDNA: true
+        });
+      }
+
       // Build LEFT union
       if (Lp.hasLeft && hasLeftChild && anchorLeftSpouseRight) {
         const xMergeLeft = (anchorLeftSpouseRight.x + anchorPrimaryLeft.x) / 2;
@@ -2509,6 +2748,14 @@
       .join('path')
       .attr('class', 'link trunk')
       .attr('d', (t) => `M ${t.x},${t.y0} V ${t.y1}`);
+    g.append('g')
+      .attr('fill', 'none')
+      .attr('stroke-linecap', 'round')
+      .selectAll('path.marriage-no-kids')
+      .data(marriageNoKids)
+      .join('path')
+      .attr('class', 'link marriage-no-kids')
+      .attr('d', (t) => `M ${t.x0},${t.y} H ${t.x1}`);
     g.append('g')
       .attr('fill', 'none')
       .attr('stroke-linecap', 'round')
@@ -2643,6 +2890,12 @@
       .attr('class', 'blood-link')
       .attr('d', (t) => `M ${t.x},${t.y0} V ${t.y1}`);
 
+    dnaGroup.selectAll('path.blood-marriage-no-kids')
+      .data(marriageNoKids.filter((t) => t.isDNA))
+      .join('path')
+      .attr('class', 'blood-link')
+      .attr('d', (t) => `M ${t.x0},${t.y} H ${t.x1}`);
+
     // Split -> child bubble top (gold curved branches)
     dnaGroup.selectAll('path.blood-branch')
       .data(branches.filter((b) => b.isDNA))
@@ -2651,10 +2904,9 @@
       .attr('d', (d) => linkGen(d));
     updateDNAVisibility();
 
-    // Only fit to screen on initial load, not on every render
-    if (!window._initialFitComplete) {
-      fitTreeWhenVisible(getTreeDefaultPadding(), 60);
-    }
+    // Fit once right after render, then run a follow-up fit after layout settles.
+    fitTreeWhenVisible(getTreeDefaultPadding(), 60);
+    requestAnimationFrame(() => fitTreeWhenVisible(getTreeDefaultPadding(), 30));
   }
 
   function drawPerson(sel, opts) {

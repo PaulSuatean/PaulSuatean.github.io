@@ -70,13 +70,50 @@
           <button class="modal-close" id="closeCreateModal">&times;</button>
         </div>
         
-        <!-- Step 1: Basic Info -->
+        <!-- Step 1: Center Person -->
         <div id="step1" class="wizard-step active">
           <div class="modal-body">
-            <p class="step-subtitle">Let's set up your family tree foundation</p>
+            <h4 class="step-heading">Who Is the Central Person?</h4>
+            <p class="step-subtitle">Choose who this tree is centered around.</p>
             <div class="form-group">
-              <label class="form-label" for="treeName">Tree Name <span class="required">*</span></label>
-              <div id="treeNameError" class="form-error" style="display: none;">Tree name is required</div>
+              <label class="form-label">Center this tree on:</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="centerMode" value="me" checked />
+                  <span>Me</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="centerMode" value="other" />
+                  <span>Someone else</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Do you want to add birthdays?</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="enableBirthdays" value="yes" checked />
+                  <span>Yes</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="enableBirthdays" value="no" />
+                  <span>No</span>
+                </label>
+              </div>
+              <p class="field-info">If enabled, birthdays can be used for calendar view and birthday notifications.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Tree + Central Person -->
+        <div id="step2" class="wizard-step">
+          <div class="modal-body">
+            <h4 class="step-heading" id="step2Heading">About You</h4>
+            <p class="step-subtitle" id="step2Subtitle">Add tree details and the central person's information.</p>
+
+            <div class="form-group">
+              <label class="form-label" for="treeName">Family Tree Name <span class="required">*</span></label>
+              <div id="treeNameError" class="form-error" style="display: none;">Family tree name is required</div>
               <input type="text" class="form-input" id="treeName" required placeholder="e.g., Smith Family Tree" />
             </div>
             <div class="form-group">
@@ -85,116 +122,223 @@
             </div>
             <div class="form-group">
               <label class="form-label">Privacy</label>
-              <div class="radio-group">
+              <div class="radio-group radio-group-inline">
                 <label class="radio-label">
                   <input type="radio" name="privacy" value="private" checked />
-                  <span>🔒 Private (Only you can see)</span>
+                  <span>Private</span>
                 </label>
                 <label class="radio-label">
                   <input type="radio" name="privacy" value="public" />
-                  <span>🌍 Public (Anyone with link can view)</span>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer wizard-footer">
-            <button type="button" class="btn-secondary" id="cancelCreateBtn">Cancel</button>
-            <button type="button" class="btn-primary" id="nextStep1">Next</button>
-          </div>
-        </div>
-
-        <!-- Step 2: Family Structure -->
-        <div id="step2" class="wizard-step">
-          <div class="modal-body">
-            <p class="step-subtitle">Tell us about your family</p>
-            
-            <div class="form-group">
-              <label class="form-label">Do you have a spouse/partner?</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="hasSpouse" value="yes" />
-                  <span>Yes</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="hasSpouse" value="no" checked />
-                  <span>No</span>
+                  <span>Public</span>
                 </label>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="myChildren">How many children do you have? <span class="hint">(0-20)</span></label>
-              <input type="number" class="form-input" id="myChildren" min="0" max="20" value="0" />
+              <label class="form-label" id="centralNameLabel">Your full name <span class="required">*</span></label>
+              <div id="centralPersonNameError" class="form-error" style="display: none;">First name and last name are required</div>
+              <div class="name-input-row">
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="centralPersonFirstName">First Name <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="centralPersonFirstName" required placeholder="First name" />
+                </div>
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="centralPersonLastName">Last Name <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="centralPersonLastName" required placeholder="Last name" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group" id="centralBirthdateGroup">
+              <div class="form-label-row">
+                <label class="form-label name-sub-label" for="centralBirthdate">Birthdate (Optional)</label>
+                <button
+                  type="button"
+                  class="info-btn"
+                  id="birthdateInfoBtn"
+                  aria-label="Birthdate help"
+                  aria-expanded="false"
+                  aria-controls="birthdateInfo"
+                >?</button>
+              </div>
+              <input type="text" class="form-input" id="centralBirthdate" placeholder="06/01/1950" maxlength="10" inputmode="numeric" />
+              <p class="field-info" id="birthdateInfo" style="display: none;">Birthdate enables birthday calendar and birthday notifications.</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="centralPhotoUrl">Photo URL (Optional)</label>
+              <input type="url" class="form-input" id="centralPhotoUrl" placeholder="https://example.com/photo.jpg" />
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="siblingCount">How many siblings do you have? <span class="hint">(0-20)</span></label>
-              <input type="number" class="form-input" id="siblingCount" min="0" max="20" value="0" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="generations">How many generations back should we include? <span class="hint">(your parents, grandparents, etc.)</span></label>
-              <select class="form-input" id="generations">
-                <option value="1">Just me</option>
-                <option value="2">Back to my parents</option>
-                <option value="3" selected>Back to my grandparents</option>
-                <option value="4">Back to my great-grandparents</option>
-                <option value="5">Back to my great-great-grandparents</option>
-                <option value="6">6+ generations back</option>
+            <div class="form-group" id="relationshipGroup" style="display: none;">
+              <label class="form-label" for="creatorRelationship">Your relationship to this person (Optional)</label>
+              <select class="form-input" id="creatorRelationship">
+                <option value="">Select relationship</option>
+                <option value="my_father">My father</option>
+                <option value="my_mother">My mother</option>
+                <option value="my_spouse">My spouse</option>
+                <option value="my_child">My child</option>
+                <option value="my_grandparent">My grandparent</option>
+                <option value="my_friend">My friend</option>
+                <option value="other">Other</option>
               </select>
             </div>
-
-            <div class="form-group">
-              <label class="form-label" for="uncles">How many aunts/uncles do you have (your parent's siblings)? <span class="hint">(0-10)</span></label>
-              <input type="number" class="form-input" id="uncles" min="0" max="10" value="1" />
+            <div class="form-group" id="relationshipOtherGroup" style="display: none;">
+              <label class="form-label" for="creatorRelationshipOther">Custom relationship (Optional)</label>
+              <input type="text" class="form-input" id="creatorRelationshipOther" placeholder="Describe your relationship" />
             </div>
-          </div>
-          <div class="modal-footer wizard-footer">
-            <button type="button" class="btn-secondary" id="backStep2">Back</button>
-            <button type="button" class="btn-primary" id="nextStep2">Next</button>
           </div>
         </div>
 
-        <!-- Step 3: Additional Details -->
+        <!-- Step 3: Parents -->
         <div id="step3" class="wizard-step">
           <div class="modal-body">
-            <p class="step-subtitle">Final details for your tree</p>
-            
-            <div class="form-group">
-              <label class="form-label" for="myGrandchildren">How many grandchildren do you have or expect?</label>
-              <input type="number" class="form-input" id="myGrandchildren" min="0" max="20" value="0" />
-            </div>
+            <h4 class="step-heading" id="step3Heading">Parents</h4>
+            <p class="step-subtitle" id="step3Subtitle">Add parent names and birthdates (you can skip unknown information).</p>
 
             <div class="form-group">
-              <label class="form-label" for="ancestorChildren">How many children did your oldest ancestor have? <span class="hint">(for building the tree structure)</span></label>
-              <input type="number" class="form-input" id="ancestorChildren" min="1" max="10" value="3" />
+              <label class="form-label" id="fatherNameLabel">Father's full name</label>
+              <div class="name-input-row">
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="fatherFirstName">First Name</label>
+                  <input type="text" class="form-input" id="fatherFirstName" placeholder="Optional" />
+                </div>
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="fatherLastName">Last Name</label>
+                  <input type="text" class="form-input" id="fatherLastName" placeholder="Optional" />
+                </div>
+              </div>
             </div>
+            <div class="form-group" id="fatherBirthdateGroup">
+              <label class="form-label name-sub-label" id="fatherBirthdateLabel" for="fatherBirthdate">Father's birthdate</label>
+              <input type="text" class="form-input" id="fatherBirthdate" placeholder="06/01/1950" maxlength="10" inputmode="numeric" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" id="motherNameLabel">Mother's full name</label>
+              <div class="name-input-row">
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="motherFirstName">First Name</label>
+                  <input type="text" class="form-input" id="motherFirstName" placeholder="Optional" />
+                </div>
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="motherLastName">Last Name</label>
+                  <input type="text" class="form-input" id="motherLastName" placeholder="Optional" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group" id="motherBirthdateGroup">
+              <label class="form-label name-sub-label" id="motherBirthdateLabel" for="motherBirthdate">Mother's birthdate</label>
+              <input type="text" class="form-input" id="motherBirthdate" placeholder="06/01/1950" maxlength="10" inputmode="numeric" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Siblings -->
+        <div id="step4" class="wizard-step">
+          <div class="modal-body">
+            <h4 class="step-heading" id="step4Heading">Siblings</h4>
+            <p class="step-subtitle" id="step4Subtitle">Add siblings if available.</p>
 
             <div class="form-group">
-              <label class="form-label">Would you like to start with a template?</label>
+              <label class="form-label" id="siblingsQuestion">Do you have brothers or sisters?</label>
               <div class="radio-group">
                 <label class="radio-label">
-                  <input type="radio" name="useTemplate" value="yes" checked />
-                  <span>Yes, create a template with placeholder names (I'll edit them later)</span>
+                  <input type="radio" name="hasSiblings" value="no" checked />
+                  <span>No</span>
                 </label>
                 <label class="radio-label">
-                  <input type="radio" name="useTemplate" value="empty" />
-                  <span>No, start with just the root person (I'll add family members manually)</span>
+                  <input type="radio" name="hasSiblings" value="yes" />
+                  <span>Yes</span>
                 </label>
               </div>
             </div>
-          </div>
-          <div class="modal-footer wizard-footer">
-            <button type="button" class="btn-secondary" id="backStep3">Back</button>
-            <button type="button" class="btn-primary" id="finalCreateTreeBtn">Create Tree</button>
+
+            <div class="conditional-block" id="siblingsBlock" style="display: none;">
+              <div class="form-group">
+                <label class="form-label" id="siblingsListLabel">Add siblings</label>
+                <div id="siblingsList" class="person-list"></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Progress Indicator -->
-        <div class="wizard-progress">
-          <div class="progress-step active" data-step="1">1</div>
-          <div class="progress-step" data-step="2">2</div>
-          <div class="progress-step" data-step="3">3</div>
+        <!-- Step 5: Partner + Children -->
+        <div id="step5" class="wizard-step">
+          <div class="modal-body">
+            <h4 class="step-heading" id="step5Heading">Partner, Children, and Grandchildren</h4>
+            <p class="step-subtitle" id="step5Subtitle">Add partner, children, and grandchildren details.</p>
+
+            <div class="form-group">
+              <label class="form-label" id="partnerNameLabel">Partner or spouse name</label>
+              <div class="name-input-row">
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="partnerFirstName">First Name</label>
+                  <input type="text" class="form-input" id="partnerFirstName" placeholder="Optional" />
+                </div>
+                <div class="name-input-group">
+                  <label class="form-label name-sub-label" for="partnerLastName">Last Name</label>
+                  <input type="text" class="form-input" id="partnerLastName" placeholder="Optional" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" id="partnerBirthdateGroup">
+              <label class="form-label name-sub-label" id="partnerBirthdateLabel" for="partnerBirthdate">Partner or spouse birthdate</label>
+              <input type="text" class="form-input" id="partnerBirthdate" placeholder="06/01/1950" maxlength="10" inputmode="numeric" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="childrenQuestion">Do you have children?</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="hasChildren" value="no" checked />
+                  <span>No</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="hasChildren" value="yes" />
+                  <span>Yes</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="conditional-block" id="childrenBlock" style="display: none;">
+              <div class="form-group">
+                <label class="form-label" id="childrenListLabel">Add children</label>
+                <div id="childrenList" class="person-list"></div>
+              </div>
+            </div>
+
+            <div class="form-group" id="grandchildrenQuestionGroup" style="display: none;">
+              <label class="form-label" id="grandchildrenQuestion">Do you have grandchildren?</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="hasGrandchildren" value="no" checked />
+                  <span>No</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="hasGrandchildren" value="yes" />
+                  <span>Yes</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="conditional-block" id="grandchildrenBlock" style="display: none;">
+              <div class="form-group">
+                <label class="form-label" id="grandchildrenListLabel">Add grandchildren</label>
+                <div id="grandchildrenList" class="person-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn-secondary wizard-nav-btn" id="wizardBackBtn">Cancel</button>
+          <div class="wizard-progress">
+            <div class="progress-step active" data-step="1">1</div>
+            <div class="progress-step" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+          </div>
+          <button type="button" class="btn-primary wizard-nav-btn" id="wizardNextBtn">Next</button>
         </div>
       </div>
     </div>
