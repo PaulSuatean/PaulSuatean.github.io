@@ -5,6 +5,8 @@ let currentTree = null;
 let treeId = null;
 let hasUnsavedChanges = false;
 let activeSavePromise = null;
+let isLocalGuestMode = false;
+let guestPersistTimeout = null;
 let visualState = {
   initialized: false,
   svg: null,
@@ -25,6 +27,7 @@ let memberModalMode = 'add';
 let memberPhotoValue = '';
 const LOCAL_PREVIEW_PREFIX = 'ancestrio-preview:';
 const LOCAL_PREVIEW_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+const LOCAL_GUEST_TREE_KEY = 'ancestrio:guest-tree:v1';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Theme toggle
@@ -42,30 +45,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateThemeIcon();
   });
   
-  // Initialize Firebase
-  if (!initializeFirebase()) {
-    window.location.href = 'auth.html';
-    return;
-  }
-
-  // Get tree ID from URL
   const urlParams = new URLSearchParams(window.location.search);
-  treeId = urlParams.get('id');
-  if (!treeId) {
-    alert('No tree ID provided');
-    window.location.href = 'dashboard.html';
-    return;
-  }
+  isLocalGuestMode = localStorage.getItem('guestMode') === 'true' || urlParams.get('guest') === '1';
 
-  // Check authentication
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      currentUser = user;
-      await loadTree();
-    } else {
+  if (isLocalGuestMode) {
+    localStorage.setItem('guestMode', 'true');
+    configureGuestModeUI();
+    loadGuestTree();
+  } else {
+    localStorage.removeItem('guestMode');
+    if (!initializeFirebase()) {
       window.location.href = 'auth.html';
+      return;
     }
-  });
+
+    treeId = urlParams.get('id');
+    if (!treeId) {
+      alert('No tree ID provided');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadTree();
+      } else {
+        window.location.href = 'auth.html';
+      }
+    });
+  }
 
   // Event listeners
   document.getElementById('saveBtn').addEventListener('click', saveTree);
@@ -207,13 +216,149 @@ async function loadTree() {
   }
 }
 
+function configureGuestModeUI() {
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    saveBtn.style.display = 'none';
+  }
+
+  const cloudInstruction = Array.from(document.querySelectorAll('.instructions-list li'))
+    .find((item) => /saved to the cloud/i.test(item.textContent || ''));
+  if (cloudInstruction) {
+    cloudInstruction.textContent = 'Changes are saved locally in this browser';
+  }
+
+  const backLink = document.querySelector('.controls-editor a[href="dashboard.html"]');
+  if (backLink) {
+    backLink.href = 'auth.html';
+  }
+
+  const container = document.querySelector('.editor-container');
+  if (container && !document.getElementById('guestModeNotice')) {
+    const notice = document.createElement('div');
+    notice.id = 'guestModeNotice';
+    notice.style.marginBottom = '12px';
+    notice.style.padding = '10px 12px';
+    notice.style.border = '1px solid var(--border)';
+    notice.style.borderRadius = '8px';
+    notice.style.background = 'var(--surface-2)';
+    notice.innerHTML = '<strong>Guest mode:</strong> This data is stored only in this browser. <a href="auth.html">Create an account</a> to save online (email optional).';
+    container.prepend(notice);
+  }
+}
+
+function loadGuestTree() {
+  try {
+    const raw = localStorage.getItem(LOCAL_GUEST_TREE_KEY);
+    let parsed = null;
+    if (raw) {
+      parsed = JSON.parse(raw);
+    }
+
+    const seededData = ensureDefaultTreeData(parsed && parsed.data);
+    currentTree = {
+      id: 'guest-local',
+      name: (parsed && typeof parsed.name === 'string' && parsed.name.trim()) ? parsed.name.trim() : 'Your Family Tree',
+      description: (parsed && typeof parsed.description === 'string') ? parsed.description : '',
+      privacy: (parsed && typeof parsed.privacy === 'string' && parsed.privacy.trim()) ? parsed.privacy : 'private',
+      data: seededData
+    };
+
+    document.getElementById('treeTitle').textContent = currentTree.name;
+    document.getElementById('editTreeName').value = currentTree.name;
+    document.getElementById('editTreeDescription').value = currentTree.description;
+    document.getElementById('editTreePrivacy').value = currentTree.privacy;
+
+    const jsonEditor = document.getElementById('jsonEditor');
+    jsonEditor.value = JSON.stringify(currentTree.data || {}, null, 2);
+    visualState.autoSeeded = false;
+
+    hasUnsavedChanges = false;
+    updateSaveButton();
+    scheduleVisualRender(true);
+  } catch (error) {
+    console.error('Error loading guest tree:', error);
+    currentTree = {
+      id: 'guest-local',
+      name: 'Your Family Tree',
+      description: '',
+      privacy: 'private',
+      data: ensureDefaultTreeData(null)
+    };
+    document.getElementById('treeTitle').textContent = currentTree.name;
+    document.getElementById('editTreeName').value = currentTree.name;
+    document.getElementById('editTreeDescription').value = '';
+    document.getElementById('editTreePrivacy').value = 'private';
+    document.getElementById('jsonEditor').value = JSON.stringify(currentTree.data || {}, null, 2);
+    hasUnsavedChanges = false;
+    updateSaveButton();
+    scheduleVisualRender(true);
+  }
+}
+
+function queueGuestPersist() {
+  if (!isLocalGuestMode) return;
+  if (guestPersistTimeout) {
+    clearTimeout(guestPersistTimeout);
+  }
+  guestPersistTimeout = setTimeout(() => {
+    guestPersistTimeout = null;
+    persistGuestTree();
+  }, 450);
+}
+
+function persistGuestTree() {
+  if (!isLocalGuestMode) return false;
+
+  try {
+    const jsonText = document.getElementById('jsonEditor').value;
+    const parsedData = JSON.parse(jsonText);
+    const treeData = cleanupTreeData(parsedData);
+    const name = document.getElementById('editTreeName').value.trim() || 'Your Family Tree';
+    const description = document.getElementById('editTreeDescription').value.trim();
+    const privacy = document.getElementById('editTreePrivacy').value || 'private';
+
+    localStorage.setItem(LOCAL_GUEST_TREE_KEY, JSON.stringify({
+      name,
+      description,
+      privacy,
+      data: treeData,
+      updatedAt: Date.now()
+    }));
+
+    currentTree = {
+      ...(currentTree || {}),
+      id: 'guest-local',
+      name,
+      description,
+      privacy,
+      data: treeData
+    };
+
+    document.getElementById('treeTitle').textContent = name;
+    hasUnsavedChanges = false;
+    updateSaveButton();
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function markAsChanged() {
   hasUnsavedChanges = true;
+  if (isLocalGuestMode) {
+    queueGuestPersist();
+  }
   updateSaveButton();
 }
 
 function updateSaveButton() {
   const saveBtn = document.getElementById('saveBtn');
+  if (!saveBtn) return;
+  if (isLocalGuestMode) {
+    saveBtn.style.display = 'none';
+    return;
+  }
   saveBtn.disabled = !hasUnsavedChanges;
   const span = saveBtn.querySelector('span');
   if (span && span.nextSibling) {
@@ -336,6 +481,15 @@ async function generateTreeThumbnail() {
 }
 
 async function saveTree() {
+  if (isLocalGuestMode) {
+    const saved = persistGuestTree();
+    if (!saved) {
+      alert('Invalid JSON format. Please fix errors before continuing.');
+      return false;
+    }
+    return true;
+  }
+
   if (activeSavePromise) {
     return activeSavePromise;
   }
@@ -640,7 +794,10 @@ function exportJson() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${currentTree.name.replace(/[^a-z0-9]/gi, '_')}_family_tree.json`;
+  const fallbackName = (currentTree && currentTree.name)
+    ? currentTree.name
+    : (document.getElementById('editTreeName')?.value || 'family_tree');
+  a.download = `${fallbackName.replace(/[^a-z0-9]/gi, '_')}_family_tree.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1391,6 +1548,8 @@ function createDefaultTreeData(name) {
 }
 
 function getDefaultPersonName() {
+  if (isLocalGuestMode) return 'Guest';
+  if (currentUser && currentUser.isAnonymous) return 'Guest';
   const displayName = currentUser && currentUser.displayName ? currentUser.displayName.trim() : '';
   if (displayName) return displayName;
   const email = currentUser && currentUser.email ? currentUser.email.trim() : '';

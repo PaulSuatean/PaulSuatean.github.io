@@ -701,6 +701,7 @@ function isNightTime() {
 
 function getCurrentUserName(user) {
   if (!user) return '';
+  if (user.isAnonymous) return 'Guest';
   const displayName = user.displayName ? user.displayName.trim() : '';
   if (displayName) return displayName;
   const email = user.email ? user.email.trim() : '';
@@ -711,8 +712,13 @@ function getCurrentUserName(user) {
 function updateDashboardTitle(user) {
   const titleEl = document.getElementById('dashboardTitle');
   if (!titleEl) return;
+  if (user && user.isAnonymous) {
+    titleEl.textContent = 'Your Family Trees';
+    return;
+  }
+
   const username = getCurrentUserName(user);
-  titleEl.textContent = username ? `${username}'s Family Trees` : 'My Family Trees';
+  titleEl.textContent = username ? `${username}'s Family Trees` : 'Your Family Trees';
 }
 
 async function loadTrees() {

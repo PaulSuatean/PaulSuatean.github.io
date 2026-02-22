@@ -2,6 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Auth page loaded');
+  const USERNAME_EMAIL_DOMAIN = 'users.ancestrio.local';
   
   // Theme toggle
   const themeBtn = document.getElementById('themeBtn');
@@ -25,17 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorMessage = document.getElementById('errorMessage');
   const tabButtons = document.querySelectorAll('.auth-tab');
   const forms = document.querySelectorAll('.auth-form');
+  const anonymousSignInBtn = document.getElementById('anonymousSignIn');
 
   console.log('DOM elements found:', { loginForm, signupForm, errorMessage });
 
   // Initialize Firebase
-  if (!initializeFirebase()) {
+  const firebaseReady = initializeFirebase();
+  if (!firebaseReady) {
     console.error('Firebase initialization failed');
-    showError('Failed to initialize Firebase. Please check your configuration.');
-    return;
+    showError('Cloud sign-in is unavailable right now. You can still continue as Guest (Local).');
+  } else {
+    console.log('Firebase initialized successfully');
   }
-  
-  console.log('Firebase initialized successfully');
 
   // Tab switching
   tabButtons.forEach(button => {
@@ -59,14 +61,25 @@ document.addEventListener('DOMContentLoaded', () => {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     console.log('Login form submitted');
-    const email = document.getElementById('loginEmail').value;
+    const identifier = document.getElementById('loginIdentifier').value;
     const password = document.getElementById('loginPassword').value;
-    
-    console.log('Attempting login with email:', email);
+    const resolvedLogin = resolveLoginIdentity(identifier);
+    if (resolvedLogin.error) {
+      showError(resolvedLogin.error);
+      return;
+    }
+
+    console.log('Attempting login with identifier:', identifier);
+
+    if (!firebaseReady) {
+      showError('Cloud sign-in is unavailable right now. Try again later or use Guest mode.');
+      return;
+    }
     
     try {
       showLoading(loginForm);
-      await auth.signInWithEmailAndPassword(email, password);
+      await auth.signInWithEmailAndPassword(resolvedLogin.email, password);
+      localStorage.removeItem('guestMode');
       console.log('Login successful, redirecting...');
       window.location.href = 'dashboard.html';
     } catch (error) {
@@ -81,32 +94,49 @@ document.addEventListener('DOMContentLoaded', () => {
   signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     console.log('Signup form submitted');
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
+    const usernameRaw = document.getElementById('signupUsername').value;
+    const emailRaw = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    
-    console.log('Attempting signup with:', { name, email });
+    const resolvedSignup = resolveSignupIdentity(emailRaw, usernameRaw);
+    if (resolvedSignup.error) {
+      showError(resolvedSignup.error);
+      return;
+    }
+
+    console.log('Attempting signup with:', {
+      authEmail: resolvedSignup.authEmail,
+      username: resolvedSignup.username
+    });
+
+    if (!firebaseReady) {
+      showError('Cloud sign-up is unavailable right now. Try again later or use Guest mode.');
+      return;
+    }
     
     try {
       showLoading(signupForm);
-      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const userCredential = await auth.createUserWithEmailAndPassword(resolvedSignup.authEmail, password);
       console.log('User created:', userCredential.user.uid);
       
-      // Update profile with name
+      const displayName = resolvedSignup.username || 'User';
       await userCredential.user.updateProfile({
-        displayName: name
+        displayName
       });
-      console.log('Profile updated with name');
+      console.log('Profile updated with display name');
       
       // Create user document in Firestore
-      await db.collection('users').doc(userCredential.user.uid).set({
-        name: name,
-        email: email,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      await ensureUserDocument(userCredential.user, {
+        name: displayName,
+        email: resolvedSignup.publicEmail,
+        username: resolvedSignup.username,
+        authEmail: resolvedSignup.authEmail,
+        usesSyntheticEmail: resolvedSignup.usesSyntheticEmail,
+        isAnonymous: false
       });
       console.log('User document created in Firestore');
       
       console.log('Signup successful, redirecting...');
+      localStorage.removeItem('guestMode');
       window.location.href = 'dashboard.html';
     } catch (error) {
       console.error('Signup error:', error);
@@ -119,21 +149,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // Google Sign In
   googleSignInBtn.addEventListener('click', async () => {
     console.log('Google sign-in clicked');
+    if (!firebaseReady) {
+      showError('Google sign-in is unavailable right now. Try again later or use Guest mode.');
+      return;
+    }
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await auth.signInWithPopup(provider);
       console.log('Google sign-in successful:', result.user.email);
       
-      // Check if user document exists, create if not
-      const userDoc = await db.collection('users').doc(result.user.uid).get();
-      if (!userDoc.exists) {
-        await db.collection('users').doc(result.user.uid).set({
-          name: result.user.displayName,
-          email: result.user.email,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
+      await ensureUserDocument(result.user, {
+        name: result.user.displayName || 'Google User',
+        email: result.user.email || '',
+        username: '',
+        authEmail: result.user.email || '',
+        usesSyntheticEmail: false,
+        isAnonymous: false
+      });
       
+      localStorage.removeItem('guestMode');
       window.location.href = 'dashboard.html';
     } catch (error) {
       if (error.code !== 'auth/popup-closed-by-user') {
@@ -141,6 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  // Guest Mode (local browser storage only)
+  if (anonymousSignInBtn) {
+    anonymousSignInBtn.addEventListener('click', () => {
+      localStorage.setItem('guestMode', 'true');
+      window.location.href = 'editor.html?guest=1';
+    });
+  }
 
   // Helper functions
   function showError(message) {
@@ -166,17 +208,120 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getErrorMessage(code) {
     const messages = {
-      'auth/email-already-in-use': 'This email is already registered.',
-      'auth/invalid-email': 'Invalid email address.',
-      'auth/operation-not-allowed': 'Operation not allowed.',
+      'auth/email-already-in-use': 'This email or username is already registered.',
+      'auth/invalid-email': 'Invalid email or username.',
+      'auth/operation-not-allowed': 'This sign-in method is not enabled in Firebase.',
       'auth/weak-password': 'Password should be at least 6 characters.',
       'auth/user-disabled': 'This account has been disabled.',
-      'auth/user-not-found': 'No account found with this email.',
+      'auth/user-not-found': 'No account found with this email or username.',
       'auth/wrong-password': 'Incorrect password.',
+      'auth/invalid-login-credentials': 'Invalid credentials. Check email/username and password.',
       'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
       'auth/network-request-failed': 'Network error. Please check your connection.'
     };
     return messages[code] || 'An error occurred. Please try again.';
+  }
+
+  function normalizeUsername(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    const cleaned = raw
+      .replace(/[^a-z0-9._-]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^[._-]+/, '')
+      .replace(/[._-]+$/, '');
+    return cleaned.slice(0, 64);
+  }
+
+  function isValidUsername(value) {
+    return String(value || '').trim().length > 0;
+  }
+
+  function toSyntheticEmail(username) {
+    return `${username}@${USERNAME_EMAIL_DOMAIN}`;
+  }
+
+  function resolveLoginIdentity(identifier) {
+    const input = String(identifier || '').trim();
+    if (!input) {
+      return { error: 'Enter your email or username.' };
+    }
+    if (input.includes('@')) {
+      return { email: input };
+    }
+
+    const username = normalizeUsername(input);
+    if (!isValidUsername(username)) {
+      return {
+        error: 'Please enter a valid username.'
+      };
+    }
+
+    return { email: toSyntheticEmail(username) };
+  }
+
+  function resolveSignupIdentity(emailRaw, usernameRaw) {
+    const email = String(emailRaw || '').trim();
+    const usernameInput = normalizeUsername(usernameRaw);
+
+    if (!email && !usernameInput) {
+      return { error: 'Provide either an email or a username.' };
+    }
+
+    let username = usernameInput || '';
+    if (!username && email) {
+      username = deriveUsernameFromEmail(email);
+    }
+
+    if (!username) {
+      return { error: 'Could not create a username from this email. Please enter a username.' };
+    }
+
+    if (!isValidUsername(username)) {
+      return {
+        error: 'Please enter a valid username.'
+      };
+    }
+
+    if (email) {
+      return {
+        authEmail: email,
+        publicEmail: email,
+        username,
+        usesSyntheticEmail: false
+      };
+    }
+
+    return {
+      authEmail: toSyntheticEmail(username),
+      publicEmail: '',
+      username,
+      usesSyntheticEmail: true
+    };
+  }
+
+  function deriveUsernameFromEmail(email) {
+    const input = String(email || '').trim().toLowerCase();
+    if (!input.includes('@')) return '';
+
+    const localPart = input.split('@')[0] || '';
+    return normalizeUsername(localPart);
+  }
+
+  async function ensureUserDocument(user, profile) {
+    if (!user || !user.uid) return;
+    const userRef = db.collection('users').doc(user.uid);
+    const userDoc = await userRef.get();
+    if (userDoc.exists) return;
+
+    await userRef.set({
+      name: profile?.name || (user.isAnonymous ? 'Guest' : 'User'),
+      email: profile?.email || '',
+      username: profile?.username || '',
+      authEmail: profile?.authEmail || user.email || '',
+      usesSyntheticEmail: Boolean(profile?.usesSyntheticEmail),
+      isAnonymous: Boolean(profile?.isAnonymous ?? user.isAnonymous),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
   }
   
   console.log('All event listeners attached successfully');
