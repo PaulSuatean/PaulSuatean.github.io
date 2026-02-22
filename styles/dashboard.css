@@ -220,19 +220,19 @@ body.theme-dark .tree-card {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.92);
   flex-direction: column;
   gap: 8px;
 }
 
 .tree-card-preview-placeholder .material-symbols-outlined {
   font-size: 48px !important;
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 .tree-card-preview-placeholder span:not(.material-symbols-outlined) {
   font-size: 13px;
-  opacity: 0.6;
+  opacity: 0.92;
 }
 
 .tree-card-meta {

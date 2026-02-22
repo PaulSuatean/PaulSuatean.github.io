@@ -397,7 +397,15 @@
 
     .triangle-icon {
       font-size: 56px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
       filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    }
+
+    .triangle-icon.material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 48;
     }
 
     .triangle-label {
@@ -698,6 +706,9 @@
 </head>
 <body>
   <div class="landing-controls">
+    <button id="themeBtn" type="button" aria-pressed="false" aria-label="Switch theme" title="Switch theme">
+      <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+    </button>
     <a href="https://www.google.com" aria-label="Google" title="Google">
       <svg viewBox="-0.5 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <g fill="none" fill-rule="evenodd">
@@ -708,9 +719,6 @@
         </g>
       </svg>
     </a>
-    <button id="themeBtn" type="button" aria-pressed="false" aria-label="Switch theme" title="Switch theme">
-      <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
-    </button>
   </div>
   <div class="triangle-container">
     <!-- Ancestrio Title -->
@@ -723,7 +731,7 @@
     <a href="pages/demo-tree.html" class="triangle triangle-left">
       <div class="triangle-content">
         <div class="triangle-card">
-          <div class="triangle-icon">🌳</div>
+          <span class="triangle-icon material-symbols-outlined" aria-hidden="true">account_tree</span>
           <div class="triangle-label">Demo</div>
           <div class="triangle-desc">Explore a sample family tree</div>
         </div>
@@ -734,7 +742,7 @@
     <a href="pages/auth.html" class="triangle triangle-right">
       <div class="triangle-content">
         <div class="triangle-card">
-          <div class="triangle-icon">✨</div>
+          <span class="triangle-icon material-symbols-outlined" aria-hidden="true">auto_awesome</span>
           <div class="triangle-label">Create</div>
           <div class="triangle-desc">Build your own family tree</div>
         </div>
@@ -746,7 +754,7 @@
       <div class="triangle-content">
         <div class="triangle-card">
           <div class="contact-icon-section">
-            <div class="triangle-icon">📧</div>
+            <span class="triangle-icon material-symbols-outlined" aria-hidden="true">mail</span>
           </div>
           <div class="contact-text-section">
             <div class="triangle-label">Contact</div>

@@ -1827,7 +1827,11 @@ body.theme-dark .topbar {
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: transparent;
   color: var(--text);
-  padding: 8px 16px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
   border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 600;
@@ -1838,6 +1842,9 @@ body.theme-dark .topbar {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.brand-group #themeBtn .material-symbols-outlined {
+  font-size: 22px;
 }
 .brand-group #themeBtn:hover {
   transform: translateY(-1px);
@@ -1997,16 +2004,30 @@ body.theme-dark .view-toggle-btn { color: var(--text); }
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  padding: 8px 12px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0;
   box-shadow: var(--shadow-sm);
   text-decoration: none;
   cursor: pointer;
   transition: transform var(--transition-base) ease, box-shadow var(--transition-base) ease, background var(--transition-base) ease, color var(--transition-base) ease, border-color var(--transition-base) ease;
+}
+.icon-btn .material-symbols-outlined {
+  font-size: 22px;
+}
+
+#backBtn {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .controls > a > button {
@@ -2827,9 +2848,10 @@ body.theme-dark.focus-mode .topbar {
 
   body:not(.focus-mode) .brand-group #themeBtn {
     flex: 0 0 auto;
-    width: 44px;
-    min-width: 44px;
-    min-height: 40px;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
     padding: 0;
     margin: 0;
   }
@@ -2874,9 +2896,17 @@ body.theme-dark.focus-mode .topbar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
   }
 
   body:not(.focus-mode) #backBtn {
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
     margin: 0 !important;
   }
 
@@ -2927,7 +2957,8 @@ body.theme-dark.focus-mode .topbar {
   }
 
   body:not(.focus-mode) .brand-group #themeBtn {
-    min-height: 38px;
+    height: 48px;
+    min-height: 48px;
   }
 
   body:not(.focus-mode) .controls > button,
@@ -2937,6 +2968,13 @@ body.theme-dark.focus-mode .topbar {
     min-height: 36px;
     padding: 6px 9px;
     font-size: 0.78rem;
+  }
+
+  body:not(.focus-mode) .controls .icon-btn {
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
   }
 
   body:not(.focus-mode) .controls-tree #upcomingContainer {
